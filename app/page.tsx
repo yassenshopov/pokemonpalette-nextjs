@@ -369,18 +369,18 @@ export default function Home() {
   return (
     <div className="min-h-screen flex">
       {/* Fixed Sidebar */}
-      <aside className="w-[30%] fixed left-0 top-0 h-screen m-0 p-0 border-r-0">
+      <aside className="w-[30%] fixed left-0 top-12 h-screen m-0 p-0 border-r-0 flex flex-col items-center">
         <PokemonMenu />
       </aside>
 
       {/* Main Content - Scrollable */}
-      <main className="flex-1 ml-[30%] p-8 min-h-screen">
+      <main className="flex-1 ml-[30%] p-4 min-h-screen">
         {/* Theme Toggle moved to top right of main content */}
         <div className="absolute top-8 right-8">
           <ThemeToggle />
         </div>
 
-        <div className="max-w-5xl mx-auto space-y-16">
+        <div className="max-w-6xl mx-auto space-y-16">
           {/* Updated hero section with artwork */}
           <div className="flex items-center gap-8 pt-8">
             <div className="flex-1 text-center">
