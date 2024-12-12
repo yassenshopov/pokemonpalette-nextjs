@@ -450,7 +450,7 @@ export function PokemonMenu() {
       // style={gradientStyle}
     >
       <CardHeader className="h-[60px]">
-        <CardTitle className="text-center">The {speciesTitle}</CardTitle>
+        <CardTitle className="text-center text-xl">The {speciesTitle}</CardTitle>
       </CardHeader>
 
       <CardContent className="flex flex-col items-center h-[calc(100%-60px)] p-6">
