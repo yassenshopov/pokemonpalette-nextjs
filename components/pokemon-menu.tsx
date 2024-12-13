@@ -429,7 +429,6 @@ export function PokemonMenu() {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const myRef = useRef<HTMLDivElement>(null);
   return (
     <Card
       className="w-[100%] h-[600px] pt-12"
