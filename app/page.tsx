@@ -369,15 +369,27 @@ export default function Home() {
   return (
     <div className="min-h-screen flex">
       {/* Fixed Sidebar */}
-      <aside className="w-[30%] fixed left-0 top-12 h-screen m-0 p-0 border-r-0 flex flex-col items-center">
+      <aside className="w-[30%] fixed left-0 top-0 h-screen m-0 p-0 flex flex-col items-center border-r-2 border-gray-200">
         <PokemonMenu />
       </aside>
 
       {/* Main Content - Scrollable */}
-      <main className="flex-1 ml-[30%] p-4 min-h-screen">
+      <main className="flex-1 ml-[30%] p-4 min-h-screen pt-16">
         {/* Theme Toggle moved to top right of main content */}
         <div className="absolute top-8 right-8">
           <ThemeToggle />
+        </div>
+        <div className="absolute top-7 right-32 hover:cursor-pointer hover:scale-105 transition-all duration-200">
+          <a
+            href="https://www.buymeacoffee.com/yassenshopov"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center px-4 py-2 font-normal rounded-xl hover:bg-gray-100 transition duration-200 ${getContrastColor(colors[0]).text}`}
+            style={{ backgroundColor: colors[0] }}
+          >
+            <span className="mr-2">☕</span>
+            Buy me a coffee
+          </a>
         </div>
 
         <div className="max-w-6xl mx-auto space-y-16">

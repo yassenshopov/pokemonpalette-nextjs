@@ -16,7 +16,7 @@ interface ColorContextType {
 const ColorContext = createContext<ColorContextType | undefined>(undefined);
 
 export function ColorProvider({ children }: { children: React.ReactNode }) {
-  const [colors, setColors] = useState<string[]>([]);
+  const [colors, setColors] = useState<string[]>(['rgb(255, 255, 255)', 'rgb(0, 0, 0)', 'rgb(128, 128, 128)']);
   const [pokemonName, setPokemonName] = useState<string>('');
   const [shiny, setShiny] = useState<boolean>(false);
   const [form, setForm] = useState<string>('');
