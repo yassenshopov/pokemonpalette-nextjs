@@ -30,7 +30,6 @@ import {
 } from '@/components/ui/popover';
 import speciesData from '@/data/species.json';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Image from 'next/image';
 
 interface PokemonSpecies {
   genera: Array<{
@@ -129,9 +128,6 @@ const PokemonService = {
 };
 
 export function PokemonMenu() {
-  // Declare the ref
-  const myRef = useRef<HTMLDivElement>(null);
-
   // Pokemon data state
   const [pokemonName, setPokemonName] = useState('ninetales');
   const [dexNumber, setDexNumber] = useState('38');
@@ -146,6 +142,8 @@ export function PokemonMenu() {
   const [availableForms, setAvailableForms] = useState<
     Array<{ name: string; id: string }>
   >([]);
+  const [baseSpeciesId, setBaseSpeciesId] = useState<number>(0);
+  const [nextEvolution, setNextEvolution] = useState<string | null>(null);
   const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOption[]>(
     []
   );
@@ -155,7 +153,7 @@ export function PokemonMenu() {
 
   // Color extraction
   const extractColors = async (imageUrl: string) => {
-    const img = new window.Image();
+    const img = new Image();
     img.crossOrigin = 'Anonymous';
 
     img.onload = () => {
@@ -191,6 +189,7 @@ export function PokemonMenu() {
 
       if (!skipSpecies) {
         const speciesData = await PokemonService.fetchPokemonSpecies(data.id);
+        setBaseSpeciesId(data.id);
 
         const forms =
           speciesData.varieties?.map((v) => ({
@@ -253,7 +252,7 @@ export function PokemonMenu() {
       setSpriteUrl(newSpriteUrl || '');
 
       if (newSpriteUrl) {
-        await extractColors(newSpriteUrl);
+        extractColors(newSpriteUrl);
       }
     } catch (error) {
       console.error('Error fetching Pokemon:', error);
@@ -298,13 +297,13 @@ export function PokemonMenu() {
     if (dexNumber) {
       handlePokemonFetch(dexNumber);
     }
-  }, [dexNumber, handlePokemonFetch]);
+  }, [dexNumber]);
 
   useEffect(() => {
     if (currentForm) {
       handlePokemonFetch(currentForm, true);
     }
-  }, [currentForm, handlePokemonFetch]);
+  }, [isShiny]);
 
   // Add useEffect to fetch initial Pokemon on mount
   useEffect(() => {
@@ -429,6 +428,25 @@ export function PokemonMenu() {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
+  // Add this near your other useEffect hooks
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const buttons = document.querySelectorAll('.shiny-active');
+      buttons.forEach((button) => {
+        const rect = button.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        // button.style.setProperty('--mouse-x', `${x}%`);
+        // button.style.setProperty('--mouse-y', `${y}%`);
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  const myRef = useRef<HTMLDivElement>(null);
+
   return (
     <Card
       className="w-[100%] h-[600px] pt-12"
@@ -453,10 +471,11 @@ export function PokemonMenu() {
                 isLoading ? 'opacity-50' : 'opacity-100'
               }`}
             >
-              <Image
+              <img
                 src={spriteUrl}
                 alt={pokemonName}
                 className={`h-48 w-48 ${isLoading ? 'animate-pulse' : ''}`}
+                style={{ imageRendering: 'pixelated' }}
               />
               {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center">
