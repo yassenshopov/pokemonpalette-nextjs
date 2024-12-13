@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/popover';
 import speciesData from '@/data/species.json';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Image from 'next/image';
 
 interface PokemonSpecies {
   genera: Array<{
@@ -142,8 +143,6 @@ export function PokemonMenu() {
   const [availableForms, setAvailableForms] = useState<
     Array<{ name: string; id: string }>
   >([]);
-  const [baseSpeciesId, setBaseSpeciesId] = useState<number>(0);
-  const [nextEvolution, setNextEvolution] = useState<string | null>(null);
   const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOption[]>(
     []
   );
@@ -189,7 +188,6 @@ export function PokemonMenu() {
 
       if (!skipSpecies) {
         const speciesData = await PokemonService.fetchPokemonSpecies(data.id);
-        setBaseSpeciesId(data.id);
 
         const forms =
           speciesData.varieties?.map((v) => ({
@@ -297,13 +295,13 @@ export function PokemonMenu() {
     if (dexNumber) {
       handlePokemonFetch(dexNumber);
     }
-  }, [dexNumber]);
+  }, [dexNumber, handlePokemonFetch]);
 
   useEffect(() => {
     if (currentForm) {
       handlePokemonFetch(currentForm, true);
     }
-  }, [isShiny]);
+  }, [currentForm, handlePokemonFetch]);
 
   // Add useEffect to fetch initial Pokemon on mount
   useEffect(() => {
@@ -445,8 +443,6 @@ export function PokemonMenu() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const myRef = useRef<HTMLDivElement>(null);
-
   return (
     <Card
       className="w-[100%] h-[600px] pt-12"
@@ -471,11 +467,10 @@ export function PokemonMenu() {
                 isLoading ? 'opacity-50' : 'opacity-100'
               }`}
             >
-              <img
+              <Image
                 src={spriteUrl}
                 alt={pokemonName}
                 className={`h-48 w-48 ${isLoading ? 'animate-pulse' : ''}`}
-                style={{ imageRendering: 'pixelated' }}
               />
               {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center">
