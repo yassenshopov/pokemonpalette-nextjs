@@ -428,23 +428,6 @@ export function PokemonMenu() {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  // Add this near your other useEffect hooks
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const buttons = document.querySelectorAll('.shiny-active');
-      buttons.forEach((button) => {
-        const rect = button.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        button.style.setProperty('--mouse-x', `${x}%`);
-        button.style.setProperty('--mouse-y', `${y}%`);
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
   const myRef = useRef<HTMLDivElement>(null);
 
   return (
