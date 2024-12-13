@@ -129,6 +129,9 @@ const PokemonService = {
 };
 
 export function PokemonMenu() {
+  // Declare the ref
+  const myRef = useRef<HTMLDivElement>(null);
+
   // Pokemon data state
   const [pokemonName, setPokemonName] = useState('ninetales');
   const [dexNumber, setDexNumber] = useState('38');
@@ -152,7 +155,7 @@ export function PokemonMenu() {
 
   // Color extraction
   const extractColors = async (imageUrl: string) => {
-    const img = new Image();
+    const img = new window.Image();
     img.crossOrigin = 'Anonymous';
 
     img.onload = () => {
@@ -250,7 +253,7 @@ export function PokemonMenu() {
       setSpriteUrl(newSpriteUrl || '');
 
       if (newSpriteUrl) {
-        extractColors(newSpriteUrl);
+        await extractColors(newSpriteUrl);
       }
     } catch (error) {
       console.error('Error fetching Pokemon:', error);
@@ -429,14 +432,13 @@ export function PokemonMenu() {
   // Add this near your other useEffect hooks
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const buttons = document.querySelectorAll('.shiny-active');
-      buttons.forEach((button) => {
-        const rect = button.getBoundingClientRect();
+      const rect = myRef.current?.getBoundingClientRect();
+      if (rect && myRef.current) {
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
-        button.style.setProperty('--mouse-x', `${x}%`);
-        button.style.setProperty('--mouse-y', `${y}%`);
-      });
+        myRef.current.style.setProperty('--mouse-x', `${x}%`);
+        myRef.current.style.setProperty('--mouse-y', `${y}%`);
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);

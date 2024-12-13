@@ -4,11 +4,13 @@
 
 ## Features
 
+
 - Search and browse Pokemon by name or number
 - Generate color palettes from Pokemon sprites
 - Copy color codes in different formats (HEX, RGB, HSL)
 - Save your favorite palettes
 - Share palettes with others
+
 
 ## Getting Started
 
@@ -29,6 +31,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Tech Stack
 
 This project is built with:
+
 - [Next.js](https://nextjs.org) - React framework for production
 - [PokeAPI](https://pokeapi.co) - Pokemon data source
 - [Vercel](https://vercel.com) - Deployment platform
