@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import {
   Shuffle,
   Sparkles,
   ArrowRight,
+  Pencil,
+  LucideGripVertical,
 } from 'lucide-react';
 import ColorThief from 'colorthief';
 import {
@@ -371,18 +373,21 @@ export function PokemonMenu() {
     return (brightest + 0.05) / (darkest + 0.05);
   };
 
-  const getContrastColor = (bgColor: string): { text: string; overlay: string } => {
+  const getContrastColor = (
+    bgColor: string
+  ): { text: string; overlay: string } => {
     if (!bgColor) return { text: 'text-foreground', overlay: '' };
 
     const whiteContrast = getContrastRatio(bgColor, 'rgb(255, 255, 255)');
     const blackContrast = getContrastRatio(bgColor, 'rgb(0, 0, 0)');
 
     const needsOverlay = Math.max(whiteContrast, blackContrast) < 4.5;
-    const textColor = whiteContrast > blackContrast ? 'text-white' : 'text-black';
+    const textColor =
+      whiteContrast > blackContrast ? 'text-white' : 'text-black';
 
     return {
       text: textColor,
-      overlay: needsOverlay ? 'bg-black/10 dark:bg-white/10' : ''
+      overlay: needsOverlay ? 'bg-black/10 dark:bg-white/10' : '',
     };
   };
 
@@ -440,9 +445,11 @@ export function PokemonMenu() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  const myRef = useRef<HTMLDivElement>(null);
+
   return (
     <Card
-      className="w-[100%] h-[600px]"
+      className="w-[100%] h-[600px] pt-12"
       style={{
         border: 'none',
         boxShadow: 'none',
@@ -450,7 +457,9 @@ export function PokemonMenu() {
       // style={gradientStyle}
     >
       <CardHeader className="h-[60px]">
-        <CardTitle className="text-center text-xl">The {speciesTitle}</CardTitle>
+        <CardTitle className="text-center text-xl">
+          The {speciesTitle}
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="flex flex-col items-center h-[calc(100%-60px)] p-6">
@@ -610,27 +619,34 @@ export function PokemonMenu() {
                 <div className="w-full flex flex-col items-center">
                   {evolutionOptions.length === 1 ? (
                     // Single evolution - direct button
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-3/4 text-base"
                       disabled={isLoading}
-                      onClick={() => handlePokemonFetch(evolutionOptions[0].name)}
+                      onClick={() =>
+                        handlePokemonFetch(evolutionOptions[0].name)
+                      }
                     >
                       <ArrowRight className="mr-2 h-4 w-4" />
                       <img
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${PokemonService.getSpeciesId(evolutionOptions[0].name)}.png`}
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+                          isShiny ? 'shiny/' : ''
+                        }${PokemonService.getSpeciesId(
+                          evolutionOptions[0].name
+                        )}.png`}
                         alt={evolutionOptions[0].name}
                         className="w-6 h-6 mr-2"
                         style={{ imageRendering: 'pixelated' }}
                       />
-                      Evolve to {capitalize(evolutionOptions[0].name.replace(/-/g, ' '))}
+                      Evolve to{' '}
+                      {capitalize(evolutionOptions[0].name.replace(/-/g, ' '))}
                     </Button>
                   ) : (
                     // Multiple evolutions - popover
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-3/4 text-base"
                           disabled={isLoading}
                         >
@@ -653,13 +669,19 @@ export function PokemonMenu() {
                               >
                                 <div className="flex items-center w-full">
                                   <img
-                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${PokemonService.getSpeciesId(evo.name)}.png`}
+                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+                                      isShiny ? 'shiny/' : ''
+                                    }${PokemonService.getSpeciesId(
+                                      evo.name
+                                    )}.png`}
                                     alt={evo.name}
                                     className="w-8 h-8 mr-2"
                                     style={{ imageRendering: 'pixelated' }}
                                   />
                                   <div className="flex flex-col">
-                                    <span className="capitalize">{capitalize(evo.name.replace(/-/g, ' '))}</span>
+                                    <span className="capitalize">
+                                      {capitalize(evo.name.replace(/-/g, ' '))}
+                                    </span>
                                     {evo.condition && (
                                       <span className="text-sm text-muted-foreground">
                                         {evo.condition}
@@ -686,10 +708,10 @@ export function PokemonMenu() {
         {/* Color Editor Section */}
         {bgColors.length > 0 && (
           <div className="w-full space-y-2 mt-4">
-            <div className="text-center text-sm text-muted-foreground">
+            <div className="text-center text-sm text-muted-foreground pb-4">
               Colors:
             </div>
-            <div className="flex flex-col space-y-4 px-4">
+            <div className="flex flex-col space-y-4 px-4 items-center">
               {bgColors.map((color, index) => {
                 // Add color labels
                 const colorLabel =
@@ -702,26 +724,34 @@ export function PokemonMenu() {
                 return (
                   <Popover key={index}>
                     <PopoverTrigger asChild>
-                      <div className="flex items-center space-x-4 group">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-muted-foreground min-w-[80px]">
-                            {colorLabel}:
-                          </span>
-                          <div
-                            className="h-12 w-12 rounded-full cursor-pointer transition-transform hover:scale-105 relative"
-                            style={{ backgroundColor: color }}
-                          >
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 rounded-full">
-                              <div
-                                className={`text-sm font-medium ${
-                                  getContrastColor(color).text
-                                }`}
-                              >
-                                Edit
-                              </div>
-                            </div>
-                          </div>
+                      <div
+                        className="flex items-center space-x-4 group cursor-pointer opacity-100 hover:opacity-80"
+                        draggable
+                        onDragStart={(e) => e.dataTransfer.setData('text/plain', index.toString())}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                          const toIndex = index;
+                          if (fromIndex !== toIndex) {
+                            const newColors = [...bgColors];
+                            const [movedColor] = newColors.splice(fromIndex, 1);
+                            newColors.splice(toIndex, 0, movedColor);
+                            setBgColors(newColors);
+                          }
+                        }}
+                        style={{ cursor: 'grab' }}
+                      >
+                        <div className="flex flex-col items-center mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <LucideGripVertical className="h-4 w-4 text-gray-500 mb-1" />
                         </div>
+                        <span
+                          className={`text-sm font-medium min-w-[80px] text-center border border-gray-300 rounded-full px-3 py-1 w-24 ${
+                            getContrastColor(color).text
+                          }`}
+                          style={{ backgroundColor: color }}
+                        >
+                          {colorLabel}
+                        </span>
                         <div className="text-base font-mono">
                           {color
                             .replace(
@@ -735,6 +765,22 @@ export function PokemonMenu() {
                                   .join('')
                             )
                             .toUpperCase()}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="h-12 w-12 rounded-full cursor-pointer transition-transform hover:scale-105 relative"
+                            style={{ backgroundColor: color }}
+                          >
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 rounded-full">
+                              <div
+                                className={`text-sm font-medium ${
+                                  getContrastColor(color).text
+                                }`}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </PopoverTrigger>
