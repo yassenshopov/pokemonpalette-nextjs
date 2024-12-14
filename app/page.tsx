@@ -235,9 +235,11 @@ export default function Home() {
 
         // Set artwork, cry, and types
         const artwork = shiny
-          ? data.sprites.other['official-artwork'].front_shiny ||
-            data.sprites.other['official-artwork'].front_default
+          ? data.sprites.other['official-artwork'].front_shiny
           : data.sprites.other['official-artwork'].front_default;
+        console.log(artwork);
+        console.log(data)
+        console.log(shiny)
         setOfficialArt(artwork);
         setPokemonCry(data.cries.latest);
         setPokemonTypes(data.types.map((t) => t.type.name));
