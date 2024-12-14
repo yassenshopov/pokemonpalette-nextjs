@@ -147,7 +147,12 @@ export function PokemonMenu() {
   const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOption[]>(
     []
   );
-  const { setColors, setPokemonName: setContextPokemonName, setShiny, setForm } = useColors();
+  const {
+    setColors,
+    setPokemonName: setContextPokemonName,
+    setShiny,
+    setForm,
+  } = useColors();
   const [suggestions, setSuggestions] = useState<PokemonSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -167,6 +172,9 @@ export function PokemonMenu() {
       setColors(hexColors);
       setShiny(isShiny);
       setForm(currentForm);
+      
+      setIsRotating(true);
+      setTimeout(() => setIsRotating(false), 1000);
     };
 
     img.src = imageUrl;
@@ -397,25 +405,23 @@ export function PokemonMenu() {
   const handleNameInputChange = async (value: string) => {
     setPokemonName(value);
 
-    if (value.length >= 2) {
-      // Filter species that start with the input value
-      const matches = Object.entries(speciesData)
-        .filter(([name]) => name.toLowerCase().startsWith(value.toLowerCase()))
-        .slice(0, 10) // Limit to 10 suggestions
-        .map(([name, id]) => ({
-          name,
-          id,
-          sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
-            isShiny ? 'shiny/' : ''
-          }${id}.png`,
-        }));
+    // Filter species that start with the input value
+    const matches = Object.entries(speciesData)
+      .filter(([name]) => name.toLowerCase().startsWith(value.toLowerCase()))
+      .slice(0, 10) // Limit to 10 suggestions
+      .map(([name, id]) => ({
+        name,
+        id,
+        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+          isShiny ? 'shiny/' : ''
+        }${id}.png`,
+      }));
 
-      setSuggestions(matches);
-      setShowSuggestions(matches.length > 0);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
+    setSuggestions(matches);
+    setShowSuggestions(matches.length > 0);
+
+    // Focus the input field to prevent losing focus
+    inputRef.current?.focus();
   };
 
   // Add this function to handle suggestion selection
@@ -442,12 +448,42 @@ export function PokemonMenu() {
         // button.style.setProperty('--mouse-y', `${y}%`);
       });
     };
-
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const myRef = useRef<HTMLDivElement>(null);
+
+  const getHueFromColor = (color: string): number => {
+    const rgb = color.match(/\d+/g);
+    if (!rgb) return 0;
+    const [r, g, b] = rgb.map(Number);
+    
+    // Convert RGB to HSL
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    let s = 0;
+    const l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return Math.round(h * 360); // Convert to degrees
+  };
+
+  // Add a new state to control the rotation animation
+  const [isRotating, setIsRotating] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null); // Create a ref for the input
 
   return (
     <Card
@@ -458,6 +494,14 @@ export function PokemonMenu() {
       }}
       // style={gradientStyle}
     >
+      <div className="absolute top-8 left-8 flex items-center justify-center">
+        <img
+          src="/logo512.png"
+          alt="App Logo"
+          className={`h-16 w-16 ${isRotating ? 'animate-rotate' : ''}`}
+          style={{ filter: `hue-rotate(${bgColors.length > 0 ? getHueFromColor(bgColors[0]) : 0}deg)` }}
+        />
+      </div>
       <CardHeader className="h-[60px]">
         <CardTitle className="text-center text-xl">
           The {speciesTitle}
@@ -493,41 +537,70 @@ export function PokemonMenu() {
           {/* Name Input */}
           <div className="space-y-3 relative">
             <div className="text-center text-lg font-medium">Name:</div>
-            <Popover open={showSuggestions} onOpenChange={setShowSuggestions}>
-              <PopoverTrigger asChild>
-                <Input
-                  type="text"
-                  value={pokemonName}
-                  onChange={(e) => handleNameInputChange(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleNameSubmit(pokemonName);
-                      setShowSuggestions(false);
-                    }
-                  }}
-                  className="text-center capitalize bg-background w-3/4 mx-auto"
+            <div className="flex items-center justify-center w-full mx-auto gap-2">
+            <Button
+                variant="outline"
+                className={`h-8 w-8 relative invisible ${isShiny ? 'shiny-active' : ''}`}
+                onClick={() => setIsShiny(!isShiny)}
+                disabled={isLoading}
+              >
+                <Sparkles
+                  className={`h-4 w-4 transition-colors duration-300 sparkle-icon ${
+                    isShiny ? 'text-yellow-500' : ''
+                  }`}
                 />
-              </PopoverTrigger>
-              <PopoverContent className="w-[75%] p-0" align="center">
-                <ScrollArea className="h-[200px]">
-                  {suggestions.map((suggestion) => (
-                    <button
-                      key={suggestion.name}
-                      className="w-full px-4 py-2 text-left capitalize hover:bg-accent cursor-pointer flex items-center gap-2"
-                      onClick={() => handleSuggestionSelect(suggestion)}
-                    >
-                      <img
-                        src={suggestion.sprite}
-                        alt={suggestion.name}
-                        className="w-8 h-8"
-                        style={{ imageRendering: 'pixelated' }}
-                      />
-                      <span>{suggestion.name.replace(/-/g, ' ')}</span>
-                    </button>
-                  ))}
-                </ScrollArea>
-              </PopoverContent>
-            </Popover>
+                <div className="absolute inset-0 h-4 w-4 pointer-events-none shiny-overlay" />
+              </Button>
+              <Popover open={showSuggestions} onOpenChange={setShowSuggestions}>
+                <PopoverTrigger asChild>
+                  <Input
+                    ref={inputRef}
+                    type="text"
+                    value={pokemonName}
+                    onChange={(e) => handleNameInputChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleNameSubmit(pokemonName);
+                        setShowSuggestions(false);
+                      }
+                    }}
+                    className="text-center capitalize bg-background w-3/4 mx-auto m-0"
+                  />
+                </PopoverTrigger>
+                <PopoverContent className="w-[75%] p-0" align="center">
+                  <ScrollArea className="h-[200px]">
+                    {suggestions.map((suggestion) => (
+                      <button
+                        key={suggestion.name}
+                        className="w-full px-4 py-2 text-left capitalize hover:bg-accent cursor-pointer flex items-center gap-2"
+                        onClick={() => handleSuggestionSelect(suggestion)}
+                      >
+                        <img
+                          src={suggestion.sprite}
+                          alt={suggestion.name}
+                          className="w-8 h-8"
+                          style={{ imageRendering: 'pixelated' }}
+                        />
+                        <span>{suggestion.name.replace(/-/g, ' ')}</span>
+                      </button>
+                    ))}
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+              <Button
+                variant="outline"
+                className={`h-8 w-8 relative ${isShiny ? 'shiny-active' : ''}`}
+                onClick={() => setIsShiny(!isShiny)}
+                disabled={isLoading}
+              >
+                <Sparkles
+                  className={`h-4 w-4 transition-colors duration-300 sparkle-icon ${
+                    isShiny ? 'text-yellow-500' : ''
+                  }`}
+                />
+                <div className="absolute inset-0 h-4 w-4 pointer-events-none shiny-overlay" />
+              </Button>
+            </div>
           </div>
 
           {/* Dex Number Input */}
@@ -566,25 +639,8 @@ export function PokemonMenu() {
             {/* First row of buttons in a horizontal layout */}
             <div className="flex w-3/4 gap-2">
               <Button
-                variant="outline"
-                className={`flex-1 text-base relative overflow-hidden ${
-                  isShiny ? 'shiny-active' : ''
-                }`}
-                onClick={() => setIsShiny(!isShiny)}
-                disabled={isLoading}
-              >
-                <Sparkles
-                  className={`mr-2 h-4 w-4 transition-colors duration-300 sparkle-icon ${
-                    isShiny ? 'text-yellow-500' : ''
-                  }`}
-                />
-                {isShiny ? 'Normal' : 'Shiny'}
-                <div className="absolute inset-0 pointer-events-none shiny-overlay" />
-              </Button>
-
-              <Button
                 variant="secondary"
-                className="flex-1 text-base"
+                className="flex-1 text-base cursor-pointer"
                 onClick={() =>
                   handlePokemonFetch(Math.floor(Math.random() * 1025) + 1)
                 }
@@ -729,10 +785,14 @@ export function PokemonMenu() {
                       <div
                         className="flex items-center space-x-4 group cursor-pointer opacity-100 hover:opacity-80"
                         draggable
-                        onDragStart={(e) => e.dataTransfer.setData('text/plain', index.toString())}
+                        onDragStart={(e) =>
+                          e.dataTransfer.setData('text/plain', index.toString())
+                        }
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={(e) => {
-                          const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                          const fromIndex = parseInt(
+                            e.dataTransfer.getData('text/plain')
+                          );
                           const toIndex = index;
                           if (fromIndex !== toIndex) {
                             const newColors = [...bgColors];
@@ -838,3 +898,4 @@ export function PokemonMenu() {
     </Card>
   );
 }
+

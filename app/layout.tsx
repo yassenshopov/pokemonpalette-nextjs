@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: 'Pokemon Palette',
     images: [
       {
-        url: '/og-image.png', // You'll need to create this image
+        url: '/og-image.webp', // You'll need to create this image
         width: 1200,
         height: 630,
         alt: 'Pokemon Palette - Create beautiful color schemes'
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Pokemon Palette - Create Color Palettes from Pokemon',
     description: 'Generate beautiful color palettes inspired by Pokemon',
-    images: ['/twitter-image.png'], // You'll need to create this image
-    creator: '@yourtwitterhandle'
+    images: ['/og-image.webp'], // You'll need to create this image
+    creator: '@yassenshopov'
   },
 
   // Robots
@@ -65,8 +65,8 @@ export const metadata: Metadata = {
   // Icons
   icons: {
     icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
+    shortcut: '/logo512.png',
+    apple: '/logo512.png',
   },
 
   // Manifest
