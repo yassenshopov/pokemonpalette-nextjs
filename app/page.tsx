@@ -369,14 +369,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Fixed Sidebar */}
-      <aside className="w-[30%] fixed left-0 top-0 h-screen m-0 p-0 flex flex-col items-center border-r-2 border-gray-200">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Sidebar with responsive positioning */}
+      <aside className="w-full md:w-[30%] fixed md:left-0 md:top-0 h-screen m-0 p-0 flex flex-col items-center border-r-2 border-gray-200">
         <PokemonMenu />
       </aside>
 
       {/* Main Content - Scrollable */}
-      <main className="flex-1 ml-[30%] p-4 min-h-screen pt-16">
+      <main className="ml-[35%] p-4 min-h-screen pt-16">
         {/* Theme Toggle moved to top right of main content */}
         <div className="absolute top-8 right-8">
           <ThemeToggle />
