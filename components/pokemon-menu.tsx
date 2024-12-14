@@ -23,13 +23,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useColors } from '@/contexts/color-context';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import speciesData from '@/data/species.json';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import speciesData from '@/data/species.json';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PokemonSpecies {
   genera: Array<{
@@ -186,6 +186,9 @@ export function PokemonMenu() {
     skipSpecies?: boolean
   ) => {
     setIsLoading(true);
+    setAvailableForms([]);
+    setShowSuggestions(false);
+    setEvolutionOptions([]);
     try {
       // Convert name to ID if string is provided
       if (typeof identifier === 'string' && isNaN(Number(identifier))) {
@@ -209,7 +212,10 @@ export function PokemonMenu() {
             id: v.pokemon.url.split('/').slice(-2, -1)[0],
           })) || [];
 
-        setAvailableForms(forms);
+        setAvailableForms(forms.map(form => ({
+          ...form,
+          name: form.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+        })));
         setCurrentForm(data.id.toString());
         setDexNumber(data.id.toString());
 
@@ -401,34 +407,43 @@ export function PokemonMenu() {
     };
   };
 
+  // Add a state to track the previous input value
+  const [previousInputValue, setPreviousInputValue] = useState('');
+
   // Add this new function to handle input changes
   const handleNameInputChange = async (value: string) => {
     setPokemonName(value);
 
-    // Filter species that start with the input value
-    const matches = Object.entries(speciesData)
-      .filter(([name]) => name.toLowerCase().startsWith(value.toLowerCase()))
-      .slice(0, 10) // Limit to 10 suggestions
-      .map(([name, id]) => ({
-        name,
-        id,
-        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
-          isShiny ? 'shiny/' : ''
-        }${id}.png`,
-      }));
+    // Only update suggestions if the input value has changed
+    if (value !== previousInputValue) {
+      // Filter species that start with the input value
+      const matches = Object.entries(speciesData)
+        .filter(([name]) => name.toLowerCase().startsWith(value.toLowerCase()))
+        .map(([name, id]) => ({
+          name,
+          id,
+          sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+            isShiny ? 'shiny/' : ''
+          }${id}.png`,
+        }));
 
-    setSuggestions(matches);
-    setShowSuggestions(matches.length > 0);
+      setSuggestions(matches);
+      setShowSuggestions(value.length > 1);
+    }
 
     // Focus the input field to prevent losing focus
-    inputRef.current?.focus();
+    inputRef.current?.focus(); // Ensure the input retains focus
+
+    // Update the previous input value
+    setPreviousInputValue(value);
   };
 
-  // Add this function to handle suggestion selection
+  // Add this to the suggestion button onClick
   const handleSuggestionSelect = (suggestion: PokemonSuggestion) => {
     setPokemonName(suggestion.name);
     setShowSuggestions(false);
     handleNameSubmit(suggestion.name);
+    inputRef.current?.focus(); // Ensure the input retains focus after selection
   };
 
   // Utility function to capitalize the first letter of each word
@@ -551,55 +566,56 @@ export function PokemonMenu() {
                 />
                 <div className="absolute inset-0 h-4 w-4 pointer-events-none shiny-overlay" />
               </Button>
-              <Popover open={showSuggestions} onOpenChange={setShowSuggestions}>
-                <PopoverTrigger asChild>
-                  <Input
-                    ref={inputRef}
-                    type="text"
-                    value={pokemonName}
-                    onChange={(e) => handleNameInputChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleNameSubmit(pokemonName);
-                        setShowSuggestions(false);
-                      }
-                    }}
-                    className="text-center capitalize bg-background w-3/4 mx-auto m-0"
-                  />
-                </PopoverTrigger>
-                <PopoverContent className="w-[75%] p-0" align="center">
-                  <ScrollArea className="h-[200px]">
-                    {suggestions.map((suggestion) => (
-                      <button
-                        key={suggestion.name}
-                        className="w-full px-4 py-2 text-left capitalize hover:bg-accent cursor-pointer flex items-center gap-2"
-                        onClick={() => handleSuggestionSelect(suggestion)}
-                      >
-                        <img
-                          src={suggestion.sprite}
-                          alt={suggestion.name}
-                          className="w-8 h-8"
-                          style={{ imageRendering: 'pixelated' }}
-                        />
-                        <span>{suggestion.name.replace(/-/g, ' ')}</span>
-                      </button>
-                    ))}
-                  </ScrollArea>
-                </PopoverContent>
-              </Popover>
-              <Button
-                variant="outline"
-                className={`h-8 w-8 relative ${isShiny ? 'shiny-active' : ''}`}
-                onClick={() => setIsShiny(!isShiny)}
-                disabled={isLoading}
-              >
-                <Sparkles
-                  className={`h-4 w-4 transition-colors duration-300 sparkle-icon ${
-                    isShiny ? 'text-yellow-500' : ''
-                  }`}
+              <div className="flex items-center justify-center w-full mx-auto gap-2">
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  value={pokemonName}
+                  onChange={(e) => handleNameInputChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleNameSubmit(pokemonName);
+                      setShowSuggestions(false);
+                    }
+                  }}
+                  className="text-center capitalize bg-background w-3/4 mx-auto m-0"
                 />
-                <div className="absolute inset-0 h-4 w-4 pointer-events-none shiny-overlay" />
-              </Button>
+                {showSuggestions && (
+                  <div className="absolute z-10 w-[50%] p-0 bg-background border rounded-md shadow-lg top-20 h-fit">
+                    <ScrollArea className="max-h-[200px]">
+                      {suggestions.map((suggestion) => (
+                        <button
+                          key={suggestion.name}
+                          className="w-full px-4 py-2 text-left capitalize hover:bg-accent cursor-pointer flex items-center gap-2 border-b border-gray-200 dark:border-gray-800"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => handleSuggestionSelect(suggestion)}
+                        >
+                          <img
+                            src={suggestion.sprite}
+                            alt={suggestion.name}
+                            className="w-8 h-8"
+                            style={{ imageRendering: 'pixelated' }}
+                          />
+                          <span>{suggestion.name.replace(/-/g, ' ')}</span>
+                        </button>
+                      ))}
+                    </ScrollArea>
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  className={`h-8 w-8 relative ${isShiny ? 'shiny-active' : ''}`}
+                  onClick={() => setIsShiny(!isShiny)}
+                  disabled={isLoading}
+                >
+                  <Sparkles
+                    className={`h-4 w-4 transition-colors duration-300 sparkle-icon ${
+                      isShiny ? 'text-yellow-500' : ''
+                    }`}
+                  />
+                  <div className="absolute inset-0 h-4 w-4 pointer-events-none shiny-overlay" />
+                </Button>
+              </div>
             </div>
           </div>
 

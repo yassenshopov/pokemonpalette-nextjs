@@ -33,6 +33,17 @@ import {
 } from '@/components/ui/popover';
 import { Copy } from 'lucide-react';
 
+// Define the type for species data
+interface SpeciesData {
+  [key: string]: number; // Allow indexing with a string
+}
+
+// Import species data normally
+import jsonSpeciesData from '@/data/species.json';
+
+// Use the type assertion when accessing the data
+const speciesData = jsonSpeciesData as SpeciesData;
+
 // Add this interface at the top
 interface Pokemon {
   sprites: {
@@ -225,8 +236,9 @@ export default function Home() {
       if (!pokemonName) return;
       try {
         // Fetch basic Pokemon data
+        const normPokemonName = pokemonName.toLowerCase().trim().replace(/\s+/g, '-');
         const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon/${pokemonName.toLowerCase()}`
+          `https://pokeapi.co/api/v2/pokemon/${normPokemonName}`
         );
         const data: Pokemon = await response.json();
 
@@ -237,44 +249,44 @@ export default function Home() {
         const artwork = shiny
           ? data.sprites.other['official-artwork'].front_shiny
           : data.sprites.other['official-artwork'].front_default;
-        console.log(artwork);
-        console.log(data)
-        console.log(shiny)
         setOfficialArt(artwork);
         setPokemonCry(data.cries.latest);
         setPokemonTypes(data.types.map((t) => t.type.name));
 
         // Fetch species data
-        const speciesResponse = await fetch(
-          `https://pokeapi.co/api/v2/pokemon-species/${pokemonName.toLowerCase()}`
-        );
-        const speciesData: PokemonSpecies = await speciesResponse.json();
-
-        // Get all English entries and versions
-        const englishEntries = speciesData.flavor_text_entries.filter(
-          (entry) => entry.language.name === 'en'
-        );
-        const uniqueVersions = Array.from(
-          new Set(englishEntries.map((entry) => entry.version.name))
-        );
-        setAvailableVersions(uniqueVersions);
-
-        // Get descriptions for selected version (defaulting to 'red' or first available version)
-        const versionToUse = uniqueVersions.includes('red')
-          ? 'red'
-          : uniqueVersions[0];
-        setSelectedVersion(versionToUse);
-
-        const versionDescriptions = englishEntries.filter(
-          (entry) => entry.version.name === versionToUse
-        );
-        setDescriptions(versionDescriptions);
-
-        if (versionDescriptions.length > 0) {
-          setPokemonDescription(
-            versionDescriptions[0].flavor_text.replace(/\f/g, ' ')
+        const speciesName = Object.keys(speciesData).find(key => speciesData[key] === data.id);
+        if (speciesName) {
+          const speciesResponse = await fetch(
+            `https://pokeapi.co/api/v2/pokemon-species/${speciesName.toLowerCase()}`
           );
-          setCurrentDescriptionIndex(0);
+          const speciesData: PokemonSpecies = await speciesResponse.json();
+
+          // Get all English entries and versions
+          const englishEntries = speciesData.flavor_text_entries.filter(
+            (entry) => entry.language.name === 'en'
+          );
+          const uniqueVersions = Array.from(
+            new Set(englishEntries.map((entry) => entry.version.name))
+          );
+          setAvailableVersions(uniqueVersions);
+
+          // Get descriptions for selected version (defaulting to 'red' or first available version)
+          const versionToUse = uniqueVersions.includes('red')
+            ? 'red'
+            : uniqueVersions[0];
+          setSelectedVersion(versionToUse);
+
+          const versionDescriptions = englishEntries.filter(
+            (entry) => entry.version.name === versionToUse
+          );
+          setDescriptions(versionDescriptions);
+
+          if (versionDescriptions.length > 0) {
+            setPokemonDescription(
+              versionDescriptions[0].flavor_text.replace(/\f/g, ' ')
+            );
+            setCurrentDescriptionIndex(0);
+          }
         }
       } catch (error) {
         console.error('Error fetching Pokemon data:', error);
@@ -297,24 +309,27 @@ export default function Home() {
     // Get descriptions for the selected version
     const fetchVersionDescriptions = async () => {
       try {
-        const speciesResponse = await fetch(
-          `https://pokeapi.co/api/v2/pokemon-species/${pokemonName.toLowerCase()}`
-        );
-        const speciesData: PokemonSpecies = await speciesResponse.json();
-
-        const englishEntries = speciesData.flavor_text_entries.filter(
-          (entry) =>
-            entry.language.name === 'en' &&
-            entry.version.name === selectedVersion
-        );
-
-        setDescriptions(englishEntries);
-
-        if (englishEntries.length > 0) {
-          setPokemonDescription(
-            englishEntries[0].flavor_text.replace(/\f/g, ' ')
+        const speciesName = Object.keys(speciesData).find(key => speciesData[key] === pokemonNumber);
+        if (speciesName) {
+          const speciesResponse = await fetch(
+            `https://pokeapi.co/api/v2/pokemon-species/${speciesName.toLowerCase()}`
           );
-          setCurrentDescriptionIndex(0);
+          const speciesData: PokemonSpecies = await speciesResponse.json();
+
+          const englishEntries = speciesData.flavor_text_entries.filter(
+            (entry) =>
+              entry.language.name === 'en' &&
+              entry.version.name === selectedVersion
+          );
+
+          setDescriptions(englishEntries);
+
+          if (englishEntries.length > 0) {
+            setPokemonDescription(
+              englishEntries[0].flavor_text.replace(/\f/g, ' ')
+            );
+            setCurrentDescriptionIndex(0);
+          }
         }
       } catch (error) {
         console.error('Error fetching version descriptions:', error);
@@ -807,15 +822,6 @@ export default function Home() {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              </section>
-
-              {/* Advanced UI Examples */}
-              <section className="space-y-8">
-                <h2 className="text-3xl font-bold text-center">
-                  Advanced UI Examples
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {/* Accordion Example */}
                   <Card>
                     <CardContent className="p-6 space-y-4">
