@@ -147,7 +147,7 @@ export function PokemonMenu() {
   const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOption[]>(
     []
   );
-  const { setColors, setPokemonName: setContextPokemonName } = useColors();
+  const { setColors, setPokemonName: setContextPokemonName, setShiny, setForm } = useColors();
   const [suggestions, setSuggestions] = useState<PokemonSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -165,6 +165,8 @@ export function PokemonMenu() {
       });
       setBgColors(hexColors);
       setColors(hexColors);
+      setShiny(isShiny);
+      setForm(currentForm);
     };
 
     img.src = imageUrl;
@@ -308,7 +310,7 @@ export function PokemonMenu() {
   // Add useEffect to fetch initial Pokemon on mount
   useEffect(() => {
     handlePokemonFetch(38);
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   // Render helpers
   const gradientStyle = bgColors.length
@@ -737,6 +739,7 @@ export function PokemonMenu() {
                             const [movedColor] = newColors.splice(fromIndex, 1);
                             newColors.splice(toIndex, 0, movedColor);
                             setBgColors(newColors);
+                            setColors(newColors);
                           }
                         }}
                         style={{ cursor: 'grab' }}
