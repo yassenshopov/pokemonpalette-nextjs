@@ -186,7 +186,7 @@ export function PokemonMenu() {
     skipSpecies?: boolean
   ) => {
     setIsLoading(true);
-    setAvailableForms([]);
+    // setAvailableForms([]);
     setShowSuggestions(false);
     setEvolutionOptions([]);
     try {
