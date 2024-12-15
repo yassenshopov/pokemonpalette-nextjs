@@ -33,6 +33,12 @@ import {
 } from '@/components/ui/popover';
 import { Info, Copy } from 'lucide-react';
 import ColorSelector from '@/components/ui/ColorSelector'; // Import the new ColorSelector component
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'; // Import Tooltip and TooltipContent
 
 // Define the type for species data
 interface SpeciesData {
@@ -211,6 +217,27 @@ const versionColors: { [key: string]: { primary: string; text: string } } = {
   violet: { primary: '#7B1FA2', text: 'white' },
 };
 
+const typeEmojis: { [key: string]: string } = {
+  fire: '🔥',
+  water: '💧',
+  grass: '🌿',
+  electric: '⚡️',
+  ice: '❄️',
+  fighting: '🥋',
+  poison: '☠️',
+  ground: '🌍',
+  flying: '🕊️',
+  psychic: '🧠',
+  bug: '🐛',
+  rock: '🪨',
+  ghost: '👻',
+  dragon: '🐉',
+  dark: '🌑',
+  steel: '⚙️',
+  fairy: '🧚',
+  normal: '⚪️',
+};
+
 export default function Home() {
   const {
     colors,
@@ -278,9 +305,6 @@ export default function Home() {
         );
         const data: Pokemon = await response.json();
 
-        // Set Pokemon number
-        setPokemonNumber(data.id);
-
         // Set artwork, cry, and types
         const artwork = shiny
           ? data.sprites.other['official-artwork'].front_shiny
@@ -325,6 +349,8 @@ export default function Home() {
             );
             setCurrentDescriptionIndex(0);
           }
+
+          setPokemonNumber(data.id);
         }
       } catch (error) {
         console.error('Error fetching Pokemon data:', error);
@@ -435,7 +461,7 @@ export default function Home() {
         <nav
           className={`fixed top-0 right-0 z-10 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl w-[70%]`}
         >
-          <div className="flex justify-start absolute left-6 font-bold text-2xl">
+          <div className="flex justify-start absolute left-6 font-bold text-2xl capitalize">
             <p>
               {'[#' +
                 pokemonNumber.toString().padStart(3, '0') +
@@ -527,9 +553,9 @@ export default function Home() {
           </div>
         </nav>
 
-        <div className="max-w-6xl mx-auto space-y-16">
+        <div className="max-w-6xl mx-auto space-y-12">
           {/* Updated hero section with artwork */}
-          <div className="flex items-center gap-8 pt-8">
+          <div className="flex items-center gap-8 pt-0">
             <div className="flex-1 text-center">
               <h1 className="text-5xl font-bold mb-4 text-left">
                 Your website - inspired by{' '}
@@ -724,7 +750,9 @@ export default function Home() {
                                   value={version}
                                   className="bg-background text-foreground capitalize"
                                 >
-                                  Pokemon {version}
+                                  Pokemon{' '}
+                                  {version.charAt(0).toUpperCase() +
+                                    version.slice(1)}
                                 </option>
                               ))}
                             </select>
@@ -915,18 +943,24 @@ export default function Home() {
                         onColorSelect={setSelectedColorCard}
                       />
                       <div
-                        className={`p-4 rounded-lg ${getContrastColor(selectedColorCard).overlay}`}
+                        className={`p-4 rounded-lg ${
+                          getContrastColor(selectedColorCard).overlay
+                        }`}
                         style={{
                           backgroundColor: selectedColorCard,
                         }}
                       >
                         <h4
-                          className={`font-medium ${getContrastColor(selectedColorCard).text}`}
+                          className={`font-medium ${
+                            getContrastColor(selectedColorCard).text
+                          }`}
                         >
                           Card Title
                         </h4>
                         <p
-                          className={`text-sm opacity-90 ${getContrastColor(selectedColorCard).text}`}
+                          className={`text-sm opacity-90 ${
+                            getContrastColor(selectedColorCard).text
+                          }`}
                         >
                           Sample card content with themed background.
                         </p>
@@ -1104,27 +1138,57 @@ export default function Home() {
                     </CardContent>
                   </Card>
 
-                  {/* Tooltip Example */}
+                  {/* Pokémon Type Cards Example */}
                   <Card>
                     <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">Tooltip</h3>
-                      <div className="relative inline-block">
-                        <button
-                          className={`px-4 py-2 rounded-lg ${
-                            getContrastColor(colors[0]).overlay
-                          }`}
-                          style={{ backgroundColor: colors[0] }}
-                        >
-                          Hover me
-                        </button>
-                        <div
-                          className={`absolute left-1/2 transform -translate-x-1/2 mt-2 p-2 rounded bg-gray-800 text-white text-sm ${
-                            getContrastColor(colors[0]).text
-                          }`}
-                          style={{ display: 'block' }}
-                        >
-                          Tooltip content
-                        </div>
+                      <h3 className="text-xl font-semibold">
+                        Pokémon Type Cards
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {pokemonTypes.map((type, index) => {
+                          const { text: textColor, overlay } = getContrastColor(
+                            colors[index % colors.length]
+                          );
+
+                          return (
+                            <div
+                              key={type}
+                              className={`flex flex-col items-center overflow-hidden rounded-lg ${overlay}`}
+                              style={{
+                                backgroundColor: colors[index % colors.length],
+                              }}
+                            >
+                              <div
+                                className={`flex items-center justify-center w-full h-24  opacity-90 ${
+                                  getContrastColor(
+                                    colors[index % colors.length]
+                                  ).overlay
+                                }`}
+                                style={{
+                                  backgroundColor:
+                                    getContrastColor(
+                                      colors[index % colors.length]
+                                    ).text === 'text-white'
+                                      ? '#ffffff'
+                                      : '#000000',
+                                }}
+                              >
+                                <span
+                                  className="text-5xl"
+                                  role="img"
+                                  aria-label={type}
+                                >
+                                  {typeEmojis[type] || '⚪️'}
+                                </span>
+                              </div>
+                              <span
+                                className={`text-lg ${textColor} font-medium p-4`}
+                              >
+                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
