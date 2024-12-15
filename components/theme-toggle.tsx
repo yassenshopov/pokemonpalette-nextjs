@@ -11,14 +11,14 @@ export function ThemeToggle() {
     <button
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
       className={`
-        relative h-8 w-16 rounded-full p-1 transition-colors duration-500
+        relative h-8 w-16 rounded-full p-1 transition-colors duration-500 border-2 border-gray-200
         ${theme === 'light' ? 'bg-slate-200' : 'bg-slate-700'}
       `}
     >
       <div
         className={`
-          flex h-6 w-6 items-center justify-center rounded-full bg-white transition-transform duration-500
-          ${theme === 'light' ? 'translate-x-0' : 'translate-x-8'}
+          flex h-6 w-6 items-center justify-center rounded-full bg-white transition-transform duration-500 -translate-y-0.5
+          ${theme === 'light' ? 'translate-x-0' : 'translate-x-7'}
         `}
       >
         {theme === 'light' ? (
