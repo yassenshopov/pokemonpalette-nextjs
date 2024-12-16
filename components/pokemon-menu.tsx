@@ -13,6 +13,8 @@ import {
   ArrowRight,
   Pencil,
   LucideGripVertical,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import ColorThief from 'colorthief';
 import {
@@ -168,8 +170,14 @@ export function PokemonMenu() {
         const [r, g, b] = rgb;
         return `rgb(${r}, ${g}, ${b})`;
       });
-      setBgColors(hexColors);
-      setColors(hexColors);
+
+      // Create new colors array respecting locked colors
+      const newColors = hexColors.map((color, index) => {
+        return lockedColors[index] ? bgColors[index] : color;
+      });
+
+      setBgColors(newColors);
+      setColors(newColors);
       setShiny(isShiny);
       setForm(currentForm);
 
@@ -186,9 +194,7 @@ export function PokemonMenu() {
     skipSpecies?: boolean
   ) => {
     setIsLoading(true);
-    // setAvailableForms([]);
     setShowSuggestions(false);
-    // setEvolutionOptions([]);
     try {
       // Convert name to ID if string is provided
       if (typeof identifier === 'string' && isNaN(Number(identifier))) {
@@ -510,6 +516,14 @@ export function PokemonMenu() {
   const [isRotating, setIsRotating] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null); // Create a ref for the input
+
+  const [lockedColors, setLockedColors] = useState<boolean[]>([false, false, false]);
+
+  const toggleLock = (index: number) => {
+    const newLocked = [...lockedColors];
+    newLocked[index] = !newLocked[index];
+    setLockedColors(newLocked);
+  };
 
   return (
     <Card
@@ -863,7 +877,7 @@ export function PokemonMenu() {
                             )
                             .toUpperCase()}
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <div
                             className="h-12 w-12 rounded-full cursor-pointer transition-transform hover:scale-105 relative"
                             style={{ backgroundColor: color }}
@@ -874,10 +888,24 @@ export function PokemonMenu() {
                                   getContrastColor(color).text
                                 }`}
                               >
-                                <Pencil className="h-4  w-4" />
+                                <Pencil className="h-4 w-4" />
                               </div>
                             </div>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleLock(index);
+                            }}
+                          >
+                            {lockedColors[index] ? (
+                              <Lock className="h-4 w-4" />
+                            ) : (
+                              <Unlock className="h-4 w-4" />
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </PopoverTrigger>
