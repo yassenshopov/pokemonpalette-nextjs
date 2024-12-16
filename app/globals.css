@@ -11,12 +11,10 @@
   padding: 0;
 }
 
-/* Use Source Sans Pro for body text and Montserrat for headings */
 body {
   font-family: 'Open Sans', sans-serif; /* Excellent readability for body text */
 }
 
-/* Use Montserrat for headings */
 h1, h2, h3, .pokemon-title {
   font-family: 'Montserrat', sans-serif; /* Clean and modern font for headings */
   letter-spacing: 0.02em;
