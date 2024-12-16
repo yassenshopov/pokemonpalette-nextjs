@@ -172,7 +172,7 @@ export function PokemonMenu() {
       setColors(hexColors);
       setShiny(isShiny);
       setForm(currentForm);
-      
+
       setIsRotating(true);
       setTimeout(() => setIsRotating(false), 1000);
     };
@@ -188,7 +188,7 @@ export function PokemonMenu() {
     setIsLoading(true);
     // setAvailableForms([]);
     setShowSuggestions(false);
-    setEvolutionOptions([]);
+    // setEvolutionOptions([]);
     try {
       // Convert name to ID if string is provided
       if (typeof identifier === 'string' && isNaN(Number(identifier))) {
@@ -212,10 +212,15 @@ export function PokemonMenu() {
             id: v.pokemon.url.split('/').slice(-2, -1)[0],
           })) || [];
 
-        setAvailableForms(forms.map(form => ({
-          ...form,
-          name: form.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-        })));
+        setAvailableForms(
+          forms.map((form) => ({
+            ...form,
+            name: form.name
+              .split(' ')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
+          }))
+        );
         setCurrentForm(data.id.toString());
         setDexNumber(data.id.toString());
 
@@ -473,7 +478,7 @@ export function PokemonMenu() {
     const rgb = color.match(/\d+/g);
     if (!rgb) return 0;
     const [r, g, b] = rgb.map(Number);
-    
+
     // Convert RGB to HSL
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
@@ -485,9 +490,15 @@ export function PokemonMenu() {
       const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
       }
       h /= 6;
     }
@@ -509,23 +520,21 @@ export function PokemonMenu() {
       }}
       // style={gradientStyle}
     >
-      <div className="absolute top-8 left-8 flex items-center justify-center">
+      <div className="absolute top-8 left-8 flex items-center justify-start">
         <img
           src="/logo512.png"
           alt="App Logo"
-          className={`h-16 w-16 ${isRotating ? 'animate-rotate' : ''}`}
-          style={{ filter: `hue-rotate(${bgColors.length > 0 ? getHueFromColor(bgColors[0]) : 0}deg)` }}
+          className={`h-[15%] w-[15%] ${isRotating ? 'animate-rotate' : ''}`}
+          style={{
+            filter: `hue-rotate(${
+              bgColors.length > 0 ? getHueFromColor(bgColors[0]) : 0
+            }deg)`,
+          }}
         />
       </div>
-      <CardHeader className="h-[60px]">
-        <CardTitle className="text-center text-xl">
-          The {speciesTitle}
-        </CardTitle>
-      </CardHeader>
-
       <CardContent className="flex flex-col items-center h-[calc(100%-60px)] p-6">
         {/* Top Section: Sprite */}
-        <div className="flex-none h-36 flex items-center justify-center mb-8">
+        <div className="flex-none h-36 flex items-center justify-center">
           {spriteUrl && (
             <div
               className={`relative transition-opacity duration-200 ${
@@ -535,7 +544,7 @@ export function PokemonMenu() {
               <img
                 src={spriteUrl}
                 alt={pokemonName}
-                className={`h-48 w-48 ${isLoading ? 'animate-pulse' : ''}`}
+                className={`h-40 w-40 ${isLoading ? 'animate-pulse' : ''}`}
                 style={{ imageRendering: 'pixelated' }}
               />
               {isLoading && (
@@ -546,16 +555,23 @@ export function PokemonMenu() {
             </div>
           )}
         </div>
+        <CardHeader className="h-[60px]">
+          <CardTitle className="text-center text-xl">
+            The {speciesTitle}
+          </CardTitle>
+        </CardHeader>
 
         {/* Main Section: Controls */}
         <div className="w-full space-y-8">
           {/* Name Input */}
           <div className="space-y-3 relative">
-            <div className="text-center text-lg font-medium">Name:</div>
+            <div className="text-center text-md font-thin italic">Name:</div>
             <div className="flex items-center justify-center w-full mx-auto gap-2">
-            <Button
+              <Button
                 variant="outline"
-                className={`h-8 w-8 relative invisible ${isShiny ? 'shiny-active' : ''}`}
+                className={`h-8 w-8 relative invisible ${
+                  isShiny ? 'shiny-active' : ''
+                }`}
                 onClick={() => setIsShiny(!isShiny)}
                 disabled={isLoading}
               >
@@ -604,7 +620,9 @@ export function PokemonMenu() {
                 )}
                 <Button
                   variant="outline"
-                  className={`h-8 w-8 relative ${isShiny ? 'shiny-active' : ''}`}
+                  className={`h-8 w-8 relative ${
+                    isShiny ? 'shiny-active' : ''
+                  }`}
                   onClick={() => setIsShiny(!isShiny)}
                   disabled={isLoading}
                 >
@@ -620,8 +638,8 @@ export function PokemonMenu() {
           </div>
 
           {/* Dex Number Input */}
-          <div className="space-y-3">
-            <div className="text-center text-lg font-medium">
+          <div className="space-y-3 !mt-2">
+            <div className="text-center text-md font-thin italic">
               National Dex No:
             </div>
             <div className="flex items-center justify-center gap-2 w-3/4 mx-auto">
@@ -914,4 +932,3 @@ export function PokemonMenu() {
     </Card>
   );
 }
-

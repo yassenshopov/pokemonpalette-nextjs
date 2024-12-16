@@ -14,7 +14,9 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({ colors, selectedColor, on
         <div
           key={index}
           className={`w-4 h-4 rounded-full cursor-pointer transition-all duration-300 ${
-            selectedColor === color ? 'border-2 border-gray-800 dark:border-gray-200' : ''
+            selectedColor === color
+              ? 'border-2 border-gray-800 dark:border-gray-200'
+              : 'border-2 border-gray-200 dark:border-gray-800'
           }`}
           style={{ backgroundColor: color }}
           onClick={() => onColorSelect(color)}

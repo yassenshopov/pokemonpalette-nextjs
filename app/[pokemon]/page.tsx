@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PokemonMenu } from '@/components/pokemon-menu';
 import { useColors } from '@/contexts/color-context';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use, Usable } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -239,10 +239,17 @@ const typeEmojis: { [key: string]: string } = {
   normal: '⚪️',
 };
 
-export default function Home() {
+// Define the type for your params
+interface PageProps {
+  params: Promise<{ pokemon: string }>;
+}
+
+export default function Page({ params }: PageProps) {
+  const unwrappedParams = use(params);
+  const pokemonName = decodeURIComponent(unwrappedParams.pokemon);
+  
   const {
     colors,
-    pokemonName = 'ninetales',
     shiny,
     form,
     setColors,
@@ -452,15 +459,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Sidebar with responsive positioning */}
-      <aside className="w-full md:w-[30%] fixed md:left-0 md:top-0 h-screen m-0 p-0 flex flex-col items-center border-r-2 border-gray-200">
-        <PokemonMenu />
-      </aside>
 
       {/* Main Content - Scrollable */}
-      <main className="ml-[35%] p-4 min-h-screen pt-6 mt-16 relative w-[65%]">
+      <main className="p-4 min-h-screen pt-6 mt-16 relative w-full">
         <nav
-          className={`fixed top-0 right-0 z-10 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl w-[70%]`}
+          className={`fixed top-0 right-0 z-10 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl w-full`}
         >
           <div className="flex justify-start absolute left-6 font-bold text-2xl capitalize">
             <p>
