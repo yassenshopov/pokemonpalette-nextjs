@@ -65,6 +65,10 @@ interface Pokemon {
       };
     };
   };
+  forms: Array<{
+    name: string;
+    url: string;
+  }>;
   varieties?: Array<{
     is_default: boolean;
     pokemon: {
@@ -101,6 +105,27 @@ interface PokemonSuggestion {
   sprite: string;
 }
 
+interface PokemonFormOption {
+  name: string;
+  id: string;
+  type: 'form' | 'variety';
+  isDefault?: boolean;
+}
+
+interface PokemonForm {
+  id: number;
+  name: string;
+  form_name: string;
+  pokemon: {
+    name: string;
+    url: string;
+  };
+  sprites: {
+    front_default: string;
+    front_shiny: string;
+  };
+}
+
 const PokemonService = {
   async fetchPokemonSpecies(id: number): Promise<PokemonSpecies> {
     const response = await fetch(
@@ -127,6 +152,12 @@ const PokemonService = {
   getSpeciesId(name: string): number | null {
     return (speciesData as Record<string, number>)[name.toLowerCase()] || null;
   },
+
+  async fetchPokemonForm(id: string): Promise<PokemonForm> {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-form/${id}`);
+    if (!response.ok) throw new Error('Pokemon form not found');
+    return response.json();
+  },
 };
 
 export function PokemonMenu() {
@@ -141,9 +172,7 @@ export function PokemonMenu() {
   const [isLoading, setIsLoading] = useState(false);
   const [bgColors, setBgColors] = useState<string[]>([]);
   const [currentForm, setCurrentForm] = useState<string>('');
-  const [availableForms, setAvailableForms] = useState<
-    Array<{ name: string; id: string }>
-  >([]);
+  const [availableForms, setAvailableForms] = useState<PokemonFormOption[]>([]);
   const [baseSpeciesId, setBaseSpeciesId] = useState<number>(0);
   const [nextEvolution, setNextEvolution] = useState<string | null>(null);
   const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOption[]>(
@@ -191,42 +220,44 @@ export function PokemonMenu() {
   // Event handlers
   const handlePokemonFetch = async (
     identifier: string | number,
-    skipSpecies?: boolean
+    skipSpecies?: boolean,
+    isForm?: boolean
   ) => {
     setIsLoading(true);
     setShowSuggestions(false);
     try {
-      // Convert name to ID if string is provided
-      if (typeof identifier === 'string' && isNaN(Number(identifier))) {
-        const speciesId = PokemonService.getSpeciesId(identifier);
-        if (speciesId) {
-          identifier = speciesId;
+      let data;
+      
+      if (isForm) {
+        // Fetch form data
+        const formData = await PokemonService.fetchPokemonForm(identifier.toString());
+        // Convert form data to match Pokemon interface structure
+        data = {
+          id: formData.id,
+          name: formData.pokemon.name,
+          sprites: {
+            front_default: formData.sprites.front_default,
+            front_shiny: formData.sprites.front_shiny,
+          },
+          forms: [], // Forms data isn't needed for form display
+        };
+      } else {
+        // Convert name to ID if string is provided
+        if (typeof identifier === 'string' && isNaN(Number(identifier))) {
+          const speciesId = PokemonService.getSpeciesId(identifier);
+          if (speciesId) {
+            identifier = speciesId;
+          }
         }
+        data = await PokemonService.fetchPokemon(identifier);
       }
-
-      const data = await PokemonService.fetchPokemon(identifier);
 
       if (!skipSpecies) {
         const speciesData = await PokemonService.fetchPokemonSpecies(data.id);
         setBaseSpeciesId(data.id);
 
-        const forms =
-          speciesData.varieties?.map((v) => ({
-            name:
-              v.pokemon.name.replace(/-/g, ' ').replace(data.name, '').trim() ||
-              'Default',
-            id: v.pokemon.url.split('/').slice(-2, -1)[0],
-          })) || [];
-
-        setAvailableForms(
-          forms.map((form) => ({
-            ...form,
-            name: form.name
-              .split(' ')
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-          }))
-        );
+        const forms = processFormsAndVarieties(speciesData, data);
+        setAvailableForms(forms);
         setCurrentForm(data.id.toString());
         setDexNumber(data.id.toString());
 
@@ -314,9 +345,10 @@ export function PokemonMenu() {
   };
 
   // Add form change handler
-  const handleFormChange = async (formId: string) => {
-    setCurrentForm(formId);
-    await handlePokemonFetch(formId, true); // Skip species fetch for forms
+  const handleFormChange = (form: string) => {
+    setCurrentForm(form);
+    const selectedForm = availableForms.find(f => f.id === form);
+    handlePokemonFetch(form, true, selectedForm?.type === 'form');
   };
 
   // Effects
@@ -328,7 +360,8 @@ export function PokemonMenu() {
 
   useEffect(() => {
     if (currentForm) {
-      handlePokemonFetch(currentForm, true);
+      const selectedForm = availableForms.find(f => f.id === currentForm);
+      handlePokemonFetch(currentForm, true, selectedForm?.type === 'form');
     }
   }, [isShiny]);
 
@@ -525,6 +558,62 @@ export function PokemonMenu() {
     setLockedColors(newLocked);
   };
 
+  const processFormsAndVarieties = (
+    speciesData: PokemonSpecies,
+    pokemonData: Pokemon
+  ): PokemonFormOption[] => {
+    const options: PokemonFormOption[] = [];
+    
+    // Process varieties from species data
+    if (speciesData.varieties) {
+      speciesData.varieties.forEach((v) => {
+        // Skip totem varieties and Own Tempo Rockruff
+        if (!v.pokemon.name.toLowerCase().includes('totem') && 
+            !v.pokemon.name.toLowerCase().includes('own-tempo')) {
+          options.push({
+            name: v.pokemon.name.replace(/-/g, ' '),
+            id: v.pokemon.url.split('/').slice(-2, -1)[0],
+            type: 'variety',
+            isDefault: v.is_default
+          });
+        }
+      });
+    }
+
+    // Process forms from pokemon data
+    if (pokemonData.forms) {
+      const baseName = pokemonData.name.toLowerCase();
+      pokemonData.forms.forEach((form) => {
+        // Skip if this form matches an existing variety or is a totem/own-tempo form
+        const isExcluded = form.name.toLowerCase().includes('totem') || 
+                          form.url.toLowerCase().includes('totem') ||
+                          form.name.toLowerCase().includes('own-tempo');
+        
+        if (!options.some(opt => opt.id === form.url.split('/').slice(-2, -1)[0]) && 
+            !isExcluded) {
+          let displayName = form.name.toLowerCase();
+          displayName = displayName === baseName ? 'Default' : 
+            displayName.replace(`${baseName}-`, '').replace(/-/g, ' ');
+
+          options.push({
+            name: displayName,
+            id: form.url.split('/').slice(-2, -1)[0],
+            type: 'form'
+          });
+        }
+      });
+    }
+
+    // Capitalize all names
+    return options.map(option => ({
+      ...option,
+      name: option.name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    }));
+  };
+
   return (
     <Card
       className="w-[100%] h-[600px] pt-12"
@@ -710,7 +799,12 @@ export function PokemonMenu() {
                         value={form.id}
                         className="text-base"
                       >
-                        {form.name}
+                        <div className="flex items-center gap-2">
+                          <span>{form.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {form.type === 'variety' ? '(Variant)' : '(Form)'}
+                          </span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -831,8 +925,11 @@ export function PokemonMenu() {
                   <Popover key={index}>
                     <PopoverTrigger asChild>
                       <div
-                        className="flex items-center space-x-4 group cursor-pointer opacity-100 hover:opacity-80"
+                        className={`flex items-center space-x-4 group cursor-pointer opacity-100 hover:opacity-80 rounded-lg p-2 transition-colors ${
+                          lockedColors[index] ? 'bg-muted' : ''
+                        }`}
                         draggable
+                        style={{ cursor: 'grab' }}
                         onDragStart={(e) =>
                           e.dataTransfer.setData('text/plain', index.toString())
                         }
@@ -850,7 +947,6 @@ export function PokemonMenu() {
                             setColors(newColors);
                           }
                         }}
-                        style={{ cursor: 'grab' }}
                       >
                         <div className="flex flex-col items-center mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           <LucideGripVertical className="h-4 w-4 text-gray-500 mb-1" />
@@ -901,7 +997,7 @@ export function PokemonMenu() {
                             }}
                           >
                             {lockedColors[index] ? (
-                              <Lock className="h-4 w-4" />
+                              <Lock className="h-4 w-4" strokeWidth={3} />
                             ) : (
                               <Unlock className="h-4 w-4" />
                             )}
