@@ -460,9 +460,17 @@ export default function Home() {
       {/* Main Content - Adjusted margins and padding */}
       <main className="flex-1 w-full md:pl-[300px] lg:pl-[350px] min-h-screen">
         {/* Navigation - Fixed positioning */}
-        <nav className={`fixed top-0 left-0 md:left-[300px] lg:left-[350px] right-0 z-30 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl`}>
+        <nav
+          className={`fixed top-0 left-0 md:left-[300px] lg:left-[350px] right-0 z-30 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl`}
+        >
           <div className="hidden md:flex justify-start absolute left-6 font-bold text-xl md:text-2xl capitalize truncate max-w-[50%]">
-            <p>{'[#' + pokemonNumber.toString().padStart(3, '0') + '] ' + pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)}</p>
+            <p>
+              {'[#' +
+                pokemonNumber.toString().padStart(3, '0') +
+                '] ' +
+                pokemonName.charAt(0).toUpperCase() +
+                pokemonName.slice(1)}
+            </p>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
             <div className="hover:cursor-pointer hover:scale-105 transition-all duration-200">
@@ -470,7 +478,9 @@ export default function Home() {
                 href="https://www.buymeacoffee.com/yassenshopov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex items-center px-2 md:px-4 py-2 font-semibold rounded-xl hover:bg-gray-100 transition duration-200 border-2 border-gray-200 ${getContrastColor(colors[0]).text}`}
+                className={`inline-flex items-center px-2 md:px-4 py-2 font-semibold rounded-xl hover:bg-gray-100 transition duration-200 border-2 border-transparent ${
+                  getContrastColor(colors[0]).text
+                }`}
                 style={{ backgroundColor: colors[0] }}
               >
                 <svg
@@ -552,10 +562,13 @@ export default function Home() {
             <div className="flex-1 text-center md:text-left space-y-4">
               <h1 className="text-3xl md:text-5xl font-bold">
                 Your website - inspired by{' '}
-                <span className="capitalize">{pokemonName || 'your Pokemon'}</span>
+                <span className="capitalize">
+                  {pokemonName || 'your Pokemon'}
+                </span>
               </h1>
               <p className="text-muted-foreground">
-                This website allows you to enter a Pokemon's name (or simply its number in the Pokedex), and its top 3 colours will be extracted.
+                This website allows you to enter a Pokemon's name (or simply its
+                number in the Pokedex), and its top 3 colours will be extracted.
               </p>
             </div>
 
@@ -661,7 +674,12 @@ export default function Home() {
           {officialArt && (
             <section className="space-y-8">
               <Card className="overflow-hidden">
-                <CardContent className={`p-4 md:p-8 ${getContrastColor(colors[0]).overlay}`} style={{ backgroundColor: colors[0] }}>
+                <CardContent
+                  className={`p-4 md:p-8 ${
+                    getContrastColor(colors[0]).overlay
+                  }`}
+                  style={{ backgroundColor: colors[0] }}
+                >
                   <div className="flex flex-col md:flex-row-reverse gap-8">
                     <div className="flex-1 space-y-6">
                       <div className="space-y-4">
@@ -676,8 +694,7 @@ export default function Home() {
 
                         <div className="flex gap-2">
                           {pokemonTypes.map((type, index) => {
-                            const bgColor =
-                              index === 0 ? colors[1] : colors[2];
+                            const bgColor = index === 0 ? colors[1] : colors[2];
                             const { text: textColor, overlay } =
                               getContrastColor(bgColor);
 
@@ -776,11 +793,7 @@ export default function Home() {
 
                       {pokemonCry && (
                         <div className="w-full">
-                          <audio
-                            controls
-                            className="w-full"
-                            src={pokemonCry}
-                          >
+                          <audio controls className="w-full" src={pokemonCry}>
                             Your browser does not support the audio element.
                           </audio>
                         </div>
@@ -846,9 +859,7 @@ export default function Home() {
               {/* Complementary Colors */}
               <Card>
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold">
-                    Primary + Secondary
-                  </h3>
+                  <h3 className="text-xl font-semibold">Primary + Secondary</h3>
                   <div className="flex gap-4">
                     <div
                       className="h-24 w-1/2 rounded-lg"
@@ -983,11 +994,7 @@ export default function Home() {
               <Card>
                 <CardContent className="p-6 space-y-4">
                   <h3 className="text-xl font-semibold">Accordion</h3>
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="w-full gap-4"
-                  >
+                  <Accordion type="single" collapsible className="w-full gap-4">
                     <AccordionItem value="item-1" className="w-full mb-4">
                       <AccordionTrigger
                         className={`${
@@ -1126,9 +1133,7 @@ export default function Home() {
               {/* Pokémon Type Cards Example */}
               <Card>
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold">
-                    Pokémon Type Cards
-                  </h3>
+                  <h3 className="text-xl font-semibold">Pokémon Type Cards</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {pokemonTypes.map((type, index) => {
                       const { text: textColor, overlay } = getContrastColor(
@@ -1145,15 +1150,13 @@ export default function Home() {
                         >
                           <div
                             className={`flex items-center justify-center w-full h-24  opacity-90 ${
-                              getContrastColor(
-                                colors[index % colors.length]
-                              ).overlay
+                              getContrastColor(colors[index % colors.length])
+                                .overlay
                             }`}
                             style={{
                               backgroundColor:
-                                getContrastColor(
-                                  colors[index % colors.length]
-                                ).text === 'text-white'
+                                getContrastColor(colors[index % colors.length])
+                                  .text === 'text-white'
                                   ? '#ffffff'
                                   : '#000000',
                             }}
@@ -1192,23 +1195,18 @@ export default function Home() {
                       className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${progress}%`,
-                        backgroundColor:
-                          selectedColorProgress || 'transparent',
+                        backgroundColor: selectedColorProgress || 'transparent',
                       }}
                     ></div>
                   </div>
-                  <p className="text-sm text-center">
-                    {progress}% Complete
-                  </p>
+                  <p className="text-sm text-center">{progress}% Complete</p>
                 </CardContent>
               </Card>
 
               {/* Notification Banner Example */}
               <Card>
                 <CardContent className="p-6 space-y-4 relative">
-                  <h3 className="text-xl font-semibold">
-                    Notification Banner
-                  </h3>
+                  <h3 className="text-xl font-semibold">Notification Banner</h3>
                   <ColorSelector
                     colors={colors} // Pass the colors array
                     selectedColor={selectedColorNotification} // Pass the selected color for notification

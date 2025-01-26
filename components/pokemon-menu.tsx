@@ -154,7 +154,9 @@ const PokemonService = {
   },
 
   async fetchPokemonForm(id: string): Promise<PokemonForm> {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-form/${id}`);
+    const response = await fetch(
+      `https://pokeapi.co/api/v2/pokemon-form/${id}`
+    );
     if (!response.ok) throw new Error('Pokemon form not found');
     return response.json();
   },
@@ -227,10 +229,12 @@ export function PokemonMenu() {
     setShowSuggestions(false);
     try {
       let data;
-      
+
       if (isForm) {
         // Fetch form data
-        const formData = await PokemonService.fetchPokemonForm(identifier.toString());
+        const formData = await PokemonService.fetchPokemonForm(
+          identifier.toString()
+        );
         // Convert form data to match Pokemon interface structure
         data = {
           id: formData.id,
@@ -347,7 +351,7 @@ export function PokemonMenu() {
   // Add form change handler
   const handleFormChange = (form: string) => {
     setCurrentForm(form);
-    const selectedForm = availableForms.find(f => f.id === form);
+    const selectedForm = availableForms.find((f) => f.id === form);
     handlePokemonFetch(form, true, selectedForm?.type === 'form');
   };
 
@@ -360,7 +364,7 @@ export function PokemonMenu() {
 
   useEffect(() => {
     if (currentForm) {
-      const selectedForm = availableForms.find(f => f.id === currentForm);
+      const selectedForm = availableForms.find((f) => f.id === currentForm);
       handlePokemonFetch(currentForm, true, selectedForm?.type === 'form');
     }
   }, [isShiny]);
@@ -550,7 +554,11 @@ export function PokemonMenu() {
 
   const inputRef = useRef<HTMLInputElement>(null); // Create a ref for the input
 
-  const [lockedColors, setLockedColors] = useState<boolean[]>([false, false, false]);
+  const [lockedColors, setLockedColors] = useState<boolean[]>([
+    false,
+    false,
+    false,
+  ]);
 
   const toggleLock = (index: number) => {
     const newLocked = [...lockedColors];
@@ -563,18 +571,20 @@ export function PokemonMenu() {
     pokemonData: Pokemon
   ): PokemonFormOption[] => {
     const options: PokemonFormOption[] = [];
-    
+
     // Process varieties from species data
     if (speciesData.varieties) {
       speciesData.varieties.forEach((v) => {
         // Skip totem varieties and Own Tempo Rockruff
-        if (!v.pokemon.name.toLowerCase().includes('totem') && 
-            !v.pokemon.name.toLowerCase().includes('own-tempo')) {
+        if (
+          !v.pokemon.name.toLowerCase().includes('totem') &&
+          !v.pokemon.name.toLowerCase().includes('own-tempo')
+        ) {
           options.push({
             name: v.pokemon.name.replace(/-/g, ' '),
             id: v.pokemon.url.split('/').slice(-2, -1)[0],
             type: 'variety',
-            isDefault: v.is_default
+            isDefault: v.is_default,
           });
         }
       });
@@ -585,32 +595,39 @@ export function PokemonMenu() {
       const baseName = pokemonData.name.toLowerCase();
       pokemonData.forms.forEach((form) => {
         // Skip if this form matches an existing variety or is a totem/own-tempo form
-        const isExcluded = form.name.toLowerCase().includes('totem') || 
-                          form.url.toLowerCase().includes('totem') ||
-                          form.name.toLowerCase().includes('own-tempo');
-        
-        if (!options.some(opt => opt.id === form.url.split('/').slice(-2, -1)[0]) && 
-            !isExcluded) {
+        const isExcluded =
+          form.name.toLowerCase().includes('totem') ||
+          form.url.toLowerCase().includes('totem') ||
+          form.name.toLowerCase().includes('own-tempo');
+
+        if (
+          !options.some(
+            (opt) => opt.id === form.url.split('/').slice(-2, -1)[0]
+          ) &&
+          !isExcluded
+        ) {
           let displayName = form.name.toLowerCase();
-          displayName = displayName === baseName ? 'Default' : 
-            displayName.replace(`${baseName}-`, '').replace(/-/g, ' ');
+          displayName =
+            displayName === baseName
+              ? 'Default'
+              : displayName.replace(`${baseName}-`, '').replace(/-/g, ' ');
 
           options.push({
             name: displayName,
             id: form.url.split('/').slice(-2, -1)[0],
-            type: 'form'
+            type: 'form',
           });
         }
       });
     }
 
     // Capitalize all names
-    return options.map(option => ({
+    return options.map((option) => ({
       ...option,
       name: option.name
         .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' '),
     }));
   };
 
