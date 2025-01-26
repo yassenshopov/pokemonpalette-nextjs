@@ -11,7 +11,7 @@ export function ThemeToggle() {
     <button
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
       className={`
-        relative h-8 w-16 rounded-full p-1 transition-colors duration-500 border-2 border-gray-200
+        relative h-8 w-16 rounded-full p-1 transition-colors duration-500 border-2 border-transparent
         ${theme === 'light' ? 'bg-slate-200' : 'bg-slate-700'}
       `}
     >
