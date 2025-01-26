@@ -451,35 +451,26 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Sidebar with responsive positioning */}
-      <aside className="w-full md:w-[30%] fixed md:left-0 md:top-0 h-screen m-0 p-0 flex flex-col items-center border-r-2 border-gray-200">
+    <div className="min-h-screen flex flex-col">
+      {/* Sidebar - Fixed for mobile and desktop */}
+      <aside className="w-full h-auto md:h-screen md:w-[300px] lg:w-[350px] md:fixed md:left-0 md:top-0 border-b-2 md:border-r-2 md:border-b-0 border-gray-200 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
         <PokemonMenu />
       </aside>
 
-      {/* Main Content - Scrollable */}
-      <main className="ml-[35%] p-4 min-h-screen pt-6 mt-16 relative w-[65%]">
-        <nav
-          className={`fixed top-0 right-0 z-10 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl w-[70%]`}
-        >
-          <div className="flex justify-start absolute left-6 font-bold text-2xl capitalize">
-            <p>
-              {'[#' +
-                pokemonNumber.toString().padStart(3, '0') +
-                '] ' +
-                pokemonName.charAt(0).toUpperCase() +
-                pokemonName.slice(1)}
-            </p>
+      {/* Main Content - Adjusted margins and padding */}
+      <main className="flex-1 w-full md:pl-[300px] lg:pl-[350px] min-h-screen">
+        {/* Navigation - Fixed positioning */}
+        <nav className={`fixed top-0 left-0 md:left-[300px] lg:left-[350px] right-0 z-30 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl`}>
+          <div className="hidden md:flex justify-start absolute left-6 font-bold text-xl md:text-2xl capitalize truncate max-w-[50%]">
+            <p>{'[#' + pokemonNumber.toString().padStart(3, '0') + '] ' + pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)}</p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <div className="hover:cursor-pointer hover:scale-105 transition-all duration-200">
               <a
                 href="https://www.buymeacoffee.com/yassenshopov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex items-center px-4 py-2 font-semibold rounded-xl hover:bg-gray-100 transition duration-200 border-2 border-gray-200  ${
-                  getContrastColor(colors[0]).text
-                }`}
+                className={`inline-flex items-center px-2 md:px-4 py-2 font-semibold rounded-xl hover:bg-gray-100 transition duration-200 border-2 border-gray-200 ${getContrastColor(colors[0]).text}`}
                 style={{ backgroundColor: colors[0] }}
               >
                 <svg
@@ -488,7 +479,7 @@ export default function Home() {
                   width="24"
                   height="24"
                   viewBox="0 0 1279 1279"
-                  className="mr-2"
+                  className="hidden md:block mr-2"
                 >
                   <path
                     d="M791.109 297.518L790.231 297.002L788.201 296.383C789.018 297.072 790.04 297.472 791.109 297.518V297.518Z"
@@ -547,32 +538,30 @@ export default function Home() {
                     fill={getContrastColor(colors[0]).text}
                   />
                 </svg>
-                Buy me a coffee!
+                <span className="text-sm md:text-base">Buy me a coffee!</span>
               </a>
             </div>
             <ThemeToggle />
           </div>
         </nav>
 
-        <div className="max-w-6xl mx-auto space-y-12">
-          {/* Updated hero section with artwork */}
-          <div className="flex items-center gap-8 pt-0">
-            <div className="flex-1 text-center">
-              <h1 className="text-5xl font-bold mb-4 text-left">
+        {/* Content wrapper with proper padding */}
+        <div className="max-w-6xl mx-auto p-4 pt-16 md:pt-24 space-y-8 md:space-y-12">
+          {/* Hero section - Stack on mobile */}
+          <div className="flex flex-col md:flex-row items-center gap-8 mt-4 md:mt-16">
+            <div className="flex-1 text-center md:text-left space-y-4">
+              <h1 className="text-3xl md:text-5xl font-bold">
                 Your website - inspired by{' '}
-                <span className="capitalize">
-                  {pokemonName || 'your Pokemon'}
-                </span>
+                <span className="capitalize">{pokemonName || 'your Pokemon'}</span>
               </h1>
-              <p className="text-muted-foreground text-left">
-                This website allows you to enter a Pokemon's name (or simply its
-                number in the Pokedex), and its top 3 colours will be extracted.
+              <p className="text-muted-foreground">
+                This website allows you to enter a Pokemon's name (or simply its number in the Pokedex), and its top 3 colours will be extracted.
               </p>
             </div>
 
             {officialArt && (
               <div className="flex-1 flex justify-center">
-                <div className="relative w-96 h-96">
+                <div className="relative w-48 h-48 md:w-96 md:h-96">
                   <Image
                     src={officialArt}
                     alt={pokemonName}
@@ -585,691 +574,684 @@ export default function Home() {
             )}
           </div>
 
+          {/* Color grid - Stack on mobile */}
           {renderColorSections && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {colors.map((color, index) => (
-                  <Card
-                    key={index}
-                    style={{ backgroundColor: color }}
-                    className="transition-all hover:scale-105"
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+              {colors.map((color, index) => (
+                <Card
+                  key={index}
+                  style={{ backgroundColor: color }}
+                  className="transition-all hover:scale-105"
+                >
+                  <CardContent
+                    className={`p-6 ${getContrastColor(color).overlay}`}
                   >
-                    <CardContent
-                      className={`p-6 ${getContrastColor(color).overlay}`}
-                    >
-                      <div className="flex justify-between items-center gap-2">
-                        <div className="flex-1">
-                          <select
-                            value={colorFormat}
-                            onChange={(e) =>
-                              setColorFormat(e.target.value as ColorFormat)
-                            }
-                            className={`bg-transparent border-none ${
-                              getContrastColor(color).text
-                            } text-sm mb-2 cursor-pointer focus:ring-0`}
-                            style={{ outline: 'none' }}
+                    <div className="flex justify-between items-center gap-2">
+                      <div className="flex-1">
+                        <select
+                          value={colorFormat}
+                          onChange={(e) =>
+                            setColorFormat(e.target.value as ColorFormat)
+                          }
+                          className={`bg-transparent border-none ${
+                            getContrastColor(color).text
+                          } text-sm mb-2 cursor-pointer focus:ring-0`}
+                          style={{ outline: 'none' }}
+                        >
+                          <option
+                            value="rgb"
+                            className="text-foreground bg-background"
                           >
-                            <option
-                              value="rgb"
-                              className="text-foreground bg-background"
-                            >
-                              RGB
-                            </option>
-                            <option
-                              value="hex"
-                              className="text-foreground bg-background"
-                            >
-                              HEX
-                            </option>
-                            <option
-                              value="hsl"
-                              className="text-foreground bg-background"
-                            >
-                              HSL
-                            </option>
-                          </select>
-                          <p className={getContrastColor(color).text}>
-                            {convertColor(color, colorFormat)}
-                          </p>
+                            RGB
+                          </option>
+                          <option
+                            value="hex"
+                            className="text-foreground bg-background"
+                          >
+                            HEX
+                          </option>
+                          <option
+                            value="hsl"
+                            className="text-foreground bg-background"
+                          >
+                            HSL
+                          </option>
+                        </select>
+                        <p className={getContrastColor(color).text}>
+                          {convertColor(color, colorFormat)}
+                        </p>
+                      </div>
+                      <Popover
+                        open={openPopover === index}
+                        onOpenChange={(open) => {
+                          if (open) {
+                            setOpenPopover(index);
+                            navigator.clipboard.writeText(
+                              convertColor(color, colorFormat)
+                            );
+                            setTimeout(() => setOpenPopover(null), 1000);
+                          } else {
+                            setOpenPopover(null);
+                          }
+                        }}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`hover:bg-white/10 ${
+                              getContrastColor(color).text
+                            }`}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto px-4 py-2">
+                          <p className="text-sm">Copied!</p>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Pokemon info card - Stack content on mobile */}
+          {officialArt && (
+            <section className="space-y-8">
+              <Card className="overflow-hidden">
+                <CardContent className={`p-4 md:p-8 ${getContrastColor(colors[0]).overlay}`} style={{ backgroundColor: colors[0] }}>
+                  <div className="flex flex-col md:flex-row-reverse gap-8">
+                    <div className="flex-1 space-y-6">
+                      <div className="space-y-4">
+                        <h2
+                          className={`text-4xl font-bold capitalize ${
+                            getContrastColor(colors[0]).text
+                          }`}
+                        >
+                          {pokemonName} [#
+                          {pokemonNumber.toString().padStart(3, '0')}]
+                        </h2>
+
+                        <div className="flex gap-2">
+                          {pokemonTypes.map((type, index) => {
+                            const bgColor =
+                              index === 0 ? colors[1] : colors[2];
+                            const { text: textColor, overlay } =
+                              getContrastColor(bgColor);
+
+                            return (
+                              <span
+                                key={type}
+                                className={`px-3 py-1 rounded-md ${overlay} capitalize font-medium`}
+                                style={{
+                                  backgroundColor: bgColor,
+                                  color:
+                                    textColor === 'text-white'
+                                      ? 'white'
+                                      : 'black',
+                                }}
+                              >
+                                {type}
+                              </span>
+                            );
+                          })}
                         </div>
-                        <Popover
-                          open={openPopover === index}
-                          onOpenChange={(open) => {
-                            if (open) {
-                              setOpenPopover(index);
-                              navigator.clipboard.writeText(
-                                convertColor(color, colorFormat)
-                              );
-                              setTimeout(() => setOpenPopover(null), 1000);
-                            } else {
-                              setOpenPopover(null);
-                            }
+                      </div>
+
+                      <div className="space-y-4">
+                        <p
+                          className={`text-lg ${
+                            getContrastColor(colors[0]).text
+                          }`}
+                        >
+                          {pokemonDescription}
+                        </p>
+
+                        <select
+                          value={selectedVersion}
+                          onChange={handleVersionChange}
+                          className={`
+                        px-4 py-2 rounded-lg 
+                        border-2 border-opacity-50 
+                        bg-transparent 
+                        ${getContrastColor(colors[0]).text}
+                        hover:border-opacity-100 
+                        focus:outline-none 
+                        focus:ring-2 
+                        focus:ring-opacity-50
+                        transition-all
+                        cursor-pointer
+                      `}
+                          style={{
+                            borderColor: colors[1],
+                            backgroundColor: `${colors[1]}10`,
                           }}
                         >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className={`hover:bg-white/10 ${
-                                getContrastColor(color).text
-                              }`}
+                          {availableVersions.map((version) => (
+                            <option
+                              key={version}
+                              value={version}
+                              className="bg-background text-foreground capitalize"
                             >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto px-4 py-2">
-                            <p className="text-sm">Copied!</p>
-                          </PopoverContent>
-                        </Popover>
+                              Pokemon{' '}
+                              {version.charAt(0).toUpperCase() +
+                                version.slice(1)}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </div>
 
-              {officialArt && (
-                <section className="space-y-8">
-                  <Card
-                    className="overflow-hidden"
-                    style={{
-                      backgroundColor: colors[0],
-                    }}
-                  >
-                    <CardContent
-                      className={`p-8 ${getContrastColor(colors[0]).overlay}`}
-                    >
-                      <div className="flex flex-col md:flex-row-reverse gap-8">
-                        <div className="flex-1 space-y-6">
-                          <div className="space-y-4">
-                            <h2
-                              className={`text-4xl font-bold capitalize ${
-                                getContrastColor(colors[0]).text
-                              }`}
-                            >
-                              {pokemonName} [#
-                              {pokemonNumber.toString().padStart(3, '0')}]
-                            </h2>
-
-                            <div className="flex gap-2">
-                              {pokemonTypes.map((type, index) => {
-                                const bgColor =
-                                  index === 0 ? colors[1] : colors[2];
-                                const { text: textColor, overlay } =
-                                  getContrastColor(bgColor);
-
-                                return (
-                                  <span
-                                    key={type}
-                                    className={`px-3 py-1 rounded-md ${overlay} capitalize font-medium`}
-                                    style={{
-                                      backgroundColor: bgColor,
-                                      color:
-                                        textColor === 'text-white'
-                                          ? 'white'
-                                          : 'black',
-                                    }}
-                                  >
-                                    {type}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          <div className="space-y-4">
-                            <p
-                              className={`text-lg ${
-                                getContrastColor(colors[0]).text
-                              }`}
-                            >
-                              {pokemonDescription}
-                            </p>
-
-                            <select
-                              value={selectedVersion}
-                              onChange={handleVersionChange}
-                              className={`
-                            px-4 py-2 rounded-lg 
-                            border-2 border-opacity-50 
-                            bg-transparent 
-                            ${getContrastColor(colors[0]).text}
-                            hover:border-opacity-100 
-                            focus:outline-none 
-                            focus:ring-2 
-                            focus:ring-opacity-50
-                            transition-all
-                            cursor-pointer
-                          `}
-                              style={{
-                                borderColor: colors[1],
-                                backgroundColor: `${colors[1]}10`,
-                              }}
-                            >
-                              {availableVersions.map((version) => (
-                                <option
-                                  key={version}
-                                  value={version}
-                                  className="bg-background text-foreground capitalize"
-                                >
-                                  Pokemon{' '}
-                                  {version.charAt(0).toUpperCase() +
-                                    version.slice(1)}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-4">
-                          <div
-                            className="relative w-96 h-60 rounded-xl flex items-center justify-center"
+                    <div className="flex flex-col items-center gap-4">
+                      <div
+                        className="relative w-96 h-60 rounded-xl flex items-center justify-center"
+                        style={{
+                          backgroundColor: `${colors[1]}20`,
+                        }}
+                      >
+                        <div className="relative w-64 h-64">
+                          <Image
+                            src={officialArt}
+                            alt={pokemonName}
+                            fill
+                            className="object-contain"
                             style={{
-                              backgroundColor: `${colors[1]}20`,
+                              filter: 'contrast(0) brightness(0)',
+                              transition: 'filter 0.3s ease',
+                              transform: 'scaleX(-1)', // Horizontally invert the image
                             }}
-                          >
-                            <div className="relative w-64 h-64">
-                              <Image
-                                src={officialArt}
-                                alt={pokemonName}
-                                fill
-                                className="object-contain"
-                                style={{
-                                  filter: 'contrast(0) brightness(0)',
-                                  transition: 'filter 0.3s ease',
-                                  transform: 'scaleX(-1)', // Horizontally invert the image
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.filter =
-                                    'contrast(1) brightness(1)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.filter =
-                                    'contrast(0) brightness(0)';
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          {pokemonCry && (
-                            <div className="w-full">
-                              <audio
-                                controls
-                                className="w-full"
-                                src={pokemonCry}
-                              >
-                                Your browser does not support the audio element.
-                              </audio>
-                            </div>
-                          )}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.filter =
+                                'contrast(1) brightness(1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.filter =
+                                'contrast(0) brightness(0)';
+                            }}
+                          />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </section>
-              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card style={{ backgroundColor: colors[0], opacity: 0.9 }}>
-                  <CardContent
-                    className={`p-8 ${getContrastColor(colors[0]).overlay}`}
-                  >
-                    <h2
-                      className={`text-2xl font-bold mb-4 ${
-                        getContrastColor(colors[0]).text
-                      }`}
-                    >
-                      Primary Color Usage
-                    </h2>
-                    <p className={getContrastColor(colors[0]).text}>
-                      Perfect for headers, hero sections, and primary CTAs.
-                    </p>
-                  </CardContent>
-                </Card>
+                      {pokemonCry && (
+                        <div className="w-full">
+                          <audio
+                            controls
+                            className="w-full"
+                            src={pokemonCry}
+                          >
+                            Your browser does not support the audio element.
+                          </audio>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          )}
 
-                <Card style={{ backgroundColor: colors[1], opacity: 0.9 }}>
-                  <CardContent
-                    className={`p-8 ${getContrastColor(colors[1]).overlay}`}
-                  >
-                    <h2
-                      className={`text-2xl font-bold mb-4 ${
-                        getContrastColor(colors[1]).text
-                      }`}
-                    >
-                      Secondary Color Usage
-                    </h2>
-                    <p className={getContrastColor(colors[1]).text}>
-                      Great for supporting elements, cards, and backgrounds.
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card style={{ backgroundColor: colors[0], opacity: 0.9 }}>
+              <CardContent
+                className={`p-8 ${getContrastColor(colors[0]).overlay}`}
+              >
+                <h2
+                  className={`text-2xl font-bold mb-4 ${
+                    getContrastColor(colors[0]).text
+                  }`}
+                >
+                  Primary Color Usage
+                </h2>
+                <p className={getContrastColor(colors[0]).text}>
+                  Perfect for headers, hero sections, and primary CTAs.
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card className="overflow-hidden">
-                <div
-                  className="h-48 w-full"
-                  style={{
-                    background: `linear-gradient(45deg, ${colors.join(', ')})`,
-                  }}
-                />
+            <Card style={{ backgroundColor: colors[1], opacity: 0.9 }}>
+              <CardContent
+                className={`p-8 ${getContrastColor(colors[1]).overlay}`}
+              >
+                <h2
+                  className={`text-2xl font-bold mb-4 ${
+                    getContrastColor(colors[1]).text
+                  }`}
+                >
+                  Secondary Color Usage
+                </h2>
+                <p className={getContrastColor(colors[1]).text}>
+                  Great for supporting elements, cards, and backgrounds.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="overflow-hidden">
+            <div
+              className="h-48 w-full"
+              style={{
+                background: `linear-gradient(45deg, ${colors.join(', ')})`,
+              }}
+            />
+          </Card>
+
+          {/* Color Combinations */}
+          <section className="space-y-8">
+            <h2 className="text-3xl font-bold text-center">
+              Color Combinations
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Complementary Colors */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">
+                    Primary + Secondary
+                  </h3>
+                  <div className="flex gap-4">
+                    <div
+                      className="h-24 w-1/2 rounded-lg"
+                      style={{ backgroundColor: colors[0] }}
+                    />
+                    <div
+                      className="h-24 w-1/2 rounded-lg"
+                      style={{ backgroundColor: colors[1] }}
+                    />
+                  </div>
+                  <p className="text-muted-foreground">
+                    Classic combination for main UI elements
+                  </p>
+                </CardContent>
               </Card>
 
-              {/* Color Combinations */}
-              <section className="space-y-8">
-                <h2 className="text-3xl font-bold text-center">
-                  Color Combinations
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Complementary Colors */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">
-                        Primary + Secondary
-                      </h3>
-                      <div className="flex gap-4">
-                        <div
-                          className="h-24 w-1/2 rounded-lg"
-                          style={{ backgroundColor: colors[0] }}
-                        />
-                        <div
-                          className="h-24 w-1/2 rounded-lg"
-                          style={{ backgroundColor: colors[1] }}
-                        />
-                      </div>
-                      <p className="text-muted-foreground">
-                        Classic combination for main UI elements
-                      </p>
-                    </CardContent>
-                  </Card>
+              {/* Gradient Blend */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Gradient Blend</h3>
+                  <div
+                    className="h-24 rounded-lg"
+                    style={{
+                      background: `linear-gradient(to right, ${colors[0]}, ${colors[1]}, ${colors[2]})`,
+                    }}
+                  />
+                  <p className="text-muted-foreground">
+                    Smooth transition between all colors
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
 
-                  {/* Gradient Blend */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">Gradient Blend</h3>
+          {/* UI Examples */}
+          <section className="space-y-8">
+            <h2 className="text-3xl font-bold text-center">UI Examples</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Button Examples */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Buttons</h3>
+                  <div className="space-y-4">
+                    <button
+                      className={`w-full px-4 py-2 rounded-lg transition-all hover:opacity-90 
+                        ${getContrastColor(colors[0]).overlay}`}
+                      style={{
+                        backgroundColor: colors[0],
+                      }}
+                    >
+                      <span className={getContrastColor(colors[0]).text}>
+                        Primary Button
+                      </span>
+                    </button>
+                    <button
+                      className={`w-full px-4 py-2 rounded-lg transition-all hover:opacity-90 
+                        ${getContrastColor(colors[1]).overlay}`}
+                      style={{
+                        backgroundColor: colors[1],
+                      }}
+                    >
+                      <span className={getContrastColor(colors[1]).text}>
+                        Secondary Button
+                      </span>
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card Examples */}
+              <Card>
+                <CardContent className="p-6 space-y-4 relative">
+                  <h3 className="text-xl font-semibold">Cards</h3>
+                  <ColorSelector
+                    colors={colors}
+                    selectedColor={selectedColorCard}
+                    onColorSelect={setSelectedColorCard}
+                  />
+                  <div
+                    className={`p-4 rounded-lg ${
+                      getContrastColor(selectedColorCard).overlay
+                    }`}
+                    style={{
+                      backgroundColor: selectedColorCard,
+                    }}
+                  >
+                    <h4
+                      className={`font-medium ${
+                        getContrastColor(selectedColorCard).text
+                      }`}
+                    >
+                      Card Title
+                    </h4>
+                    <p
+                      className={`text-sm opacity-90 ${
+                        getContrastColor(selectedColorCard).text
+                      }`}
+                    >
+                      Sample card content with themed background.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Text Examples */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Typography</h3>
+                  <div className="space-y-2">
+                    {colors.map((color, index) => (
                       <div
-                        className="h-24 rounded-lg"
-                        style={{
-                          background: `linear-gradient(to right, ${colors[0]}, ${colors[1]}, ${colors[2]})`,
-                        }}
-                      />
-                      <p className="text-muted-foreground">
-                        Smooth transition between all colors
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </section>
+                        key={index}
+                        className={`p-2 rounded ${
+                          getContrastColor(color).overlay
+                        }`}
+                        style={{ backgroundColor: color }}
+                      >
+                        <p className={getContrastColor(color).text}>
+                          {index === 0
+                            ? 'Primary'
+                            : index === 1
+                            ? 'Secondary'
+                            : 'Accent'}{' '}
+                          Text Color
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Accordion Example */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Accordion</h3>
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="w-full gap-4"
+                  >
+                    <AccordionItem value="item-1" className="w-full mb-4">
+                      <AccordionTrigger
+                        className={`${
+                          getContrastColor(colors[0]).text
+                        } p-4 rounded-lg`}
+                        style={{ backgroundColor: colors[0] }}
+                      >
+                        Primary Section
+                      </AccordionTrigger>
+                      <AccordionContent
+                        style={{ borderColor: colors[0] }}
+                        className="border-l-2 pl-4"
+                      >
+                        Content styled with your primary color.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger
+                        className={`${
+                          getContrastColor(colors[1]).text
+                        } p-4 rounded-lg`}
+                        style={{ backgroundColor: colors[1] }}
+                      >
+                        Secondary Section
+                      </AccordionTrigger>
+                      <AccordionContent
+                        style={{ borderColor: colors[1] }}
+                        className="border-l-2 pl-4"
+                      >
+                        Content styled with your secondary color.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
 
-              {/* UI Examples */}
-              <section className="space-y-8">
-                <h2 className="text-3xl font-bold text-center">UI Examples</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {/* Button Examples */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">Buttons</h3>
-                      <div className="space-y-4">
-                        <button
-                          className={`w-full px-4 py-2 rounded-lg transition-all hover:opacity-90 
-                            ${getContrastColor(colors[0]).overlay}`}
-                          style={{
+              {/* Tabs Example */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Tabs</h3>
+                  <Tabs defaultValue="tab1">
+                    <TabsList
+                      className="w-full gap-2"
+                      style={{ backgroundColor: `${colors[0]}20` }}
+                    >
+                      <TabsTrigger
+                        value="tab1"
+                        className="flex-1"
+                        style={
+                          {
                             backgroundColor: colors[0],
-                          }}
-                        >
-                          <span className={getContrastColor(colors[0]).text}>
-                            Primary Button
-                          </span>
-                        </button>
-                        <button
-                          className={`w-full px-4 py-2 rounded-lg transition-all hover:opacity-90 
-                            ${getContrastColor(colors[1]).overlay}`}
+                            color: getContrastColor(colors[0]).text,
+                          } as React.CSSProperties
+                        }
+                      >
+                        Tab 1
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="tab2"
+                        className="flex-1"
+                        style={
+                          {
+                            backgroundColor: colors[1],
+                            color: getContrastColor(colors[1]).text,
+                          } as React.CSSProperties
+                        }
+                      >
+                        Tab 2
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="tab1" className="mt-4">
+                      <div
+                        className="p-4 rounded-lg"
+                        style={{ backgroundColor: `${colors[1]}20` }}
+                      >
+                        First tab content
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="tab2" className="mt-4">
+                      <div
+                        className="p-4 rounded-lg"
+                        style={{ backgroundColor: `${colors[2]}20` }}
+                      >
+                        Second tab content
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              {/* Alert Dialog Example */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">Alert Dialog</h3>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        className={`w-full ${
+                          getContrastColor(colors[0]).overlay
+                        }`}
+                        style={{
+                          backgroundColor: colors[0],
+                        }}
+                      >
+                        <span className={getContrastColor(colors[0]).text}>
+                          Open Dialog
+                        </span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle style={{ color: colors[0] }}>
+                          Themed Dialog
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This is an example of how the color palette can be
+                          applied to interactive components.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
                           style={{
                             backgroundColor: colors[1],
                           }}
+                          className={getContrastColor(colors[1]).text}
                         >
-                          <span className={getContrastColor(colors[1]).text}>
-                            Secondary Button
-                          </span>
-                        </button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                          Continue
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardContent>
+              </Card>
 
-                  {/* Card Examples */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4 relative">
-                      <h3 className="text-xl font-semibold">Cards</h3>
-                      <ColorSelector
-                        colors={colors}
-                        selectedColor={selectedColorCard}
-                        onColorSelect={setSelectedColorCard}
-                      />
-                      <div
-                        className={`p-4 rounded-lg ${
-                          getContrastColor(selectedColorCard).overlay
-                        }`}
-                        style={{
-                          backgroundColor: selectedColorCard,
-                        }}
-                      >
-                        <h4
-                          className={`font-medium ${
-                            getContrastColor(selectedColorCard).text
-                          }`}
-                        >
-                          Card Title
-                        </h4>
-                        <p
-                          className={`text-sm opacity-90 ${
-                            getContrastColor(selectedColorCard).text
-                          }`}
-                        >
-                          Sample card content with themed background.
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+              {/* Pokémon Type Cards Example */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="text-xl font-semibold">
+                    Pokémon Type Cards
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {pokemonTypes.map((type, index) => {
+                      const { text: textColor, overlay } = getContrastColor(
+                        colors[index % colors.length]
+                      );
 
-                  {/* Text Examples */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">Typography</h3>
-                      <div className="space-y-2">
-                        {colors.map((color, index) => (
-                          <div
-                            key={index}
-                            className={`p-2 rounded ${
-                              getContrastColor(color).overlay
-                            }`}
-                            style={{ backgroundColor: color }}
-                          >
-                            <p className={getContrastColor(color).text}>
-                              {index === 0
-                                ? 'Primary'
-                                : index === 1
-                                ? 'Secondary'
-                                : 'Accent'}{' '}
-                              Text Color
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  {/* Accordion Example */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">Accordion</h3>
-                      <Accordion
-                        type="single"
-                        collapsible
-                        className="w-full gap-4"
-                      >
-                        <AccordionItem value="item-1" className="w-full mb-4">
-                          <AccordionTrigger
-                            className={`${
-                              getContrastColor(colors[0]).text
-                            } p-4 rounded-lg`}
-                            style={{ backgroundColor: colors[0] }}
-                          >
-                            Primary Section
-                          </AccordionTrigger>
-                          <AccordionContent
-                            style={{ borderColor: colors[0] }}
-                            className="border-l-2 pl-4"
-                          >
-                            Content styled with your primary color.
-                          </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-2">
-                          <AccordionTrigger
-                            className={`${
-                              getContrastColor(colors[1]).text
-                            } p-4 rounded-lg`}
-                            style={{ backgroundColor: colors[1] }}
-                          >
-                            Secondary Section
-                          </AccordionTrigger>
-                          <AccordionContent
-                            style={{ borderColor: colors[1] }}
-                            className="border-l-2 pl-4"
-                          >
-                            Content styled with your secondary color.
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </CardContent>
-                  </Card>
-
-                  {/* Tabs Example */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">Tabs</h3>
-                      <Tabs defaultValue="tab1">
-                        <TabsList
-                          className="w-full gap-2"
-                          style={{ backgroundColor: `${colors[0]}20` }}
-                        >
-                          <TabsTrigger
-                            value="tab1"
-                            className="flex-1"
-                            style={
-                              {
-                                backgroundColor: colors[0],
-                                color: getContrastColor(colors[0]).text,
-                              } as React.CSSProperties
-                            }
-                          >
-                            Tab 1
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="tab2"
-                            className="flex-1"
-                            style={
-                              {
-                                backgroundColor: colors[1],
-                                color: getContrastColor(colors[1]).text,
-                              } as React.CSSProperties
-                            }
-                          >
-                            Tab 2
-                          </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="tab1" className="mt-4">
-                          <div
-                            className="p-4 rounded-lg"
-                            style={{ backgroundColor: `${colors[1]}20` }}
-                          >
-                            First tab content
-                          </div>
-                        </TabsContent>
-                        <TabsContent value="tab2" className="mt-4">
-                          <div
-                            className="p-4 rounded-lg"
-                            style={{ backgroundColor: `${colors[2]}20` }}
-                          >
-                            Second tab content
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-                    </CardContent>
-                  </Card>
-
-                  {/* Alert Dialog Example */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">Alert Dialog</h3>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            className={`w-full ${
-                              getContrastColor(colors[0]).overlay
-                            }`}
-                            style={{
-                              backgroundColor: colors[0],
-                            }}
-                          >
-                            <span className={getContrastColor(colors[0]).text}>
-                              Open Dialog
-                            </span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle style={{ color: colors[0] }}>
-                              Themed Dialog
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This is an example of how the color palette can be
-                              applied to interactive components.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              style={{
-                                backgroundColor: colors[1],
-                              }}
-                              className={getContrastColor(colors[1]).text}
-                            >
-                              Continue
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </CardContent>
-                  </Card>
-
-                  {/* Pokémon Type Cards Example */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4">
-                      <h3 className="text-xl font-semibold">
-                        Pokémon Type Cards
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {pokemonTypes.map((type, index) => {
-                          const { text: textColor, overlay } = getContrastColor(
-                            colors[index % colors.length]
-                          );
-
-                          return (
-                            <div
-                              key={type}
-                              className={`flex flex-col items-center overflow-hidden rounded-lg ${overlay}`}
-                              style={{
-                                backgroundColor: colors[index % colors.length],
-                              }}
-                            >
-                              <div
-                                className={`flex items-center justify-center w-full h-24  opacity-90 ${
-                                  getContrastColor(
-                                    colors[index % colors.length]
-                                  ).overlay
-                                }`}
-                                style={{
-                                  backgroundColor:
-                                    getContrastColor(
-                                      colors[index % colors.length]
-                                    ).text === 'text-white'
-                                      ? '#ffffff'
-                                      : '#000000',
-                                }}
-                              >
-                                <span
-                                  className="text-5xl"
-                                  role="img"
-                                  aria-label={type}
-                                >
-                                  {typeEmojis[type] || '⚪️'}
-                                </span>
-                              </div>
-                              <span
-                                className={`text-lg ${textColor} font-medium p-4`}
-                              >
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Progress Bar Example */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4 relative">
-                      <h3 className="text-xl font-semibold">Progress Bar</h3>
-                      <ColorSelector
-                        colors={colors} // Pass the colors array
-                        selectedColor={selectedColorProgress} // Pass the selected color for progress
-                        onColorSelect={setSelectedColorProgress} // Pass the function to handle progress color selection
-                      />
-                      <div className="w-full bg-gray-200 rounded-full h-4">
+                      return (
                         <div
-                          className="h-full rounded-full transition-all duration-500"
+                          key={type}
+                          className={`flex flex-col items-center overflow-hidden rounded-lg ${overlay}`}
                           style={{
-                            width: `${progress}%`,
-                            backgroundColor:
-                              selectedColorProgress || 'transparent',
+                            backgroundColor: colors[index % colors.length],
                           }}
-                        ></div>
-                      </div>
-                      <p className="text-sm text-center">
-                        {progress}% Complete
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Notification Banner Example */}
-                  <Card>
-                    <CardContent className="p-6 space-y-4 relative">
-                      <h3 className="text-xl font-semibold">
-                        Notification Banner
-                      </h3>
-                      <ColorSelector
-                        colors={colors} // Pass the colors array
-                        selectedColor={selectedColorNotification} // Pass the selected color for notification
-                        onColorSelect={setSelectedColorNotification} // Pass the function to handle notification color selection
-                      />
-                      <div
-                        className={`p-4 rounded-lg border-2 ${
-                          getContrastColor(selectedColorNotification).overlay
-                        } border-gray-600 dark:border-gray-200`}
-                        style={{
-                          backgroundColor: selectedColorNotification,
-                          borderRadius: '12px', // Increased border radius
-                        }}
-                      >
-                        <div className="flex items-center">
-                          <span
-                            className="mr-2 text-lg"
+                        >
+                          <div
+                            className={`flex items-center justify-center w-full h-24  opacity-90 ${
+                              getContrastColor(
+                                colors[index % colors.length]
+                              ).overlay
+                            }`}
                             style={{
-                              color: getContrastColor(selectedColorNotification)
-                                .text,
+                              backgroundColor:
+                                getContrastColor(
+                                  colors[index % colors.length]
+                                ).text === 'text-white'
+                                  ? '#ffffff'
+                                  : '#000000',
                             }}
                           >
-                            <Info
-                              className={`h-5 w-5 ${
-                                getContrastColor(selectedColorNotification).text
-                              }`}
-                            />
-                          </span>
-                          <p
-                            className={
-                              getContrastColor(selectedColorNotification).text
-                            }
+                            <span
+                              className="text-5xl"
+                              role="img"
+                              aria-label={type}
+                            >
+                              {typeEmojis[type] || '⚪️'}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-lg ${textColor} font-medium p-4`}
                           >
-                            This is a notification message!
-                          </p>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </span>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </section>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <Footer />
-            </>
-          )}
+              {/* Progress Bar Example */}
+              <Card>
+                <CardContent className="p-6 space-y-4 relative">
+                  <h3 className="text-xl font-semibold">Progress Bar</h3>
+                  <ColorSelector
+                    colors={colors} // Pass the colors array
+                    selectedColor={selectedColorProgress} // Pass the selected color for progress
+                    onColorSelect={setSelectedColorProgress} // Pass the function to handle progress color selection
+                  />
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${progress}%`,
+                        backgroundColor:
+                          selectedColorProgress || 'transparent',
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-center">
+                    {progress}% Complete
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Notification Banner Example */}
+              <Card>
+                <CardContent className="p-6 space-y-4 relative">
+                  <h3 className="text-xl font-semibold">
+                    Notification Banner
+                  </h3>
+                  <ColorSelector
+                    colors={colors} // Pass the colors array
+                    selectedColor={selectedColorNotification} // Pass the selected color for notification
+                    onColorSelect={setSelectedColorNotification} // Pass the function to handle notification color selection
+                  />
+                  <div
+                    className={`p-4 rounded-lg border-2 ${
+                      getContrastColor(selectedColorNotification).overlay
+                    } border-gray-600 dark:border-gray-200`}
+                    style={{
+                      backgroundColor: selectedColorNotification,
+                      borderRadius: '12px', // Increased border radius
+                    }}
+                  >
+                    <div className="flex items-center">
+                      <span
+                        className="mr-2 text-lg"
+                        style={{
+                          color: getContrastColor(selectedColorNotification)
+                            .text,
+                        }}
+                      >
+                        <Info
+                          className={`h-5 w-5 ${
+                            getContrastColor(selectedColorNotification).text
+                          }`}
+                        />
+                      </span>
+                      <p
+                        className={
+                          getContrastColor(selectedColorNotification).text
+                        }
+                      >
+                        This is a notification message!
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          <Footer />
         </div>
       </main>
     </div>
