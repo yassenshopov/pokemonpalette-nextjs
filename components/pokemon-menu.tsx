@@ -633,7 +633,7 @@ export function PokemonMenu() {
 
   return (
     <Card
-      className="w-[100%] h-[600px] pt-12"
+      className="w-[100%] h-auto pt-16"
       style={{
         border: 'none',
         boxShadow: 'none',
@@ -644,7 +644,7 @@ export function PokemonMenu() {
         <img
           src="/logo512.png"
           alt="App Logo"
-          className={`h-[15%] w-[15%] ${isRotating ? 'animate-rotate' : ''}`}
+          className={`hidden md:block h-[15%] w-[15%] ${isRotating ? 'animate-rotate' : ''}`}
           style={{
             filter: `hue-rotate(${
               bgColors.length > 0 ? getHueFromColor(bgColors[0]) : 0
@@ -675,7 +675,7 @@ export function PokemonMenu() {
             </div>
           )}
         </div>
-        <CardHeader className="h-[60px]">
+        <CardHeader className="">
           <CardTitle className="text-center text-xl">
             The {speciesTitle}
           </CardTitle>
@@ -788,13 +788,13 @@ export function PokemonMenu() {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col items-center space-y-4">
-            {/* First row of buttons in a horizontal layout */}
-            <div className="flex w-3/4 gap-2">
+          {/* Action Buttons Section - Updated for better responsiveness */}
+          <div className="flex flex-col items-center space-y-2 w-full px-4">
+            {/* Controls Row */}
+            <div className="flex flex-col w-full max-w-md gap-2">
               <Button
                 variant="secondary"
-                className="flex-1 text-base cursor-pointer"
+                className="text-base cursor-pointer h-10"
                 onClick={() =>
                   handlePokemonFetch(Math.floor(Math.random() * 1025) + 1)
                 }
@@ -806,21 +806,21 @@ export function PokemonMenu() {
 
               {availableForms.length > 1 && (
                 <Select value={currentForm} onValueChange={handleFormChange}>
-                  <SelectTrigger className="flex-1 bg-background text-base">
-                    <SelectValue placeholder="Select form" />
+                  <SelectTrigger className="w-full bg-secondary text-base h-10 border-0">
+                    <SelectValue placeholder="Select Form" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]" position="popper">
                     {availableForms.map((form) => (
                       <SelectItem
                         key={form.id}
                         value={form.id}
-                        className="text-base"
+                        className="text-base py-3 sm:py-2"
                       >
                         <div className="flex items-center gap-2">
-                          <span>{form.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {form.type === 'variety' ? '(Variant)' : '(Form)'}
-                          </span>
+                          <span className="truncate">{form.name}</span>
+                          {form.type === 'variety' && (
+                            <span className="text-xs text-muted-foreground">(Variant)</span>
+                          )}
                         </div>
                       </SelectItem>
                     ))}
@@ -829,49 +829,50 @@ export function PokemonMenu() {
               )}
             </div>
 
-            {/* Evolution section with fixed height */}
-            <div className="w-full h-[52px] flex flex-col items-center">
+            {/* Evolution Section - Updated for better responsiveness */}
+            <div className="w-full max-w-md">
               {evolutionOptions.length > 0 ? (
-                // Evolution content
-                <div className="w-full flex flex-col items-center">
+                <div className="w-full">
                   {evolutionOptions.length === 1 ? (
-                    // Single evolution - direct button
+                    // Single evolution button
                     <Button
                       variant="outline"
-                      className="w-3/4 text-base"
+                      className="w-full text-base h-auto py-2"
                       disabled={isLoading}
-                      onClick={() =>
-                        handlePokemonFetch(evolutionOptions[0].name)
-                      }
+                      onClick={() => handlePokemonFetch(evolutionOptions[0].name)}
                     >
-                      <ArrowRight className="mr-2 h-4 w-4" />
-                      <img
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
-                          isShiny ? 'shiny/' : ''
-                        }${PokemonService.getSpeciesId(
-                          evolutionOptions[0].name
-                        )}.png`}
-                        alt={evolutionOptions[0].name}
-                        className="w-6 h-6 mr-2"
-                        style={{ imageRendering: 'pixelated' }}
-                      />
-                      Evolve to{' '}
-                      {capitalize(evolutionOptions[0].name.replace(/-/g, ' '))}
+                      <div className="flex items-center justify-center gap-2 w-full">
+                        <ArrowRight className="h-4 w-4 flex-shrink-0" />
+                        <img
+                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+                            isShiny ? 'shiny/' : ''
+                          }${PokemonService.getSpeciesId(
+                            evolutionOptions[0].name
+                          )}.png`}
+                          alt={evolutionOptions[0].name}
+                          className="w-6 h-6 flex-shrink-0"
+                          style={{ imageRendering: 'pixelated' }}
+                        />
+                        <span className="truncate">
+                          Evolve to{' '}
+                          {capitalize(evolutionOptions[0].name.replace(/-/g, ' '))}
+                        </span>
+                      </div>
                     </Button>
                   ) : (
-                    // Multiple evolutions - popover
+                    // Multiple evolutions popover
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
-                          className="w-3/4 text-base"
+                          className="w-full text-base"
                           disabled={isLoading}
                         >
                           <ArrowRight className="mr-2 h-4 w-4" />
                           Choose Evolution
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-64">
+                      <PopoverContent className="w-[280px] sm:w-[320px]">
                         <div className="space-y-4">
                           <h4 className="font-medium">Evolution Options</h4>
                           <div className="space-y-2">
@@ -879,12 +880,10 @@ export function PokemonMenu() {
                               <Button
                                 key={evo.name}
                                 variant="ghost"
-                                className="w-full justify-start text-left"
-                                onClick={() => {
-                                  handlePokemonFetch(evo.name);
-                                }}
+                                className="w-full justify-start text-left h-auto py-2"
+                                onClick={() => handlePokemonFetch(evo.name)}
                               >
-                                <div className="flex items-center w-full">
+                                <div className="flex items-center gap-3 w-full">
                                   <img
                                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
                                       isShiny ? 'shiny/' : ''
@@ -892,15 +891,15 @@ export function PokemonMenu() {
                                       evo.name
                                     )}.png`}
                                     alt={evo.name}
-                                    className="w-8 h-8 mr-2"
+                                    className="w-8 h-8 flex-shrink-0"
                                     style={{ imageRendering: 'pixelated' }}
                                   />
-                                  <div className="flex flex-col">
-                                    <span className="capitalize">
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="capitalize truncate">
                                       {capitalize(evo.name.replace(/-/g, ' '))}
                                     </span>
                                     {evo.condition && (
-                                      <span className="text-sm text-muted-foreground">
+                                      <span className="text-sm text-muted-foreground truncate">
                                         {evo.condition}
                                       </span>
                                     )}
@@ -915,7 +914,6 @@ export function PokemonMenu() {
                   )}
                 </div>
               ) : (
-                // Empty placeholder to maintain height
                 <div className="h-10" />
               )}
             </div>
@@ -928,7 +926,7 @@ export function PokemonMenu() {
             <div className="text-center text-sm text-muted-foreground pb-4">
               Colors:
             </div>
-            <div className="flex flex-col space-y-4 px-4 items-center">
+            <div className="flex flex-col space-y-0 md:space-y-4 px-4 items-center">
               {bgColors.map((color, index) => {
                 // Add color labels
                 const colorLabel =
@@ -969,7 +967,7 @@ export function PokemonMenu() {
                           <LucideGripVertical className="h-4 w-4 text-gray-500 mb-1" />
                         </div>
                         <span
-                          className={`text-sm font-medium min-w-[80px] text-center border border-gray-300 rounded-full px-3 py-1 w-24 ${
+                          className={`hidden md:block text-sm font-medium min-w-[80px] text-center border border-gray-300 rounded-full px-3 py-1 w-24 ${
                             getContrastColor(color).text
                           }`}
                           style={{ backgroundColor: color }}

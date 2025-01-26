@@ -461,7 +461,7 @@ export default function Home() {
       <main className="flex-1 w-full md:pl-[300px] lg:pl-[350px] min-h-screen">
         {/* Navigation - Fixed positioning */}
         <nav
-          className={`fixed top-0 left-0 md:left-[300px] lg:left-[350px] right-0 z-30 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl`}
+          className={`box-border fixed top-0 left-0 md:left-[300px] lg:left-[350px] right-0 z-30 flex justify-end items-center p-4 ${colors[0]} dark:${colors[1]} backdrop-blur-xl`}
         >
           <div className="hidden md:flex justify-start absolute left-6 font-bold text-xl md:text-2xl capitalize truncate max-w-[50%]">
             <p>
@@ -473,7 +473,7 @@ export default function Home() {
             </p>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <div className="hover:cursor-pointer hover:scale-105 transition-all duration-200">
+            <div className="hover:cursor-pointer hover:scale-105 transition-all duration-200 flex-start">
               <a
                 href="https://www.buymeacoffee.com/yassenshopov"
                 target="_blank"
@@ -489,7 +489,7 @@ export default function Home() {
                   width="24"
                   height="24"
                   viewBox="0 0 1279 1279"
-                  className="hidden md:block mr-2"
+                  className="mr-2"
                 >
                   <path
                     d="M791.109 297.518L790.231 297.002L788.201 296.383C789.018 297.072 790.04 297.472 791.109 297.518V297.518Z"
