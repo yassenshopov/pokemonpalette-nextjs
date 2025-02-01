@@ -82,7 +82,11 @@ export default {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
 			'rotate': 'rotate 0.5s linear'
-  		}
+  		},
+  		fontFamily: {
+  			sans: ['var(--font-inter)'],
+  			display: ['var(--font-outfit)'],
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],
