@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import speciesData from '@/data/species.json';
 import { useColors } from '@/contexts/color-context';
 import ColorThief from 'colorthief';
 import { PokemonSearch } from '@/components/pokemon-search';
 import { LoadingPokeball } from '@/components/loading-pokeball';
-import { Heart, HeartCrack } from "lucide-react";
 import confetti from 'canvas-confetti';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -25,6 +23,7 @@ interface GameState {
   hints: string[];
   usedHintTypes: HintType[];
   gameMode: 'daily' | 'unlimited';
+  isShiny: boolean;
 }
 
 interface PokemonData {
@@ -59,6 +58,7 @@ export default function GamePage() {
     hints: [],
     usedHintTypes: [],
     gameMode: 'unlimited',
+    isShiny: false,
   });
   const { colors, setColors } = useColors();
   const [pokemonSprite, setPokemonSprite] = useState<string>('');
@@ -130,16 +130,34 @@ export default function GamePage() {
     const randomPokemon = mode === 'daily' ? getDailyPokemon() : getRandomPokemon();
     setTargetPokemon(randomPokemon);
     
+    // Determine if this Pokemon should be shiny (1/20 chance)
+    const isShiny = Math.random() < 0.05;
+    
     try {
       const data = await PokemonService.fetchPokemon(randomPokemon);
       setTargetPokemonData(data);
-      const spriteUrl = data.sprites.other['official-artwork'].front_default;
+      
+      // Use shiny sprite if available and Pokemon is shiny
+      const spriteUrl = isShiny 
+        ? data.sprites.other['official-artwork'].front_shiny || data.sprites.other['official-artwork'].front_default
+        : data.sprites.other['official-artwork'].front_default;
+      
+      const pixelSpriteUrl = isShiny 
+        ? data.sprites.front_shiny || data.sprites.front_default
+        : data.sprites.front_default;
+        
       setPokemonSprite(spriteUrl);
       
-      if (spriteUrl) {
-        const colors = await extractColors(spriteUrl);
+      if (pixelSpriteUrl) {
+        const colors = await extractColors(pixelSpriteUrl);
         setColors(colors as string[]);
       }
+
+      // Update game state with shiny status
+      setGameState(prev => ({
+        ...prev,
+        isShiny
+      }));
     } catch (error) {
       console.error('Error fetching Pokemon:', error);
     } finally {
@@ -325,7 +343,8 @@ export default function GamePage() {
       guessHistory: [],
       hints: [],
       usedHintTypes: [],
-      gameMode: prev.gameMode
+      gameMode: prev.gameMode,
+      isShiny: prev.isShiny
     }));
     
     if (gameState.gameMode === 'unlimited') {
@@ -353,7 +372,7 @@ export default function GamePage() {
       <div className="absolute top-4 right-4 flex gap-2">
         <Tabs 
           value={gameState.gameMode} 
-          onValueChange={(value: 'daily' | 'unlimited') => {
+          onValueChange={(value) => {
             toggleGameMode();
           }}
         >
@@ -367,6 +386,11 @@ export default function GamePage() {
 
       <h1 className="text-2xl sm:text-4xl font-bold mb-6 text-center font-display">
         Pokemon Palette Guesser
+        {gameState.isShiny && (
+          <span className="block text-lg sm:text-xl text-yellow-500 animate-pulse">
+            ✨ Shiny Pokemon! ✨
+          </span>
+        )}
       </h1>
       
       {/* Pokemon Sprite Display */}
@@ -423,6 +447,8 @@ export default function GamePage() {
               className="flex-1"
               placeholder="Enter Pokemon name..."
               disabled={isGuessing}
+              disabledOptions={gameState.guessHistory}
+              isShiny={gameState.isShiny}
             />
             <Button 
               onClick={handleGuess}
@@ -512,9 +538,9 @@ export default function GamePage() {
                 <DialogDescription className="text-center">
                   <div className="mb-4">
                     {gameState.gameMode === 'daily' ? (
-                      <>You solved today's Pokemon! It was</>
+                      <>You solved today's {gameState.isShiny ? 'Shiny ' : ''}Pokemon! It was</>
                     ) : (
-                      <>You caught the Pokemon! It was</>
+                      <>You caught the {gameState.isShiny ? 'Shiny ' : ''}Pokemon! It was</>
                     )}{' '}
                     <span className="font-bold capitalize">
                       {targetPokemon.replace(/-/g, ' ')}
@@ -552,7 +578,8 @@ export default function GamePage() {
                         guessHistory: [],
                         hints: [],
                         usedHintTypes: [],
-                        gameMode: 'unlimited'
+                        gameMode: 'unlimited',
+                        isShiny: false
                       });
                       initGame('unlimited');
                     }}
