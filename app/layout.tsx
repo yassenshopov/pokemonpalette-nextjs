@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { ColorProvider } from "@/contexts/color-context";
+import { Inter, Outfit } from 'next/font/google';
+import { ThemeProvider as NextThemeProvider } from 'next-themes';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,6 +14,16 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter'
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit'
 });
 
 export const metadata: Metadata = {
@@ -75,25 +87,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+    <html lang="en">
+      <body suppressHydrationWarning className={`${inter.variable} ${outfit.variable} font-sans`}>
+        <NextThemeProvider attribute="class">
           <ColorProvider>
             {children}
           </ColorProvider>
-        </ThemeProvider>
+        </NextThemeProvider>
       </body>
     </html>
   );
