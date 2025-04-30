@@ -16,6 +16,8 @@ import { SignInButton, UserButton } from "@clerk/nextjs";
 import { TypeBadge } from '@/app/components/type-badge';
 import { GameBackground } from '@/app/components/game-background';
 import '../styles/game-animations.css';
+import Link from "next/link";
+import Image from "next/image";
 
 type HintType = 'first-letter' | 'generation' | 'type' | 'size' | 'pokedex' | 'name-length' | 'common-substring';
 
@@ -88,7 +90,7 @@ export default function GamePage() {
 
   // Add color extraction function
   const extractColors = async (imageUrl: string) => {
-    const img = new Image();
+    const img = new window.Image();
     img.crossOrigin = 'Anonymous';
 
     return new Promise((resolve) => {
@@ -460,7 +462,7 @@ export default function GamePage() {
           
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm" className="h-8">
-              <a href="/">Home</a>
+              <Link href="/">Home</Link>
             </Button>
             <Tabs 
               value={gameState.gameMode} 
@@ -490,9 +492,11 @@ export default function GamePage() {
         <div className="max-w-[460px] sm:max-w-[200px] relative p-4 mb-4">
           {gameState.gameStatus !== 'playing' && (
             <div className="pokemon-sprite-container">
-              <img
+              <Image
                 src={pokemonSprite}
                 alt="Pokemon"
+                width={200}
+                height={200}
                 className={`w-full h-full object-contain animate-fade-in ${
                   gameState.isShiny ? 'shiny-effect' : ''
                 }`}
@@ -566,9 +570,11 @@ export default function GamePage() {
               <Card key={index} className="pokemon-card overflow-hidden">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-2">
-                    <img 
+                    <Image 
                       src={guess.sprite} 
                       alt={guess.name} 
+                      width={64}
+                      height={64}
                       className="w-16 h-16 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg"
                     />
                     <div className="flex-1">
@@ -630,9 +636,11 @@ export default function GamePage() {
                     </div>
                     <div className="w-full max-w-[200px] mx-auto mb-4">
                       <div className="pokemon-sprite-container">
-                        <img
+                        <Image
                           src={pokemonSprite}
                           alt={targetPokemon}
+                          width={200}
+                          height={200}
                           className="w-full h-full object-contain grayscale opacity-80"
                         />
                       </div>
@@ -676,9 +684,11 @@ export default function GamePage() {
                     </div>
                     <div className="w-full max-w-[200px] mx-auto mb-4">
                       <div className="pokemon-sprite-container">
-                        <img
+                        <Image
                           src={pokemonSprite}
                           alt={targetPokemon}
+                          width={200}
+                          height={200}
                           className="w-full h-full object-contain pokemon-float"
                         />
                       </div>

@@ -32,6 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import Image from "next/image";
 
 interface PokemonSpecies {
   genera: Array<{
@@ -191,7 +192,7 @@ export function PokemonMenu() {
 
   // Color extraction
   const extractColors = async (imageUrl: string) => {
-    const img = new Image();
+    const img = new window.Image();
     img.crossOrigin = 'Anonymous';
 
     img.onload = () => {
@@ -641,9 +642,11 @@ export function PokemonMenu() {
       // style={gradientStyle}
     >
       <div className="absolute top-8 left-8 flex items-center justify-start">
-        <img
+        <Image
           src="/logo512.png"
           alt="App Logo"
+          width={200}
+          height={200}
           className={`hidden md:block h-[15%] w-[15%] ${isRotating ? 'animate-rotate' : ''}`}
           style={{
             filter: `hue-rotate(${
@@ -661,9 +664,11 @@ export function PokemonMenu() {
                 isLoading ? 'opacity-50' : 'opacity-100'
               }`}
             >
-              <img
+              <Image
                 src={spriteUrl}
                 alt={pokemonName}
+                width={160}
+                height={160}
                 className={`h-40 w-40 ${isLoading ? 'animate-pulse' : ''}`}
                 style={{ imageRendering: 'pixelated' }}
               />
@@ -726,9 +731,11 @@ export function PokemonMenu() {
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => handleSuggestionSelect(suggestion)}
                         >
-                          <img
+                          <Image
                             src={suggestion.sprite}
                             alt={suggestion.name}
+                            width={32}
+                            height={32}
                             className="w-8 h-8"
                             style={{ imageRendering: 'pixelated' }}
                           />
@@ -843,13 +850,15 @@ export function PokemonMenu() {
                     >
                       <div className="flex items-center justify-center gap-2 w-full">
                         <ArrowRight className="h-4 w-4 flex-shrink-0" />
-                        <img
+                        <Image
                           src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
                             isShiny ? 'shiny/' : ''
                           }${PokemonService.getSpeciesId(
                             evolutionOptions[0].name
                           )}.png`}
                           alt={evolutionOptions[0].name}
+                          width={24}
+                          height={24}
                           className="w-6 h-6 flex-shrink-0"
                           style={{ imageRendering: 'pixelated' }}
                         />
@@ -884,13 +893,15 @@ export function PokemonMenu() {
                                 onClick={() => handlePokemonFetch(evo.name)}
                               >
                                 <div className="flex items-center gap-3 w-full">
-                                  <img
+                                  <Image
                                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
                                       isShiny ? 'shiny/' : ''
                                     }${PokemonService.getSpeciesId(
                                       evo.name
                                     )}.png`}
                                     alt={evo.name}
+                                    width={24}
+                                    height={24}
                                     className="w-8 h-8 flex-shrink-0"
                                     style={{ imageRendering: 'pixelated' }}
                                   />

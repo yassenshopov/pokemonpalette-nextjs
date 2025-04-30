@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,15 +11,35 @@
   padding: 0;
 }
 
+@font-face {
+  font-family: 'Cal Sans';
+  src: url('/fonts/CalSans-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-satoshi: 'Satoshi', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
 body {
-  font-family: 'Open Sans', sans-serif; /* Excellent readability for body text */
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, .pokemon-title {
-  font-family: 'Montserrat', sans-serif; /* Clean and modern font for headings */
-  letter-spacing: 0.02em;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-satoshi);
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
+.display-text {
+  font-family: var(--font-satoshi);
+  letter-spacing: -0.03em;
+}
 
 @layer base {
   :root {
