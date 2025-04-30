@@ -4,6 +4,7 @@ import { useState, useRef, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import speciesData from '@/data/species.json';
+import Image from "next/image";
 
 interface PokemonSuggestion {
   name: string;
@@ -100,9 +101,11 @@ export function PokemonSearch({
                   onClick={() => !isDisabled && handleSuggestionSelect(suggestion)}
                   disabled={isDisabled}
                 >
-                  <img
+                  <Image
                     src={suggestion.sprite}
                     alt={suggestion.name}
+                    width={32}
+                    height={32}
                     className={`w-8 h-8 ${isDisabled ? 'grayscale' : ''}`}
                     style={{ imageRendering: 'pixelated' }}
                   />

@@ -5,10 +5,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'raw.githubusercontent.com',
+        port: '',
         pathname: '/PokeAPI/sprites/**',
       },
     ],
   },
-}
+};
 
-module.exports = nextConfig 
+module.exports = nextConfig;

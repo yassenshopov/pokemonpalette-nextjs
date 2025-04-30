@@ -40,6 +40,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'; // Import Tooltip and TooltipContent
 import Footer from '@/components/ui/Footer'; // Import the new Footer component
+import { SignInButton, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 // Define the type for species data
 interface SpeciesData {
@@ -472,8 +473,31 @@ export default function Home() {
                 pokemonName.slice(1)}
             </p>
           </div>
-          <div className="flex items-center space-x-2 md:space-x-4">
-            <div className="hover:cursor-pointer hover:scale-105 transition-all duration-200 flex-start">
+          <div className="flex items-center space-x-4">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="outline" size="sm" className="h-8">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-muted-foreground hidden md:block">
+                  Welcome back!
+                </p>
+                <UserButton 
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "h-8 w-8"
+                    }
+                  }}
+                />
+              </div>
+            </SignedIn>
+            <Separator orientation="vertical" className="h-6" />
+            <div className="hover:cursor-pointer hover:scale-105 transition-all duration-200">
               <a
                 href="https://www.buymeacoffee.com/yassenshopov"
                 target="_blank"
@@ -551,6 +575,7 @@ export default function Home() {
                 <span className="text-sm md:text-base">Buy me a coffee!</span>
               </a>
             </div>
+            <Separator orientation="vertical" className="h-6" />
             <ThemeToggle />
           </div>
         </nav>
@@ -636,7 +661,7 @@ export default function Home() {
                       </div>
                       <Popover
                         open={openPopover === index}
-                        onOpenChange={(open) => {
+                        onOpenChange={(open: boolean) => {
                           if (open) {
                             setOpenPopover(index);
                             navigator.clipboard.writeText(
