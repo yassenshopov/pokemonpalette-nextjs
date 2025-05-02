@@ -439,9 +439,11 @@ export default function GamePage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-4">
             <div>
-              <img 
+              <Image 
                 src="/logo512.png" 
                 alt="Pokemon Palette Logo" 
+                width={32}
+                height={32}
                 className={`w-8 h-8 pokemon-float ${isRotating ? 'animate-rotate' : ''}`}
                 style={{
                   filter: `hue-rotate(${

@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface LoadingPokeballProps {
   className?: string;
 }
@@ -5,7 +7,7 @@ interface LoadingPokeballProps {
 export function LoadingPokeball({ className }: LoadingPokeballProps) {
   return (
     <div className={`animate-spin ${className}`}>
-      <img src="/pokeball.svg" alt="Loading..." />
+      <Image src="/pokeball.svg" alt="Loading..." width={24} height={24} />
     </div>
   );
 } 
