@@ -52,7 +52,7 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
   return (
     <div className="space-y-8">
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-8 md:px-16">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-8 md:px-16 mx-auto max-w-7xl">
         {colors.map((color, index) => (
           <motion.div
             key={color}

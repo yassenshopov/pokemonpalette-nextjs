@@ -323,12 +323,12 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Sidebar - Fixed for mobile and desktop */}
-      <aside className="w-full h-auto md:h-screen md:w-[300px] lg:w-[350px] md:fixed md:left-0 md:top-0 border-b-2 md:border-r-2 md:border-b-0 border-gray-200 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
+      <aside className="w-full h-auto md:h-screen md:w-[350px] lg:w-[450px] md:fixed md:left-0 md:top-0 border-b-2 md:border-r-2 md:border-b-0 border-gray-500/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
         <PokemonMenu />
       </aside>
 
       {/* Main Content - Adjusted margins and padding */}
-      <main className="flex-1 w-full md:pl-[300px] lg:pl-[350px] min-h-screen">
+      <main className="flex-1 w-full md:pl-[350px] lg:pl-[450px] min-h-screen">
         {/* Navigation - Fixed positioning */}
         <Navbar 
           colors={colors}

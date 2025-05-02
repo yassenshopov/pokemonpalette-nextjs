@@ -1,11 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { SignInButton, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import { Bookmark } from 'lucide-react';
+import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { Bookmark, Check, Palette, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { savePalette, isPaletteSaved } from '@/lib/utils';
+import { useToast } from '@/components/ui/use-toast';
+import { PalettePickerDialog } from '@/components/palettes/palette-picker-dialog';
+import { useRouter } from 'next/navigation';
+import { useSaveContext } from '@/contexts/save-context';
+import { useColors } from '@/contexts/color-context';
 
 interface NavbarProps {
   colors: string[];
@@ -16,6 +22,23 @@ interface NavbarProps {
 
 export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }: NavbarProps) {
   const [isRotating, setIsRotating] = useState(false);
+  const { isSaved, isSaving, savePaletteAction } = useSaveContext();
+  const { shiny } = useColors();
+  const { user } = useUser();
+  const { toast } = useToast();
+  const router = useRouter();
+
+  // Function to handle saving palette
+  const handleSavePalette = () => {
+    savePaletteAction(colors, pokemonNumber, pokemonName, shiny);
+  };
+
+  // Function to handle selecting a palette
+  const handlePaletteSelect = (palette: any) => {
+    if (palette.pokemonName) {
+      router.push(`/${palette.pokemonName.toLowerCase()}`);
+    }
+  };
 
   // Function to get hue from color
   const getHueFromColor = (color: string): number => {
@@ -59,7 +82,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
 
   return (
     <nav
-      className="box-border fixed top-0 left-0 md:left-[300px] lg:left-[350px] right-0 z-30 h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="box-border fixed top-0 left-0 md:left-[350px] lg:left-[450px] right-0 z-30 h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       style={{
         background: `linear-gradient(to right, ${colors[0]}20, ${colors[1]}10)`,
       }}
@@ -114,13 +137,38 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
           
           <SignedIn>
             <div className="flex items-center gap-3">
+              <PalettePickerDialog
+                onSelectPalette={handlePaletteSelect}
+                trigger={
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-8 px-3 text-sm font-medium transition-colors hover:bg-primary/10 gap-2"
+                  >
+                    <Palette className="w-4 h-4" />
+                    My Palettes
+                  </Button>
+                }
+              />
+              
               <Button 
                 variant="ghost" 
-                size="sm" 
+                size="sm"
+                disabled={isSaving || colors.length === 0}
+                onClick={handleSavePalette}
                 className="h-8 px-3 text-sm font-medium transition-colors hover:bg-primary/10 gap-2"
               >
-                <Bookmark className="w-4 h-4" />
-                Save Palette
+                {isSaving || isSaved ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Saved
+                  </>
+                ) : (
+                  <>
+                    <Bookmark className="w-4 h-4" />
+                    Save Palette
+                  </>
+                )}
               </Button>
               <UserButton 
                 afterSignOutUrl="/"

@@ -15,6 +15,7 @@ import {
   LucideGripVertical,
   Lock,
   Unlock,
+  Palette,
 } from 'lucide-react';
 import ColorThief from 'colorthief';
 import {
@@ -33,6 +34,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import Image from "next/image";
+import { SavedPalette } from '@/lib/utils';
+import { useToast } from '@/components/ui/use-toast';
+import { SavedPalettes } from '@/components/palettes/saved-palettes';
+import { useUser } from "@clerk/nextjs";
 
 interface PokemonSpecies {
   genera: Array<{
@@ -120,6 +125,7 @@ interface PokemonFormOption {
   id: string;
   type: 'form' | 'variety';
   isDefault?: boolean;
+  sprite?: string;
 }
 
 interface PokemonForm {
@@ -206,9 +212,10 @@ export function PokemonMenu() {
   } = useColors();
   const [suggestions, setSuggestions] = useState<PokemonSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const { toast } = useToast();
 
   // Add tab state
-  const [activeTab, setActiveTab] = useState<'info' | 'forms' | 'colors'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'forms' | 'colors'>('colors');
 
   // Color extraction
   const extractColors = async (imageUrl: string) => {
@@ -401,6 +408,16 @@ export function PokemonMenu() {
     if (currentForm) {
       const selectedForm = availableForms.find((f) => f.id === currentForm);
       handlePokemonFetch(currentForm, true, selectedForm?.type === 'form');
+      
+      // Update sprite URLs for forms when shiny state changes
+      if (baseSpeciesId) {
+        setAvailableForms((prevForms) => 
+          prevForms.map(form => ({
+            ...form,
+            sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${form.id}.png`
+          }))
+        );
+      }
     }
   }, [isShiny]);
 
@@ -615,11 +632,13 @@ export function PokemonMenu() {
           !v.pokemon.name.toLowerCase().includes('totem') &&
           !v.pokemon.name.toLowerCase().includes('own-tempo')
         ) {
+          const id = v.pokemon.url.split('/').slice(-2, -1)[0];
           options.push({
             name: v.pokemon.name.replace(/-/g, ' '),
-            id: v.pokemon.url.split('/').slice(-2, -1)[0],
+            id: id,
             type: 'variety',
             isDefault: v.is_default,
+            sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${id}.png`
           });
         }
       });
@@ -635,9 +654,10 @@ export function PokemonMenu() {
           form.url.toLowerCase().includes('totem') ||
           form.name.toLowerCase().includes('own-tempo');
 
+        const id = form.url.split('/').slice(-2, -1)[0];
         if (
           !options.some(
-            (opt) => opt.id === form.url.split('/').slice(-2, -1)[0]
+            (opt) => opt.id === id
           ) &&
           !isExcluded
         ) {
@@ -649,8 +669,9 @@ export function PokemonMenu() {
 
           options.push({
             name: displayName,
-            id: form.url.split('/').slice(-2, -1)[0],
+            id: id,
             type: 'form',
+            sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${id}.png`
           });
         }
       });
@@ -803,19 +824,12 @@ export function PokemonMenu() {
 
   return (
     <Card
-      className="w-full h-full overflow-hidden flex flex-col border-none shadow-none"
+      className="w-full h-full overflow-hidden flex flex-col border-none shadow-none px-8 mt-4"
       style={{ maxHeight: "calc(100vh - 40px)" }}
     >
-      {/* Pokemon Header with Name and Species */}
-      <div className="pt-4 px-6 pb-2 text-center">
-        <h2 className="text-2xl font-semibold tracking-tight capitalize">
-          {pokemonName.replace(/-/g, ' ')}
-        </h2>
-        <div className="text-md text-muted-foreground">{speciesTitle}</div>
-      </div>
 
       {/* Prominent Pokemon Sprite - INCREASED SIZE */}
-      <div className="relative flex-shrink-0 flex items-center justify-center mx-auto p-4 w-56 h-56">
+      <div className="relative flex-shrink-0 flex items-center justify-center mx-auto p-4 w-48 h-48">
         {spriteUrl ? (
           <div
             className={`w-full h-full relative transition-all duration-300 ${
@@ -825,8 +839,10 @@ export function PokemonMenu() {
             <Image
               src={spriteUrl}
               alt={pokemonName}
-              width={224}
-              height={224}
+              width={180}
+              height={180}
+              quality={1}
+              unoptimized={true}
               // className="h-full w-full object-contain"
               style={{ imageRendering: 'pixelated' }}
             />
@@ -854,6 +870,11 @@ export function PokemonMenu() {
         >
           <Sparkles className={`h-4 w-4 ${isShiny ? 'text-yellow-400' : 'text-muted-foreground'}`} />
         </Button>
+      </div>
+
+            {/* Pokemon Header with Name and Species */}
+      <div className="px-6 pb-2 text-center">
+        <div className="text-md text-muted-foreground">{speciesTitle}</div>
       </div>
 
       {/* Search and Navigation Controls */}
@@ -898,6 +919,8 @@ export function PokemonMenu() {
                       width={32}
                       height={32}
                       className="w-8 h-8"
+                      unoptimized={true}
+                      quality={1}
                       style={{ imageRendering: 'pixelated' }}
                     />
                     <span>{suggestion.name.replace(/-/g, ' ')}</span>
@@ -961,8 +984,8 @@ export function PokemonMenu() {
               activeTab === 'info' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
-              activeTab === 'info' && bgColors[0]
-                ? { color: bgColors[0] }
+              activeTab === 'info' 
+                ? { color: bgColors[0] || undefined }
                 : {}
             }
           >
@@ -980,8 +1003,8 @@ export function PokemonMenu() {
               activeTab === 'forms' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
-              activeTab === 'forms' && bgColors[1]
-                ? { color: bgColors[1] }
+              activeTab === 'forms'
+                ? { color: bgColors[1] || undefined }
                 : {}
             }
           >
@@ -999,8 +1022,8 @@ export function PokemonMenu() {
               activeTab === 'colors' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
-              activeTab === 'colors' && bgColors[2]
-                ? { color: bgColors[2] }
+              activeTab === 'colors'
+                ? { color: bgColors[2] || undefined }
                 : {}
             }
           >
@@ -1067,118 +1090,86 @@ export function PokemonMenu() {
         {/* Forms & Evolutions Tab with full evolution chain */}
         {activeTab === 'forms' && (
           <div className="space-y-6">
-            {/* Forms Section */}
-            {availableForms.length > 1 && (
-              <div className="bg-background/60 rounded-xl p-6">
-                <h3 className="text-sm font-medium mb-4 text-center">Available Forms</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {availableForms.map((form) => (
-                    <button
-                      key={form.id}
-                      className={`p-3 border rounded-lg transition-colors ${
-                        currentForm === form.id ? 'border-primary bg-primary/5' : 'hover:bg-accent'
-                      }`}
-                      style={
-                        currentForm === form.id && bgColors[1]
-                          ? { borderColor: bgColors[1], backgroundColor: `${bgColors[1]}10` }
-                          : {}
-                      }
-                      onClick={() => handleFormChange(form.id)}
-                    >
-                      <div className="text-sm font-medium truncate">{form.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {form.type === 'variety' ? 'Variant' : 'Form'}
-                      </div>
-                    </button>
-                  ))}
+            {/* Combined Forms & Evolutions Section */}
+            <div className="bg-background/60 rounded-xl p-6 pt-3">
+              
+              {availableForms.length <= 1 && evolutionChain.flat().filter(pokemon => !pokemon.isCurrent).length === 0 ? (
+                <div className="text-center text-sm text-muted-foreground">
+                  This Pokémon has no alternative forms or evolutions.
                 </div>
-              </div>
-            )}
-
-            {/* Full Evolution Chain Display */}
-            {evolutionChain.length > 0 ? (
-              <div className="bg-background/60 rounded-xl p-6">
-                <h3 className="text-sm font-medium mb-6 text-center">Evolution Chain</h3>
-                
-                {/* Scrollable container for wide evolution chains */}
-                <div className="relative overflow-x-auto pb-2 -mx-1 px-1">
-                  <div className={`flex flex-row items-center justify-center gap-2 min-w-max ${evolutionChain.length > 2 ? 'mx-auto' : ''}`}>
-                    {evolutionChain.map((stage, stageIndex) => (
-                      <React.Fragment key={stageIndex}>
-                        {/* Pokemon stage */}
-                        <div className="flex flex-col items-center gap-4">
-                          {stage.map((pokemon, pokemonIndex) => (
-                            <button
-                              key={pokemon.name}
-                              onClick={() => handlePokemonFetch(pokemon.id)}
-                              className={`flex flex-col items-center w-28 ${
-                                pokemon.isCurrent ? 'cursor-default' : 'hover:opacity-80'
-                              }`}
-                            >
-                              <div 
-                                className={`w-20 h-20 rounded-full flex items-center justify-center mb-2 ${
-                                  pokemon.isCurrent ? 'border-2' : 'bg-muted/20'
-                                }`}
-                                style={pokemon.isCurrent ? { borderColor: bgColors[0] || 'var(--primary)' } : {}}
-                              >
-                                <Image
-                                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
-                                    isShiny ? 'shiny/' : ''
-                                  }${pokemon.id}.png`}
-                                  alt={pokemon.name}
-                                  width={48}
-                                  height={48}
-                                  className="w-12 h-12"
-                                  style={{ imageRendering: 'pixelated' }}
-                                />
-                              </div>
-                              <div className="text-xs font-medium capitalize text-center">{pokemon.name.replace(/-/g, ' ')}</div>
-                              {pokemon.condition && (
-                                <div className="text-xs text-muted-foreground mt-1 text-center w-full line-clamp-2">{pokemon.condition}</div>
-                              )}
-                            </button>
-                          ))}
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 justify-items-center">
+                  {/* Show forms first */}
+                  {availableForms
+                    .filter(form => !(form.name === "Default" && availableForms.length > 1))
+                    .map((form) => (
+                      <button
+                        key={`form-${form.id}`}
+                        className={`flex flex-col items-center group w-full max-w-[140px] ${
+                          currentForm === form.id ? 'opacity-100' : 'opacity-80 hover:opacity-100'
+                        }`}
+                        onClick={() => handleFormChange(form.id)}
+                      >
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-3 transition-colors ${
+                          currentForm === form.id 
+                            ? 'bg-primary/10' 
+                            : 'bg-muted/20 group-hover:bg-muted/30'
+                        }`}
+                        style={
+                          currentForm === form.id && bgColors[1]
+                            ? { backgroundColor: `${bgColors[1]}20` }
+                            : {}
+                        }>
+                          <Image
+                            src={form.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${form.id}.png`}
+                            alt={form.name}
+                            width={56}
+                            height={56}
+                            unoptimized={true}
+                            quality={1}
+                            className="w-14 h-14"
+                            style={{ imageRendering: 'pixelated' }}
+                          />
                         </div>
-                        
-                        {/* Arrow between stages */}
-                        {stageIndex < evolutionChain.length - 1 && (
-                          <div className="flex flex-col items-center justify-center self-center h-full">
-                            <div className="flex items-center">
-                              <ArrowRight 
-                                className="h-5 w-5" 
-                                style={{ color: bgColors[1] || 'var(--primary)' }}
-                              />
-                            </div>
-                            {/* Add connecting line if the next stage has multiple evolutions */}
-                            {evolutionChain[stageIndex + 1].length > 1 && stageIndex === 0 && (
-                              <div className="h-[50px] w-0.5 mt-1 mb-1 bg-muted" style={{ backgroundColor: `${bgColors[1]}40` || 'var(--muted)' }}></div>
-                            )}
-                          </div>
-                        )}
-                      </React.Fragment>
+                        <div className="text-sm font-medium text-center">{form.name}</div>
+                        <div className="text-xs text-muted-foreground text-center">
+                          {form.type === 'variety' ? 'Variant' : 'Form'}
+                        </div>
+                      </button>
                     ))}
-                  </div>
+                  
+                  {/* Evolutions with same styling as forms */}
+                  {evolutionChain.flat()
+                    .filter(pokemon => !pokemon.isCurrent)
+                    .map(pokemon => (
+                      <button
+                        key={`evo-${pokemon.name}`}
+                        onClick={() => handlePokemonFetch(pokemon.id)}
+                        className="flex flex-col items-center group w-full max-w-[140px] opacity-80 hover:opacity-100"
+                      >
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-3 bg-muted/20 group-hover:bg-muted/30 transition-colors">
+                          <Image
+                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+                              isShiny ? 'shiny/' : ''
+                            }${pokemon.id}.png`}
+                            alt={pokemon.name}
+                            width={56}
+                            height={56}
+                            unoptimized={true}
+                            quality={1}
+                            className="w-14 h-14"
+                            style={{ imageRendering: 'pixelated' }}
+                          />
+                        </div>
+                        <div className="text-sm font-medium capitalize text-center">{pokemon.name.replace(/-/g, ' ')}</div>
+                        <div className="text-xs text-muted-foreground text-center">
+                          {pokemon.condition || 'Evolution'}
+                        </div>
+                      </button>
+                    ))}
                 </div>
-                
-                {evolutionChain.length === 1 && (
-                  <div className="text-center text-xs text-muted-foreground mt-4">
-                    This Pokémon does not evolve.
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="bg-background/60 rounded-xl p-6 text-center">
-                <h3 className="text-sm font-medium mb-4">Evolution Chain</h3>
-                <div className="text-muted-foreground text-sm">Evolution data not available</div>
-              </div>
-            )}
-            
-            {/* No forms message */}
-            {availableForms.length <= 1 && (
-              <div className="text-xs text-muted-foreground text-center mt-4">
-                This Pokémon has no alternative forms.
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
@@ -1186,7 +1177,7 @@ export function PokemonMenu() {
         {activeTab === 'colors' && bgColors.length > 0 && (
           <div className="space-y-6">
             {/* Color Preview */}
-            <div className="h-28 rounded-xl overflow-hidden" style={gradientStyle} />
+            {/* <div className="h-28 rounded-xl overflow-hidden" style={gradientStyle} /> */}
             
             {/* Color Editors */}
             <div className="space-y-4">
