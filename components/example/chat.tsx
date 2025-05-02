@@ -31,6 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useTheme } from "next-themes";
 
 interface Message {
   id: string;
@@ -104,18 +105,29 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
   const [isBlocked, setIsBlocked] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { theme } = useTheme();
 
-  // Get contrast text color for message bubbles
-  const userBubbleColor = `color-mix(in srgb, ${secondaryColor}, transparent 85%)`;
-  const otherBubbleColor = `color-mix(in srgb, ${mainColor}, transparent 85%)`;
-  const systemBubbleColor = `color-mix(in srgb, #888888, transparent 90%)`;
+  // Get contrast text color for message bubbles based on theme
+  const userBubbleColor = theme === 'dark' 
+    ? `color-mix(in srgb, ${secondaryColor}, var(--muted) 70%)`
+    : `color-mix(in srgb, ${secondaryColor}, transparent 85%)`;
+  const otherBubbleColor = theme === 'dark'
+    ? `color-mix(in srgb, ${mainColor}, var(--muted) 70%)`
+    : `color-mix(in srgb, ${mainColor}, transparent 85%)`;
+  const systemBubbleColor = theme === 'dark'
+    ? `color-mix(in srgb, #888888, var(--muted) 80%)`
+    : `color-mix(in srgb, #888888, transparent 90%)`;
+  
+  // Define background colors for light and dark mode
+  const messageAreaBgLight = "rgba(248, 250, 252, 0.3)";
+  const messageAreaBgDark = "rgba(30, 41, 59, 0.3)";
+  const messageAreaBg = theme === 'dark' ? messageAreaBgDark : messageAreaBgLight;
 
   // Define CSS variables for global themeing
   const cssVariables = {
     "--ring": mainColor,
     "--ring-offset-shadow": `0 0 0 2px ${mainColor}`,
     "--focus-ring": `0 0 0 2px ${secondaryColor}`,
-    "--border": `color-mix(in srgb, ${mainColor}, transparent 70%)`,
   } as React.CSSProperties;
 
   const scrollToBottom = () => {
@@ -256,7 +268,13 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
   };
 
   return (
-    <Card className="p-4 h-[400px] relative overflow-hidden border shadow-md" style={{ ...cssVariables }}>
+    <Card className="p-4 h-[400px] relative overflow-hidden shadow-md" 
+      style={{ 
+        ...cssVariables,
+        backgroundColor: theme === 'dark' ? 'var(--card)' : undefined,
+        borderColor: theme === 'dark' ? 'transparent' : undefined
+      }}
+    >
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex justify-between items-center pb-3 border-b mb-3" style={{ borderColor: `color-mix(in srgb, ${mainColor}, transparent 85%)` }}>
@@ -440,7 +458,7 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
           ref={scrollAreaRef} 
           className="flex-1 pr-4" 
           style={{ 
-            backgroundColor: "rgba(248, 250, 252, 0.3)",
+            backgroundColor: messageAreaBg,
             "--scrollbar-thumb": `color-mix(in srgb, ${mainColor}, transparent 50%)`,
             "--scrollbar-track": "transparent"
           } as React.CSSProperties}
@@ -486,6 +504,7 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
                         backgroundColor: message.sender === 'user' ? userBubbleColor : 
                                       message.sender === 'other' ? otherBubbleColor : 
                                       systemBubbleColor,
+                        color: theme === 'dark' ? 'var(--foreground)' : 'inherit',
                         borderWidth: message.sender === 'system' ? '1px' : '0',
                         borderColor: 'rgba(0,0,0,0.1)',
                         borderStyle: 'solid'
@@ -524,12 +543,30 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
                   </Avatar>
                   <div 
                     className="px-3 py-2 rounded-2xl rounded-bl-sm"
-                    style={{ backgroundColor: otherBubbleColor }}
+                    style={{ 
+                      backgroundColor: otherBubbleColor,
+                      color: theme === 'dark' ? 'var(--foreground)' : 'inherit' 
+                    }}
                   >
                     <div className="flex gap-1.5 items-center">
-                      <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: mainColor, animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: mainColor, animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: mainColor, animationDelay: '300ms' }}></div>
+                      <div className="w-2 h-2 rounded-full animate-bounce" 
+                        style={{ 
+                          backgroundColor: theme === 'dark' ? 'var(--foreground)' : mainColor, 
+                          animationDelay: '0ms' 
+                        }}
+                      ></div>
+                      <div className="w-2 h-2 rounded-full animate-bounce" 
+                        style={{ 
+                          backgroundColor: theme === 'dark' ? 'var(--foreground)' : mainColor, 
+                          animationDelay: '150ms' 
+                        }}
+                      ></div>
+                      <div className="w-2 h-2 rounded-full animate-bounce" 
+                        style={{ 
+                          backgroundColor: theme === 'dark' ? 'var(--foreground)' : mainColor, 
+                          animationDelay: '300ms' 
+                        }}
+                      ></div>
                     </div>
                   </div>
                 </motion.div>
@@ -575,6 +612,8 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
             className="rounded-full border-muted-foreground/20"
             style={{ 
               borderColor: `color-mix(in srgb, ${mainColor}, transparent 70%)`,
+              backgroundColor: theme === 'dark' ? 'var(--muted)' : undefined,
+              color: theme === 'dark' ? 'var(--foreground)' : undefined,
               "&:focus": { borderColor: mainColor, boxShadow: `0 0 0 2px ${secondaryColor}` }
             } as React.CSSProperties}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}

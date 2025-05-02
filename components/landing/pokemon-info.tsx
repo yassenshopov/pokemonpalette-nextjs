@@ -177,7 +177,7 @@ export function PokemonInfo({
   return (
     <div 
       id="pokemon-info"
-      className="w-full rounded-2xl relative overflow-hidden bg-gradient-to-br from-transparent to-black/5" 
+      className="w-full px-8 md:px-16 mx-auto max-w-7xl rounded-2xl relative overflow-hidden bg-gradient-to-br from-transparent to-black/5" 
       style={{ backgroundColor: mainColor }}>
       {/* Pokemon Silhouette */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-12 opacity-10 pointer-events-none">
@@ -192,7 +192,7 @@ export function PokemonInfo({
         </div>
       </div>
 
-      <div className="relative z-10 p-8">
+      <div className="relative z-10 py-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="space-y-4">

@@ -53,7 +53,7 @@ export function HeroSection({ pokemonName, officialArt, colors = [] }: HeroSecti
       }}
     >
       {/* Content container */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 px-8 md:px-16">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 px-8 md:px-16 mx-auto max-w-7xl">
         {/* Left content section */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
