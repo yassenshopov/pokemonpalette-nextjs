@@ -1,15 +1,20 @@
 import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Paintbrush, Palette, Bookmark, ArrowRight } from "lucide-react";
+import { Paintbrush, Palette, Bookmark, ArrowRight, Check, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { useState } from 'react';
+import { useToast } from "@/components/ui/use-toast";
+import { useSaveContext } from "@/contexts/save-context";
+import { useColors } from "@/contexts/color-context";
 
 interface HeroSectionProps {
   pokemonName: string;
   officialArt: string;
   colors?: string[]; // Make colors optional since they might not be available immediately
+  pokemonNumber?: number;
 }
 
 function hexToRgb(hex: string) {
@@ -24,10 +29,19 @@ function hexToRgb(hex: string) {
   return { r, g, b };
 }
 
-export function HeroSection({ pokemonName, officialArt, colors = [] }: HeroSectionProps) {
+export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumber }: HeroSectionProps) {
+  const { isSaved, isSaving, savePaletteAction } = useSaveContext();
+  const { shiny } = useColors();
+  const { user } = useUser();
+
   // Use the first two colors from the palette, or fallback to neutral colors
   const primaryColor = colors[0] || 'rgb(209 213 219)';
   const secondaryColor = colors[1] || 'rgb(243 244 246)';
+  
+  // Function to handle saving palette
+  const handleSavePalette = () => {
+    savePaletteAction(colors, pokemonNumber, pokemonName, shiny);
+  };
   
   // Convert the primary color to RGB if it's a hex color
   let rgbColor;
@@ -98,9 +112,20 @@ export function HeroSection({ pokemonName, officialArt, colors = [] }: HeroSecti
                   borderColor: primaryColor,
                   color: '#fff'
                 }}
+                onClick={handleSavePalette}
+                disabled={isSaving || colors.length === 0}
               >
-                <Bookmark className="w-5 h-5" />
-                Save Palette
+                {isSaving || isSaved ? (
+                  <>
+                    <Check className="w-5 h-5" />
+                    Saved!
+                  </>
+                ) : (
+                  <>
+                    <Bookmark className="w-5 h-5" />
+                    Save Palette
+                  </>
+                )}
               </Button>
             </SignedIn>
             <SignedOut>

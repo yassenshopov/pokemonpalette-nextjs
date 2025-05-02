@@ -74,6 +74,7 @@ export function ColorExampleSection({
         pokemonName={pokemonName} 
         officialArt={officialArt}
         colors={colors}
+        pokemonNumber={pokemonNumber}
       />
 
       <div className="space-y-8">

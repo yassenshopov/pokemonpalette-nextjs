@@ -15,6 +15,7 @@ import {
   LucideGripVertical,
   Lock,
   Unlock,
+  Palette,
 } from 'lucide-react';
 import ColorThief from 'colorthief';
 import {
@@ -33,6 +34,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import Image from "next/image";
+import { SavedPalette } from '@/lib/utils';
+import { useToast } from '@/components/ui/use-toast';
+import { SavedPalettes } from '@/components/palettes/saved-palettes';
+import { useUser } from "@clerk/nextjs";
 
 interface PokemonSpecies {
   genera: Array<{
@@ -207,6 +212,7 @@ export function PokemonMenu() {
   } = useColors();
   const [suggestions, setSuggestions] = useState<PokemonSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const { toast } = useToast();
 
   // Add tab state
   const [activeTab, setActiveTab] = useState<'info' | 'forms' | 'colors'>('colors');
@@ -978,8 +984,8 @@ export function PokemonMenu() {
               activeTab === 'info' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
-              activeTab === 'info' && bgColors[0]
-                ? { color: bgColors[0] }
+              activeTab === 'info' 
+                ? { color: bgColors[0] || undefined }
                 : {}
             }
           >
@@ -997,8 +1003,8 @@ export function PokemonMenu() {
               activeTab === 'forms' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
-              activeTab === 'forms' && bgColors[1]
-                ? { color: bgColors[1] }
+              activeTab === 'forms'
+                ? { color: bgColors[1] || undefined }
                 : {}
             }
           >
@@ -1016,8 +1022,8 @@ export function PokemonMenu() {
               activeTab === 'colors' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
-              activeTab === 'colors' && bgColors[2]
-                ? { color: bgColors[2] }
+              activeTab === 'colors'
+                ? { color: bgColors[2] || undefined }
                 : {}
             }
           >
