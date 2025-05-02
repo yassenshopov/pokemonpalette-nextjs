@@ -1,0 +1,118 @@
+import { useState, useEffect } from 'react';
+import { HeroSection } from './hero-section';
+import { ColorPalette } from './color-palette';
+import { ExampleComponents } from './example-components';
+import { PokemonInfo } from './pokemon-info';
+import { Footer } from '@/components/ui/Footer';
+
+interface ColorExampleSectionProps {
+  colors: string[];
+  pokemonName: string;
+  officialArt: string;
+  getContrastColor: (color: string) => { text: string; overlay: string };
+  pokemonNumber: number;
+  pokemonDescription: string;
+  pokemonTypes: string[];
+  selectedVersion: string;
+  availableVersions: string[];
+  onVersionChange: (version: string) => void;
+  pokemonCry?: string;
+  stats: Array<{ name: string; base_stat: number }>;
+  descriptions: Array<{ flavor_text: string; version: { name: string } }>;
+  currentDescriptionIndex: number;
+  onDescriptionChange: (index: number) => void;
+}
+
+export function ColorExampleSection({
+  colors,
+  pokemonName,
+  officialArt,
+  getContrastColor,
+  pokemonNumber,
+  pokemonDescription,
+  pokemonTypes,
+  selectedVersion,
+  availableVersions,
+  onVersionChange,
+  pokemonCry,
+  stats,
+  descriptions,
+  currentDescriptionIndex,
+  onDescriptionChange,
+}: ColorExampleSectionProps) {
+  const [selectedColorProgress, setSelectedColorProgress] = useState(colors[0]);
+  const [selectedColorNotification, setSelectedColorNotification] = useState(colors[1]);
+  const [selectedColorCard, setSelectedColorCard] = useState(colors[2]);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((oldProgress) => {
+        if (oldProgress === 100) {
+          return 0;
+        }
+        return Math.min(oldProgress + 10, 100);
+      });
+    }, 500);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  // Update selected colors when colors prop changes
+  useEffect(() => {
+    setSelectedColorProgress(colors[0]);
+    setSelectedColorNotification(colors[1]);
+    setSelectedColorCard(colors[2]);
+  }, [colors]);
+
+  return (
+    <div className="max-w-6xl mx-auto p-4 pt-16 md:pt-24 space-y-8 md:space-y-12">
+      <HeroSection 
+        pokemonName={pokemonName} 
+        officialArt={officialArt}
+        colors={colors}
+      />
+
+      <div className="space-y-8">
+        <div>
+          <ColorPalette colors={colors} />
+        </div>
+
+        <div>
+          <PokemonInfo
+            pokemonName={pokemonName}
+            pokemonNumber={pokemonNumber}
+            pokemonDescription={pokemonDescription}
+            pokemonTypes={pokemonTypes}
+            selectedVersion={selectedVersion}
+            availableVersions={availableVersions}
+            onVersionChange={onVersionChange}
+            getContrastColor={getContrastColor}
+            colors={colors}
+            officialArt={officialArt}
+            pokemonCry={pokemonCry}
+            stats={stats}
+            descriptions={descriptions}
+            currentDescriptionIndex={currentDescriptionIndex}
+            onDescriptionChange={onDescriptionChange}
+          />
+        </div>
+
+        <div>
+          <ExampleComponents
+            selectedColorProgress={selectedColorProgress}
+            selectedColorNotification={selectedColorNotification}
+            selectedColorCard={selectedColorCard}
+            progress={progress}
+            getContrastColor={getContrastColor}
+            colors={colors}
+          />
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+} 

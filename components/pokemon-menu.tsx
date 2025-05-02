@@ -639,22 +639,7 @@ export function PokemonMenu() {
         border: 'none',
         boxShadow: 'none',
       }}
-      // style={gradientStyle}
     >
-      <div className="absolute top-8 left-8 flex items-center justify-start">
-        <Image
-          src="/logo512.png"
-          alt="App Logo"
-          width={200}
-          height={200}
-          className={`hidden md:block h-[15%] w-[15%] ${isRotating ? 'animate-rotate' : ''}`}
-          style={{
-            filter: `hue-rotate(${
-              bgColors.length > 0 ? getHueFromColor(bgColors[0]) : 0
-            }deg)`,
-          }}
-        />
-      </div>
       <CardContent className="flex flex-col items-center h-[calc(100%-60px)] p-6">
         {/* Top Section: Sprite */}
         <div className="flex-none h-36 flex items-center justify-center">
