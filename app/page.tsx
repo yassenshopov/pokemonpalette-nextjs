@@ -155,7 +155,7 @@ interface PokemonSpecies {
 export default function Home() {
   const {
     colors,
-    pokemonName = 'ninetales',
+    pokemonName = 'umbreon',
     shiny,
     form,
     setColors,

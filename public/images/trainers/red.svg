@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="256" cy="256" r="248" fill="#FF1111" stroke="#000000" stroke-width="16" />
+
+    <!-- Trainer Red's Hat -->
+    <path d="M160 180 Q256 140 352 180 L340 240 Q256 210 172 240 Z" fill="#CC0000" />
+    <path d="M172 240 Q256 210 340 240 L320 280 Q256 255 192 280 Z" fill="#FFFFFF" />
+    <circle cx="256" cy="240" r="20" fill="#000000" />
+
+    <!-- Trainer's Face -->
+    <path d="M192 280 Q256 255 320 280 Q310 380 256 380 Q202 380 192 280" fill="#FFE0D0" />
+
+    <!-- Hair -->
+    <path d="M160 180 Q256 140 352 180 Q380 140 350 100 Q300 70 256 70 Q212 70 162 100 Q132 140 160 180"
+        fill="#2B1B17" />
+
+    <!-- Eyes -->
+    <circle cx="226" cy="310" r="8" fill="#2B1B17" />
+    <circle cx="286" cy="310" r="8" fill="#2B1B17" />
+
+    <!-- Determined Expression -->
+    <path d="M236 340 Q256 350 276 340" stroke="#2B1B17" stroke-width="4" fill="none" />
+
+    <!-- Jacket Collar -->
+    <path d="M192 380 Q256 360 320 380 L310 420 Q256 405 202 420 Z" fill="#CC0000" />
+</svg>
