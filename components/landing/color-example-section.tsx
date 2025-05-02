@@ -3,6 +3,7 @@ import { HeroSection } from './hero-section';
 import { ColorPalette } from './color-palette';
 import { ExampleComponents } from './example-components';
 import { PokemonInfo } from './pokemon-info';
+import { PokeballPaletteSection } from './pokeball-palette-section';
 import { Footer } from '@/components/ui/Footer';
 
 interface ColorExampleSectionProps {
@@ -99,6 +100,13 @@ export function ColorExampleSection({
             onDescriptionChange={onDescriptionChange}
           />
         </div>
+
+        {/* <div>
+          <PokeballPaletteSection 
+            colors={colors}
+            pokemonTypes={pokemonTypes}
+          />
+        </div> */}
 
         <div>
           <ExampleComponents

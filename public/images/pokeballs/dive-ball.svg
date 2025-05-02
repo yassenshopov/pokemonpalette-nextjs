@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="256" cy="256" r="248" fill="#3D85C6" stroke="#000000" stroke-width="16" />
+
+    <!-- Dive Ball Pattern -->
+    <path d="M160 180 Q256 140 352 180 L340 240 Q256 210 172 240 Z" fill="#64B5F6" />
+    <path d="M172 240 Q256 210 340 240 L320 280 Q256 255 192 280 Z" fill="#0D47A1" />
+
+    <!-- Wave Pattern -->
+    <path d="M206 190 Q236 170 266 190 Q296 210 326 190" stroke="#B3E5FC" stroke-width="5" fill="none" />
+    <path d="M196 210 Q226 190 256 210 Q286 230 316 210" stroke="#B3E5FC" stroke-width="3" fill="none" />
+
+    <!-- Center Button -->
+    <circle cx="256" cy="240" r="24" fill="white" stroke="#000000" stroke-width="4" />
+    <circle cx="256" cy="240" r="12" fill="#01579B" />
+    <circle cx="246" cy="230" r="4" fill="white" />
+</svg>

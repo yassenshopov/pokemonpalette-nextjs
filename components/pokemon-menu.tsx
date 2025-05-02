@@ -77,6 +77,15 @@ interface Pokemon {
       url: string;
     };
   }>;
+  height: number;
+  weight: number;
+  types: Array<{
+    slot: number;
+    type: {
+      name: string;
+      url: string;
+    };
+  }>;
 }
 
 interface EvolutionOption {
@@ -127,6 +136,14 @@ interface PokemonForm {
   };
 }
 
+// New interface for evolution chain display
+interface EvolutionStage {
+  name: string;
+  id: number;
+  isCurrent: boolean;
+  condition?: string;
+}
+
 const PokemonService = {
   async fetchPokemonSpecies(id: number): Promise<PokemonSpecies> {
     const response = await fetch(
@@ -165,10 +182,11 @@ const PokemonService = {
 
 export function PokemonMenu() {
   // Pokemon data state
-  const [pokemonName, setPokemonName] = useState('ninetales');
-  const [dexNumber, setDexNumber] = useState('38');
+  const [pokemonName, setPokemonName] = useState('umbreon');
+  const [dexNumber, setDexNumber] = useState('197');
   const [spriteUrl, setSpriteUrl] = useState('');
   const [speciesTitle, setSpeciesTitle] = useState('Select a Pokémon');
+  const [pokemonData, setPokemonData] = useState<{height?: number, weight?: number, types?: string[]}>({});
 
   // UI state
   const [isShiny, setIsShiny] = useState(false);
@@ -178,9 +196,8 @@ export function PokemonMenu() {
   const [availableForms, setAvailableForms] = useState<PokemonFormOption[]>([]);
   const [baseSpeciesId, setBaseSpeciesId] = useState<number>(0);
   const [nextEvolution, setNextEvolution] = useState<string | null>(null);
-  const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOption[]>(
-    []
-  );
+  const [evolutionOptions, setEvolutionOptions] = useState<EvolutionOption[]>([]);
+  const [evolutionChain, setEvolutionChain] = useState<EvolutionStage[][]>([]);
   const {
     setColors,
     setPokemonName: setContextPokemonName,
@@ -189,6 +206,9 @@ export function PokemonMenu() {
   } = useColors();
   const [suggestions, setSuggestions] = useState<PokemonSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Add tab state
+  const [activeTab, setActiveTab] = useState<'info' | 'forms' | 'colors'>('info');
 
   // Color extraction
   const extractColors = async (imageUrl: string) => {
@@ -245,6 +265,9 @@ export function PokemonMenu() {
             front_shiny: formData.sprites.front_shiny,
           },
           forms: [], // Forms data isn't needed for form display
+          height: 0, // Default value as forms don't have height data
+          weight: 0, // Default value as forms don't have weight data
+          types: [] // Default value as forms don't have types data
         };
       } else {
         // Convert name to ID if string is provided
@@ -255,6 +278,13 @@ export function PokemonMenu() {
           }
         }
         data = await PokemonService.fetchPokemon(identifier);
+        
+        // Store Pokemon's height, weight and types
+        setPokemonData({
+          height: data.height / 10, // Convert to meters
+          weight: data.weight / 10, // Convert to kg
+          types: data.types?.map((t: any) => t.type.name) || []
+        });
       }
 
       if (!skipSpecies) {
@@ -278,9 +308,13 @@ export function PokemonMenu() {
         const evoChain = await PokemonService.fetchEvolutionChain(
           speciesData.evolution_chain.url
         );
+        
+        // Extract full evolution chain
+        const extractedChain = extractEvolutionChain(evoChain.chain, data.name);
+        setEvolutionChain(extractedChain);
+        
+        // Set evolution options (for backward compatibility)
         let currentEvo = evoChain.chain;
-
-        // Find current Pokemon in evolution chain
         while (currentEvo) {
           if (currentEvo.species.name === data.name) {
             // Get all possible evolutions with their conditions
@@ -372,7 +406,7 @@ export function PokemonMenu() {
 
   // Add useEffect to fetch initial Pokemon on mount
   useEffect(() => {
-    handlePokemonFetch(38);
+    handlePokemonFetch(197);
   }, []);
 
   // Render helpers
@@ -632,438 +666,665 @@ export function PokemonMenu() {
     }));
   };
 
+  // New function to extract full evolution chain
+  const extractEvolutionChain = (
+    chain: any,
+    currentPokemonName: string,
+    condition?: string,
+    depth = 0
+  ): EvolutionStage[][] => {
+    // Start with base evolution
+    const baseSpeciesId = PokemonService.getSpeciesId(chain.species.name) || 0;
+    
+    // Log chain data for debugging
+    if (depth === 0) {
+      console.log("Evolution chain data:", JSON.stringify(chain));
+    }
+    
+    const result: EvolutionStage[][] = [
+      [
+        {
+          name: chain.species.name,
+          id: baseSpeciesId,
+          isCurrent: chain.species.name === currentPokemonName,
+          condition: condition
+        }
+      ]
+    ];
+    
+    // Handle branching evolutions
+    if (chain.evolves_to && chain.evolves_to.length > 0) {
+      // Handle each evolution path
+      const nextStages: EvolutionStage[][] = [];
+      
+      chain.evolves_to.forEach((evo: any) => {
+        const evoSpeciesId = PokemonService.getSpeciesId(evo.species.name) || 0;
+        const isCurrentPokemon = evo.species.name === currentPokemonName;
+        const evoCondition = getEvolutionCondition(evo);
+        
+        // Check if we already added this stage
+        let stage1Found = false;
+        for (const stage of nextStages) {
+          if (stage.some(p => p.name === evo.species.name)) {
+            stage1Found = true;
+            break;
+          }
+        }
+        
+        if (!stage1Found) {
+          nextStages.push([{
+            name: evo.species.name,
+            id: evoSpeciesId,
+            isCurrent: isCurrentPokemon,
+            condition: evoCondition
+          }]);
+        }
+        
+        // Process further evolutions recursively
+        if (evo.evolves_to && evo.evolves_to.length > 0) {
+          evo.evolves_to.forEach((nextEvo: any) => {
+            const nextEvoSpeciesId = PokemonService.getSpeciesId(nextEvo.species.name) || 0;
+            const isNextEvoCurrent = nextEvo.species.name === currentPokemonName;
+            const nextEvoCondition = getEvolutionCondition(nextEvo);
+            
+            // Add stage 2 evolution
+            let stage2Found = false;
+            for (let i = 2; i < result.length; i++) {
+              if (result[i] && result[i].some(p => p.name === nextEvo.species.name)) {
+                stage2Found = true;
+                break;
+              }
+            }
+            
+            if (!stage2Found) {
+              // Make sure we have an array for stage 2
+              if (!result[2]) result[2] = [];
+              
+              result[2].push({
+                name: nextEvo.species.name,
+                id: nextEvoSpeciesId,
+                isCurrent: isNextEvoCurrent,
+                condition: nextEvoCondition
+              });
+            }
+            
+            // Handle potential stage 3+ evolutions
+            if (nextEvo.evolves_to && nextEvo.evolves_to.length > 0) {
+              nextEvo.evolves_to.forEach((stage3Evo: any, idx: number) => {
+                const stage3Id = PokemonService.getSpeciesId(stage3Evo.species.name) || 0;
+                const isStage3Current = stage3Evo.species.name === currentPokemonName;
+                const stage3Condition = getEvolutionCondition(stage3Evo);
+                
+                // Add stage 3 evolution
+                if (!result[3]) result[3] = [];
+                
+                result[3].push({
+                  name: stage3Evo.species.name,
+                  id: stage3Id,
+                  isCurrent: isStage3Current,
+                  condition: stage3Condition
+                });
+              });
+            }
+          });
+        }
+      });
+      
+      // Add stage 1 evolutions to the result if not already included
+      if (nextStages.length > 0 && !result[1]) {
+        result[1] = nextStages.flat();
+      }
+    }
+    
+    // Special case handling for Scovillain and other Pokémon with unique evolution mechanisms
+    // These might not be properly represented in the standard evolution chain
+    if (currentPokemonName === "scovillain") {
+      const capsacidId = PokemonService.getSpeciesId("capsakid") || 0;
+      result.length = 0; // Clear the array
+      
+      // Create proper evolution chain for Scovillain
+      result.push([{
+        name: "capsakid",
+        id: capsacidId, 
+        isCurrent: false,
+        condition: undefined
+      }]);
+      
+      result.push([{
+        name: "scovillain",
+        id: PokemonService.getSpeciesId("scovillain") || 0,
+        isCurrent: true,
+        condition: "Level up with Spicy Extract"
+      }]);
+    }
+    
+    return result;
+  };
+
   return (
     <Card
-      className="w-[100%] h-auto pt-16"
-      style={{
-        border: 'none',
-        boxShadow: 'none',
-      }}
+      className="w-full h-full overflow-hidden flex flex-col border-none shadow-none"
+      style={{ maxHeight: "calc(100vh - 40px)" }}
     >
-      <CardContent className="flex flex-col items-center h-[calc(100%-60px)] p-6">
-        {/* Top Section: Sprite */}
-        <div className="flex-none h-36 flex items-center justify-center">
-          {spriteUrl && (
-            <div
-              className={`relative transition-opacity duration-200 ${
-                isLoading ? 'opacity-50' : 'opacity-100'
-              }`}
-            >
-              <Image
-                src={spriteUrl}
-                alt={pokemonName}
-                width={160}
-                height={160}
-                className={`h-40 w-40 ${isLoading ? 'animate-pulse' : ''}`}
-                style={{ imageRendering: 'pixelated' }}
-              />
-              {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
+      {/* Pokemon Header with Name and Species */}
+      <div className="pt-4 px-6 pb-2 text-center">
+        <h2 className="text-2xl font-semibold tracking-tight capitalize">
+          {pokemonName.replace(/-/g, ' ')}
+        </h2>
+        <div className="text-md text-muted-foreground">{speciesTitle}</div>
+      </div>
+
+      {/* Prominent Pokemon Sprite - INCREASED SIZE */}
+      <div className="relative flex-shrink-0 flex items-center justify-center mx-auto p-4 w-56 h-56">
+        {spriteUrl ? (
+          <div
+            className={`w-full h-full relative transition-all duration-300 ${
+              isLoading ? 'opacity-50 scale-95' : 'opacity-100 scale-100'
+            } ${isRotating ? 'animate-pulse' : ''}`}
+          >
+            <Image
+              src={spriteUrl}
+              alt={pokemonName}
+              width={224}
+              height={224}
+              // className="h-full w-full object-contain"
+              style={{ imageRendering: 'pixelated' }}
+            />
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div 
+                  className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" 
+                  style={{ borderColor: bgColors[0] ? `${bgColors[0]} transparent ${bgColors[0]} ${bgColors[0]}` : 'var(--primary) transparent var(--primary) var(--primary)' }}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="w-full h-full bg-muted rounded-md flex items-center justify-center">
+            <div className="text-muted-foreground">No Pokémon</div>
+          </div>
+        )}
+
+        {/* Shiny toggle button as an overlay */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`absolute top-1 right-1 h-8 w-8 rounded-full ${isShiny ? 'bg-yellow-500/10' : 'bg-foreground/5'}`}
+          onClick={() => setIsShiny(!isShiny)}
+        >
+          <Sparkles className={`h-4 w-4 ${isShiny ? 'text-yellow-400' : 'text-muted-foreground'}`} />
+        </Button>
+      </div>
+
+      {/* Search and Navigation Controls */}
+      <div className="flex flex-col space-y-3 px-6 pb-4">
+        {/* Name Search */}
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            type="text"
+            value={pokemonName}
+            onChange={(e) => handleNameInputChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleNameSubmit(pokemonName);
+                setShowSuggestions(false);
+              }
+            }}
+            className="pr-12 pl-4 h-10 text-center capitalize"
+            placeholder="Search Pokémon..."
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-0 h-full"
+            onClick={() => handleNameSubmit(pokemonName)}
+          >
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+          {showSuggestions && (
+            <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg">
+              <ScrollArea className="max-h-[200px]">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.name}
+                    className="w-full px-4 py-2 text-left capitalize hover:bg-accent cursor-pointer flex items-center gap-2 border-b border-gray-200 dark:border-gray-800"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSuggestionSelect(suggestion)}
+                  >
+                    <Image
+                      src={suggestion.sprite}
+                      alt={suggestion.name}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8"
+                      style={{ imageRendering: 'pixelated' }}
+                    />
+                    <span>{suggestion.name.replace(/-/g, ' ')}</span>
+                  </button>
+                ))}
+              </ScrollArea>
             </div>
           )}
         </div>
-        <CardHeader className="">
-          <CardTitle className="text-center text-xl">
-            The {speciesTitle}
-          </CardTitle>
-        </CardHeader>
 
-        {/* Main Section: Controls */}
-        <div className="w-full space-y-8">
-          {/* Name Input */}
-          <div className="space-y-3 relative">
-            <div className="text-center text-md font-thin italic">Name:</div>
-            <div className="flex items-center justify-center w-full mx-auto gap-2">
-              <Button
-                variant="outline"
-                className={`h-8 w-8 relative invisible ${
-                  isShiny ? 'shiny-active' : ''
-                }`}
-                onClick={() => setIsShiny(!isShiny)}
-                disabled={isLoading}
-              >
-                <Sparkles
-                  className={`h-4 w-4 transition-colors duration-300 sparkle-icon ${
-                    isShiny ? 'text-yellow-500' : ''
-                  }`}
-                />
-                <div className="absolute inset-0 h-4 w-4 pointer-events-none shiny-overlay" />
-              </Button>
-              <div className="flex items-center justify-center w-full mx-auto gap-2">
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  value={pokemonName}
-                  onChange={(e) => handleNameInputChange(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleNameSubmit(pokemonName);
-                      setShowSuggestions(false);
-                    }
-                  }}
-                  className="text-center capitalize bg-background w-3/4 mx-auto m-0"
-                />
-                {showSuggestions && (
-                  <div className="absolute z-10 w-[50%] p-0 bg-background border rounded-md shadow-lg top-20 h-fit">
-                    <ScrollArea className="max-h-[200px]">
-                      {suggestions.map((suggestion) => (
-                        <button
-                          key={suggestion.name}
-                          className="w-full px-4 py-2 text-left capitalize hover:bg-accent cursor-pointer flex items-center gap-2 border-b border-gray-200 dark:border-gray-800"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => handleSuggestionSelect(suggestion)}
+        {/* Dex Controls and Random Button */}
+        <div className="flex items-center gap-2">
+          <div className="font-medium text-sm whitespace-nowrap">Dex #:</div>
+          <div className="flex items-center h-10 flex-1 max-w-[160px]">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-full rounded-r-none border-r-0"
+              onClick={() => handleDexNumberChange(-1)}
+              disabled={isLoading}
+            >
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+            <Input
+              type="text"
+              value={dexNumber}
+              onChange={(e) => setDexNumber(e.target.value)}
+              className="h-full w-16 text-center rounded-none border-x-0"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-full rounded-l-none border-l-0"
+              onClick={() => handleDexNumberChange(1)}
+              disabled={isLoading}
+            >
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Button
+            variant="default"
+            size="sm"
+            className="h-10 ml-auto min-w-[110px]"
+            style={{ backgroundColor: bgColors[0] || undefined }}
+            onClick={() => handlePokemonFetch(Math.floor(Math.random() * 1025) + 1)}
+            disabled={isLoading}
+          >
+            <Shuffle className="mr-2 h-4 w-4" />
+            Random
+          </Button>
+        </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="border-b px-6">
+        <div className="flex space-x-6">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`py-3 px-1 text-sm font-medium relative ${
+              activeTab === 'info' ? 'text-foreground' : 'text-muted-foreground'
+            }`}
+            style={
+              activeTab === 'info' && bgColors[0]
+                ? { color: bgColors[0] }
+                : {}
+            }
+          >
+            Information
+            {activeTab === 'info' && (
+              <div
+                className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                style={{ backgroundColor: bgColors[0] || 'var(--primary)' }}
+              />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('forms')}
+            className={`py-3 px-1 text-sm font-medium relative ${
+              activeTab === 'forms' ? 'text-foreground' : 'text-muted-foreground'
+            }`}
+            style={
+              activeTab === 'forms' && bgColors[1]
+                ? { color: bgColors[1] }
+                : {}
+            }
+          >
+            Forms & Evolutions
+            {activeTab === 'forms' && (
+              <div
+                className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                style={{ backgroundColor: bgColors[1] || 'var(--primary)' }}
+              />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('colors')}
+            className={`py-3 px-1 text-sm font-medium relative ${
+              activeTab === 'colors' ? 'text-foreground' : 'text-muted-foreground'
+            }`}
+            style={
+              activeTab === 'colors' && bgColors[2]
+                ? { color: bgColors[2] }
+                : {}
+            }
+          >
+            Colors
+            {activeTab === 'colors' && (
+              <div
+                className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                style={{ backgroundColor: bgColors[2] || 'var(--primary)' }}
+              />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <ScrollArea className="flex-1 p-6">
+        {/* Information Tab - Update with real data */}
+        {activeTab === 'info' && (
+          <div className="space-y-6">
+            {/* Quick Stats Section */}
+            {spriteUrl && (
+              <>
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Type Display */}
+                  <div className="bg-background/60 rounded-xl p-4 flex flex-col items-center justify-center">
+                    <div className="text-sm text-muted-foreground mb-2">Type</div>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {pokemonData.types?.map((type, index) => (
+                        <div 
+                          key={index}
+                          className="px-3 py-1 rounded-full text-white text-xs font-medium capitalize"
+                          style={{ backgroundColor: index === 0 ? (bgColors[0] || 'var(--primary)') : (bgColors[1] || 'var(--secondary)') }}
                         >
-                          <Image
-                            src={suggestion.sprite}
-                            alt={suggestion.name}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8"
-                            style={{ imageRendering: 'pixelated' }}
-                          />
-                          <span>{suggestion.name.replace(/-/g, ' ')}</span>
-                        </button>
+                          {type}
+                        </div>
                       ))}
-                    </ScrollArea>
+                    </div>
+                  </div>
+                  
+                  {/* Height Display */}
+                  <div className="bg-background/60 rounded-xl p-4 flex flex-col items-center justify-center">
+                    <div className="text-sm text-muted-foreground mb-2">Height</div>
+                    <div className="font-medium">{pokemonData.height?.toFixed(1) || '?'} m</div>
+                  </div>
+                  
+                  {/* Weight Display */}
+                  <div className="bg-background/60 rounded-xl p-4 flex flex-col items-center justify-center">
+                    <div className="text-sm text-muted-foreground mb-2">Weight</div>
+                    <div className="font-medium">{pokemonData.weight?.toFixed(1) || '?'} kg</div>
+                  </div>
+                </div>
+
+                {/* Additional Stats - Base Stats, Abilities, etc. would go here in future versions */}
+                <div className="flex items-center justify-center">
+                  <div className="text-xs text-muted-foreground text-center">
+                    More Pokémon details coming in future updates
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Forms & Evolutions Tab with full evolution chain */}
+        {activeTab === 'forms' && (
+          <div className="space-y-6">
+            {/* Forms Section */}
+            {availableForms.length > 1 && (
+              <div className="bg-background/60 rounded-xl p-6">
+                <h3 className="text-sm font-medium mb-4 text-center">Available Forms</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {availableForms.map((form) => (
+                    <button
+                      key={form.id}
+                      className={`p-3 border rounded-lg transition-colors ${
+                        currentForm === form.id ? 'border-primary bg-primary/5' : 'hover:bg-accent'
+                      }`}
+                      style={
+                        currentForm === form.id && bgColors[1]
+                          ? { borderColor: bgColors[1], backgroundColor: `${bgColors[1]}10` }
+                          : {}
+                      }
+                      onClick={() => handleFormChange(form.id)}
+                    >
+                      <div className="text-sm font-medium truncate">{form.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {form.type === 'variety' ? 'Variant' : 'Form'}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Full Evolution Chain Display */}
+            {evolutionChain.length > 0 ? (
+              <div className="bg-background/60 rounded-xl p-6">
+                <h3 className="text-sm font-medium mb-6 text-center">Evolution Chain</h3>
+                
+                {/* Scrollable container for wide evolution chains */}
+                <div className="relative overflow-x-auto pb-2 -mx-1 px-1">
+                  <div className={`flex flex-row items-center justify-center gap-2 min-w-max ${evolutionChain.length > 2 ? 'mx-auto' : ''}`}>
+                    {evolutionChain.map((stage, stageIndex) => (
+                      <React.Fragment key={stageIndex}>
+                        {/* Pokemon stage */}
+                        <div className="flex flex-col items-center gap-4">
+                          {stage.map((pokemon, pokemonIndex) => (
+                            <button
+                              key={pokemon.name}
+                              onClick={() => handlePokemonFetch(pokemon.id)}
+                              className={`flex flex-col items-center w-28 ${
+                                pokemon.isCurrent ? 'cursor-default' : 'hover:opacity-80'
+                              }`}
+                            >
+                              <div 
+                                className={`w-20 h-20 rounded-full flex items-center justify-center mb-2 ${
+                                  pokemon.isCurrent ? 'border-2' : 'bg-muted/20'
+                                }`}
+                                style={pokemon.isCurrent ? { borderColor: bgColors[0] || 'var(--primary)' } : {}}
+                              >
+                                <Image
+                                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+                                    isShiny ? 'shiny/' : ''
+                                  }${pokemon.id}.png`}
+                                  alt={pokemon.name}
+                                  width={48}
+                                  height={48}
+                                  className="w-12 h-12"
+                                  style={{ imageRendering: 'pixelated' }}
+                                />
+                              </div>
+                              <div className="text-xs font-medium capitalize text-center">{pokemon.name.replace(/-/g, ' ')}</div>
+                              {pokemon.condition && (
+                                <div className="text-xs text-muted-foreground mt-1 text-center w-full line-clamp-2">{pokemon.condition}</div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        
+                        {/* Arrow between stages */}
+                        {stageIndex < evolutionChain.length - 1 && (
+                          <div className="flex flex-col items-center justify-center self-center h-full">
+                            <div className="flex items-center">
+                              <ArrowRight 
+                                className="h-5 w-5" 
+                                style={{ color: bgColors[1] || 'var(--primary)' }}
+                              />
+                            </div>
+                            {/* Add connecting line if the next stage has multiple evolutions */}
+                            {evolutionChain[stageIndex + 1].length > 1 && stageIndex === 0 && (
+                              <div className="h-[50px] w-0.5 mt-1 mb-1 bg-muted" style={{ backgroundColor: `${bgColors[1]}40` || 'var(--muted)' }}></div>
+                            )}
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+                
+                {evolutionChain.length === 1 && (
+                  <div className="text-center text-xs text-muted-foreground mt-4">
+                    This Pokémon does not evolve.
                   </div>
                 )}
-                <Button
-                  variant="outline"
-                  className={`h-8 w-8 relative ${
-                    isShiny ? 'shiny-active' : ''
-                  }`}
-                  onClick={() => setIsShiny(!isShiny)}
-                  disabled={isLoading}
-                >
-                  <Sparkles
-                    className={`h-4 w-4 transition-colors duration-300 sparkle-icon ${
-                      isShiny ? 'text-yellow-500' : ''
-                    }`}
-                  />
-                  <div className="absolute inset-0 h-4 w-4 pointer-events-none shiny-overlay" />
-                </Button>
               </div>
-            </div>
+            ) : (
+              <div className="bg-background/60 rounded-xl p-6 text-center">
+                <h3 className="text-sm font-medium mb-4">Evolution Chain</h3>
+                <div className="text-muted-foreground text-sm">Evolution data not available</div>
+              </div>
+            )}
+            
+            {/* No forms message */}
+            {availableForms.length <= 1 && (
+              <div className="text-xs text-muted-foreground text-center mt-4">
+                This Pokémon has no alternative forms.
+              </div>
+            )}
           </div>
+        )}
 
-          {/* Dex Number Input */}
-          <div className="space-y-3 !mt-2">
-            <div className="text-center text-md font-thin italic">
-              National Dex No:
-            </div>
-            <div className="flex items-center justify-center gap-2 w-3/4 mx-auto">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleDexNumberChange(-1)}
-                disabled={isLoading}
-              >
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-              <Input
-                type="text"
-                value={dexNumber}
-                onChange={(e) => setDexNumber(e.target.value)}
-                className="text-center bg-background text-base"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleDexNumberChange(1)}
-                disabled={isLoading}
-              >
-                <ChevronUp className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Action Buttons Section - Updated for better responsiveness */}
-          <div className="flex flex-col items-center space-y-2 w-full px-4">
-            {/* Controls Row */}
-            <div className="flex flex-col w-full max-w-md gap-2">
-              <Button
-                variant="secondary"
-                className="text-base cursor-pointer h-10"
-                onClick={() =>
-                  handlePokemonFetch(Math.floor(Math.random() * 1025) + 1)
-                }
-                disabled={isLoading}
-              >
-                <Shuffle className="mr-2 h-4 w-4" />
-                Random
-              </Button>
-
-              {availableForms.length > 1 && (
-                <Select value={currentForm} onValueChange={handleFormChange}>
-                  <SelectTrigger className="w-full bg-secondary text-base h-10 border-0">
-                    <SelectValue placeholder="Select Form" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]" position="popper">
-                    {availableForms.map((form) => (
-                      <SelectItem
-                        key={form.id}
-                        value={form.id}
-                        className="text-base py-3 sm:py-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="truncate">{form.name}</span>
-                          {form.type === 'variety' && (
-                            <span className="text-xs text-muted-foreground">(Variant)</span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            {/* Evolution Section - Updated for better responsiveness */}
-            <div className="w-full max-w-md">
-              {evolutionOptions.length > 0 ? (
-                <div className="w-full">
-                  {evolutionOptions.length === 1 ? (
-                    // Single evolution button
-                    <Button
-                      variant="outline"
-                      className="w-full text-base h-auto py-2"
-                      disabled={isLoading}
-                      onClick={() => handlePokemonFetch(evolutionOptions[0].name)}
-                    >
-                      <div className="flex items-center justify-center gap-2 w-full">
-                        <ArrowRight className="h-4 w-4 flex-shrink-0" />
-                        <Image
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
-                            isShiny ? 'shiny/' : ''
-                          }${PokemonService.getSpeciesId(
-                            evolutionOptions[0].name
-                          )}.png`}
-                          alt={evolutionOptions[0].name}
-                          width={24}
-                          height={24}
-                          className="w-6 h-6 flex-shrink-0"
-                          style={{ imageRendering: 'pixelated' }}
-                        />
-                        <span className="truncate">
-                          Evolve to{' '}
-                          {capitalize(evolutionOptions[0].name.replace(/-/g, ' '))}
-                        </span>
-                      </div>
-                    </Button>
-                  ) : (
-                    // Multiple evolutions popover
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full text-base"
-                          disabled={isLoading}
-                        >
-                          <ArrowRight className="mr-2 h-4 w-4" />
-                          Choose Evolution
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[280px] sm:w-[320px]">
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Evolution Options</h4>
-                          <div className="space-y-2">
-                            {evolutionOptions.map((evo) => (
-                              <Button
-                                key={evo.name}
-                                variant="ghost"
-                                className="w-full justify-start text-left h-auto py-2"
-                                onClick={() => handlePokemonFetch(evo.name)}
-                              >
-                                <div className="flex items-center gap-3 w-full">
-                                  <Image
-                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
-                                      isShiny ? 'shiny/' : ''
-                                    }${PokemonService.getSpeciesId(
-                                      evo.name
-                                    )}.png`}
-                                    alt={evo.name}
-                                    width={24}
-                                    height={24}
-                                    className="w-8 h-8 flex-shrink-0"
-                                    style={{ imageRendering: 'pixelated' }}
-                                  />
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="capitalize truncate">
-                                      {capitalize(evo.name.replace(/-/g, ' '))}
-                                    </span>
-                                    {evo.condition && (
-                                      <span className="text-sm text-muted-foreground truncate">
-                                        {evo.condition}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-              ) : (
-                <div className="h-10" />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Color Editor Section */}
-        {bgColors.length > 0 && (
-          <div className="w-full space-y-2 mt-4">
-            <div className="text-center text-sm text-muted-foreground pb-4">
-              Colors:
-            </div>
-            <div className="flex flex-col space-y-0 md:space-y-4 px-4 items-center">
+        {/* Colors Tab */}
+        {activeTab === 'colors' && bgColors.length > 0 && (
+          <div className="space-y-6">
+            {/* Color Preview */}
+            <div className="h-28 rounded-xl overflow-hidden" style={gradientStyle} />
+            
+            {/* Color Editors */}
+            <div className="space-y-4">
               {bgColors.map((color, index) => {
-                // Add color labels
-                const colorLabel =
-                  index === 0
-                    ? 'Primary'
-                    : index === 1
-                    ? 'Secondary'
-                    : 'Accent';
-
+                const colorLabel = index === 0 ? 'Primary' : index === 1 ? 'Secondary' : 'Accent';
+                const hexColor = color.replace(
+                  /rgb\((\d+),\s*(\d+),\s*(\d+)\)/,
+                  (_, r, g, b) =>
+                    '#' +
+                    [r, g, b]
+                      .map((x) => parseInt(x).toString(16).padStart(2, '0'))
+                      .join('')
+                ).toUpperCase();
+                
                 return (
-                  <Popover key={index}>
-                    <PopoverTrigger asChild>
-                      <div
-                        className={`flex items-center space-x-4 group cursor-pointer opacity-100 hover:opacity-80 rounded-lg p-2 transition-colors ${
-                          lockedColors[index] ? 'bg-muted' : ''
-                        }`}
-                        draggable
-                        style={{ cursor: 'grab' }}
-                        onDragStart={(e) =>
-                          e.dataTransfer.setData('text/plain', index.toString())
-                        }
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => {
-                          const fromIndex = parseInt(
-                            e.dataTransfer.getData('text/plain')
-                          );
-                          const toIndex = index;
-                          if (fromIndex !== toIndex) {
-                            const newColors = [...bgColors];
-                            const [movedColor] = newColors.splice(fromIndex, 1);
-                            newColors.splice(toIndex, 0, movedColor);
-                            setBgColors(newColors);
-                            setColors(newColors);
-                          }
-                        }}
-                      >
-                        <div className="flex flex-col items-center mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <LucideGripVertical className="h-4 w-4 text-gray-500 mb-1" />
-                        </div>
-                        <span
-                          className={`hidden md:block text-sm font-medium min-w-[80px] text-center border border-gray-300 rounded-full px-3 py-1 w-24 ${
-                            getContrastColor(color).text
-                          }`}
-                          style={{ backgroundColor: color }}
-                        >
-                          {colorLabel}
-                        </span>
-                        <div className="text-base font-mono">
-                          {color
-                            .replace(
-                              /rgb\((\d+),\s*(\d+),\s*(\d+)\)/,
-                              (_, r, g, b) =>
-                                '#' +
-                                [r, g, b]
-                                  .map((x) =>
-                                    parseInt(x).toString(16).padStart(2, '0')
-                                  )
-                                  .join('')
-                            )
-                            .toUpperCase()}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-12 w-12 rounded-full cursor-pointer transition-transform hover:scale-105 relative"
-                            style={{ backgroundColor: color }}
-                          >
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 rounded-full">
-                              <div
-                                className={`text-sm font-medium ${
-                                  getContrastColor(color).text
-                                }`}
-                              >
-                                <Pencil className="h-4 w-4" />
+                  <div 
+                    key={index}
+                    className={`flex items-center p-4 border rounded-lg ${
+                      lockedColors[index] ? 'bg-muted/40' : ''
+                    }`}
+                    draggable
+                    onDragStart={(e) =>
+                      e.dataTransfer.setData('text/plain', index.toString())
+                    }
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      const fromIndex = parseInt(
+                        e.dataTransfer.getData('text/plain')
+                      );
+                      const toIndex = index;
+                      if (fromIndex !== toIndex) {
+                        const newColors = [...bgColors];
+                        const [movedColor] = newColors.splice(fromIndex, 1);
+                        newColors.splice(toIndex, 0, movedColor);
+                        setBgColors(newColors);
+                        setColors(newColors);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-1 mr-2 text-muted-foreground">
+                      <LucideGripVertical className="h-4 w-4" />
+                    </div>
+                    
+                    <div 
+                      className="w-12 h-12 rounded-full flex-shrink-0 mr-4 relative cursor-pointer"
+                      style={{ backgroundColor: color }}
+                    >
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 bg-black/20">
+                            <Pencil className={`h-4 w-4 ${getContrastColor(color).text}`} />
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64">
+                          <div className="space-y-3">
+                            <h4 className="font-medium">{colorLabel} Color</h4>
+                            <div className="space-y-2">
+                              <div className="flex gap-2">
+                                <input
+                                  type="color"
+                                  value={hexColor}
+                                  onChange={(e) => {
+                                    const hex = e.target.value;
+                                    const r = parseInt(hex.slice(1, 3), 16);
+                                    const g = parseInt(hex.slice(3, 5), 16);
+                                    const b = parseInt(hex.slice(5, 7), 16);
+                                    handleColorChange(index, `rgb(${r}, ${g}, ${b})`);
+                                  }}
+                                  className="w-full h-8 cursor-pointer"
+                                />
                               </div>
+                              <input
+                                type="text"
+                                value={hexColor}
+                                onChange={(e) => {
+                                  try {
+                                    const hex = e.target.value;
+                                    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                                      const r = parseInt(hex.slice(1, 3), 16);
+                                      const g = parseInt(hex.slice(3, 5), 16);
+                                      const b = parseInt(hex.slice(5, 7), 16);
+                                      handleColorChange(index, `rgb(${r}, ${g}, ${b})`);
+                                    }
+                                  } catch (e) {
+                                    console.error('Invalid color format', e);
+                                  }
+                                }}
+                                className="w-full px-3 py-2 border rounded-md text-sm"
+                              />
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleLock(index);
-                            }}
-                          >
-                            {lockedColors[index] ? (
-                              <Lock className="h-4 w-4" strokeWidth={3} />
-                            ) : (
-                              <Unlock className="h-4 w-4" />
-                            )}
-                          </Button>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center">
+                        <div 
+                          className="text-sm font-medium py-1 px-3 rounded-full"
+                          style={{ 
+                            backgroundColor: color, 
+                            color: getContrastColor(color).text.replace('text-', '')
+                          }}
+                        >
+                          {colorLabel}
                         </div>
+                        {lockedColors[index] && (
+                          <Lock className="h-3 w-3 ml-2 text-muted-foreground" />
+                        )}
                       </div>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64">
-                      <div className="space-y-4">
-                        <h4 className="font-medium">Edit Color {index + 1}</h4>
-                        <div className="space-y-2">
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={color.replace(
-                                /rgb\((\d+),\s*(\d+),\s*(\d+)\)/,
-                                (_, r, g, b) =>
-                                  '#' +
-                                  [r, g, b]
-                                    .map((x) =>
-                                      parseInt(x).toString(16).padStart(2, '0')
-                                    )
-                                    .join('')
-                              )}
-                              onChange={(e) => {
-                                const hex = e.target.value;
-                                const r = parseInt(hex.slice(1, 3), 16);
-                                const g = parseInt(hex.slice(3, 5), 16);
-                                const b = parseInt(hex.slice(5, 7), 16);
-                                handleColorChange(
-                                  index,
-                                  `rgb(${r}, ${g}, ${b})`
-                                );
-                              }}
-                              className="w-full h-8 cursor-pointer"
-                            />
-                          </div>
-                          <input
-                            type="text"
-                            value={color}
-                            onChange={(e) =>
-                              handleColorChange(index, e.target.value)
-                            }
-                            className="w-full px-3 py-2 border rounded-md text-sm"
-                          />
-                        </div>
+                      <div className="text-xs font-mono text-muted-foreground mt-1 truncate">
+                        {hexColor}
                       </div>
-                    </PopoverContent>
-                  </Popover>
+                    </div>
+                    
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="ml-2"
+                      onClick={() => toggleLock(index)}
+                    >
+                      {lockedColors[index] ? (
+                        <Lock className="h-4 w-4" />
+                      ) : (
+                        <Unlock className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 );
               })}
             </div>
+            
+            <div className="text-xs text-muted-foreground text-center pt-2">
+              Drag and drop colors to reorder. Lock colors to preserve them when selecting different Pokémon.
+            </div>
           </div>
         )}
-      </CardContent>
+      </ScrollArea>
     </Card>
   );
 }

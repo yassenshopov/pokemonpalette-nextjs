@@ -16,7 +16,10 @@ import {
   ArrowRight,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Info,
+  Check,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -29,6 +32,23 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Chat } from '@/components/example/chat';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ExampleComponentsProps {
   selectedColorProgress: string;
@@ -51,6 +71,15 @@ interface CalendarEvent {
   time: string;
   date: Date;
   type: 'elite' | 'gym' | 'special';
+}
+
+// Add a new interface for cookie preferences
+interface CookiePreference {
+  id: string;
+  title: string;
+  description: string;
+  required: boolean;
+  enabled: boolean;
 }
 
 // Helper function to generate random values
@@ -91,6 +120,52 @@ export function ExampleComponents({
   const [notifications, setNotifications] = useState(notificationTemplates.slice(0, 3));
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  // Cookie consent state
+  const [cookiePreferences, setCookiePreferences] = useState<CookiePreference[]>([
+    {
+      id: "necessary",
+      title: "Necessary Cookies",
+      description: "These cookies are essential for the proper functioning of the Pokémon Trainer platform.",
+      required: true,
+      enabled: true
+    },
+    {
+      id: "functional",
+      title: "Functional Cookies",
+      description: "These cookies enhance your training experience by remembering your preferences.",
+      required: false,
+      enabled: true
+    },
+    {
+      id: "analytics",
+      title: "Analytics Cookies",
+      description: "Help us improve by collecting anonymous data about how trainers use our platform.",
+      required: false,
+      enabled: false
+    },
+    {
+      id: "marketing",
+      title: "Marketing Cookies",
+      description: "Allow us to provide personalized Pokémon product recommendations.",
+      required: false,
+      enabled: false
+    }
+  ]);
+  const [cookieConsent, setCookieConsent] = useState<'pending' | 'accepted' | 'declined'>('pending');
+  const [cookieDialogOpen, setCookieDialogOpen] = useState(false);
+  
+  // New state for randomized battle stats
+  const [battleStats, setBattleStats] = useState({
+    winRate: Math.floor(Math.random() * 30) + 50, // 50-80%
+    streak: Math.floor(Math.random() * 10) + 3,   // 3-12
+    accuracy: Math.floor(Math.random() * 15) + 80, // 80-95%
+    winRateChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
+    accuracyChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
+    nextRankPoints: Math.floor(Math.random() * 250) + 50, // 50-300 points
+    totalRankPoints: 300 // Fixed total needed
+  });
+  
   const [calendarEvents] = useState<CalendarEvent[]>([
     {
       id: 1,
@@ -114,6 +189,39 @@ export function ExampleComponents({
       type: 'special'
     }
   ]);
+
+  // Helper function to toggle cookie preferences
+  const toggleCookiePreference = (id: string) => {
+    setCookiePreferences(prev => 
+      prev.map(pref => 
+        pref.id === id && !pref.required 
+          ? { ...pref, enabled: !pref.enabled } 
+          : pref
+      )
+    );
+  };
+
+  // Helper function to set all non-required cookie preferences
+  const setAllCookiePreferences = (enabled: boolean) => {
+    setCookiePreferences(prev => 
+      prev.map(pref => 
+        pref.required ? pref : { ...pref, enabled }
+      )
+    );
+  };
+
+  // Helper to save cookie preferences
+  const saveCookiePreferences = () => {
+    setCookieConsent('accepted');
+    setCookieDialogOpen(false);
+  };
+
+  // Decline all optional cookies
+  const declineAllCookies = () => {
+    setAllCookiePreferences(false);
+    setCookieConsent('declined');
+    setCookieDialogOpen(false);
+  };
 
   // Effect to update bar values periodically
   useEffect(() => {
@@ -145,6 +253,19 @@ export function ExampleComponents({
 
     return () => clearInterval(interval);
   }, []);
+
+  // Effect to update battle stats when colors change
+  useEffect(() => {
+    setBattleStats({
+      winRate: Math.floor(Math.random() * 30) + 50, // 50-80%
+      streak: Math.floor(Math.random() * 10) + 3,   // 3-12
+      accuracy: Math.floor(Math.random() * 15) + 80, // 80-95%
+      winRateChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
+      accuracyChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
+      nextRankPoints: Math.floor(Math.random() * 250) + 50, // 50-300 points
+      totalRankPoints: 300 // Fixed total needed
+    });
+  }, [colors]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -205,15 +326,17 @@ export function ExampleComponents({
                 <p className="text-sm text-muted-foreground">Win Rate</p>
               </div>
               <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-bold" style={{ color: mainColor }}>68%</p>
-                <span className="text-xs text-green-500">+5%</span>
+                <p className="text-2xl font-bold" style={{ color: mainColor }}>{battleStats.winRate}%</p>
+                <span className={`text-xs ${battleStats.winRateChange >= 0 ? 'text-green-500' : 'text-orange-500'}`}>
+                  {battleStats.winRateChange >= 0 ? '+' : ''}{battleStats.winRateChange}%
+                </span>
               </div>
               <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ backgroundColor: mainColor }}
                   initial={{ width: "0%" }}
-                  animate={{ width: "68%" }}
+                  animate={{ width: `${battleStats.winRate}%` }}
                   transition={{ duration: 1, ease: "easeOut" }}
                 />
               </div>
@@ -225,11 +348,11 @@ export function ExampleComponents({
                 <p className="text-sm text-muted-foreground">Streak</p>
               </div>
               <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-bold" style={{ color: secondaryColor }}>7</p>
+                <p className="text-2xl font-bold" style={{ color: secondaryColor }}>{battleStats.streak}</p>
                 <span className="text-xs text-muted-foreground">max 12</span>
               </div>
               <div className="flex gap-0.5 h-1.5">
-                {Array.from({ length: 7 }).map((_, i) => (
+                {Array.from({ length: battleStats.streak }).map((_, i) => (
                   <motion.div
                     key={i}
                     className="flex-1 rounded-full"
@@ -239,9 +362,9 @@ export function ExampleComponents({
                     transition={{ delay: i * 0.1 }}
                   />
                 ))}
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: 12 - battleStats.streak }).map((_, i) => (
                   <div
-                    key={i + 7}
+                    key={i + battleStats.streak}
                     className="flex-1 rounded-full bg-secondary"
                   />
                 ))}
@@ -254,15 +377,17 @@ export function ExampleComponents({
                 <p className="text-sm text-muted-foreground">Accuracy</p>
               </div>
               <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-bold" style={{ color: tertiaryColor }}>92%</p>
-                <span className="text-xs text-orange-500">-2%</span>
+                <p className="text-2xl font-bold" style={{ color: tertiaryColor }}>{battleStats.accuracy}%</p>
+                <span className={`text-xs ${battleStats.accuracyChange >= 0 ? 'text-green-500' : 'text-orange-500'}`}>
+                  {battleStats.accuracyChange >= 0 ? '+' : ''}{battleStats.accuracyChange}%
+                </span>
               </div>
               <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ backgroundColor: tertiaryColor }}
                   initial={{ width: "0%" }}
-                  animate={{ width: "92%" }}
+                  animate={{ width: `${battleStats.accuracy}%` }}
                   transition={{ duration: 1, ease: "easeOut" }}
                 />
               </div>
@@ -277,7 +402,7 @@ export function ExampleComponents({
                 <span className="text-sm font-medium">Elite Trainer</span>
               </div>
               <div className="text-xs text-muted-foreground whitespace-nowrap">
-                230/300 points
+                {battleStats.nextRankPoints}/{battleStats.totalRankPoints} points
               </div>
             </div>
             <motion.div 
@@ -288,7 +413,7 @@ export function ExampleComponents({
                 className="h-full rounded-full"
                 style={{ backgroundColor: mainColor }}
                 initial={{ width: "0%" }}
-                animate={{ width: "77%" }}
+                animate={{ width: `${(battleStats.nextRankPoints / battleStats.totalRankPoints * 100)}%` }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
               />
             </motion.div>
@@ -297,58 +422,13 @@ export function ExampleComponents({
       </Card>
 
       {/* Chat Interface Card */}
-      <Card className="p-4 md:col-span-2 h-[400px] relative overflow-hidden">
-        <div className="flex flex-col h-full">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-foreground">Trainer Chat</h3>
-            <Badge variant="outline" style={{ color: mainColor, borderColor: mainColor }}>
-              Online
-            </Badge>
-          </div>
-          <ScrollArea className="flex-1 pr-4">
-            <div className="space-y-4">
-              <div className="flex gap-3 items-start">
-                <Avatar>
-                  <AvatarImage src="/placeholder-avatar.jpg" />
-                  <AvatarFallback style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 70%)` }}>
-                    TR
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Trainer Red</p>
-                  <div className="rounded-lg p-3 bg-muted">
-                    <p className="text-sm">Ready for our Pokemon battle?</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3 items-start flex-row-reverse">
-                <Avatar>
-                  <AvatarImage src="/placeholder-avatar-2.jpg" />
-                  <AvatarFallback style={{ backgroundColor: `color-mix(in srgb, ${secondaryColor}, transparent 70%)` }}>
-                    TB
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-right">You</p>
-                  <div className="rounded-lg p-3" style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 90%)` }}>
-                    <p className="text-sm">Let's do this! My team is ready.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ScrollArea>
-          <div className="mt-4 flex gap-2">
-            <input
-              type="text"
-              placeholder="Type your message..."
-              className="flex-1 rounded-lg bg-muted px-3 py-2 text-sm"
-            />
-            <Button size="icon" style={{ backgroundColor: mainColor }} className={getContrastColor(mainColor).text}>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <div className="md:col-span-2">
+        <Chat 
+          mainColor={mainColor} 
+          secondaryColor={secondaryColor} 
+          getContrastColor={getContrastColor} 
+        />
+      </div>
 
       {/* Calendar Card */}
       <Card className="p-4 md:col-span-2 h-[400px] relative overflow-hidden">
@@ -581,25 +661,211 @@ export function ExampleComponents({
         </div>
       </Card>
 
-      {/* Cookie Banner Card */}
-      <Card className="p-4 md:col-span-4 h-[100px] relative overflow-hidden">
-        <div className="flex items-start gap-4">
-          <div className="p-2 rounded-full" style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 90%)` }}>
-            <Cookie className="w-5 h-5" style={{ color: mainColor }} />
+      {/* Cookie Banner Card - Improved UI */}
+      <Card className="md:col-span-2 relative overflow-hidden shadow-lg flex flex-col">
+        <div className="p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-2.5 bg-muted rounded-full">
+              <Cookie className="w-5 h-5" style={{ color: mainColor }} />
+            </div>
+            <h3 className="text-base font-semibold flex items-center">
+              Cookie Preferences
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 ml-1.5"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-80" 
+                  style={{ 
+                    borderColor: mainColor,
+                    boxShadow: `0 4px 12px ${mainColor}25`
+                  }}
+                >
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm" style={{ color: mainColor }}>About our cookies</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Cookies help us provide, protect, and improve our Pokémon training platform. We use them to remember your preferences, analyze how you use our website, and provide personalized content.
+                    </p>
+                    <div className="pt-2">
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs"
+                        style={{ borderColor: mainColor, color: mainColor }}
+                      >
+                        Your Privacy Matters
+                      </Badge>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </h3>
           </div>
-          <div className="flex-1">
-            <h3 className="text-sm font-semibold">Cookie Preferences</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              We use cookies to enhance your Pokemon training experience.
-            </p>
+
+          <p className="text-sm text-muted-foreground mb-6">
+            We use cookies to enhance your Pokémon training experience and analyze how our platform is used.
+          </p>
+
+          <div className="space-y-4 mb-6">
+            {cookiePreferences.map((pref) => (
+              <div 
+                key={pref.id} 
+                className="flex items-center justify-between py-2 border-b border-muted"
+              >
+                <div className="font-medium">{pref.title}</div>
+                <div className="relative">
+                  <button
+                    onClick={() => toggleCookiePreference(pref.id)}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      pref.enabled ? "bg-primary" : "bg-muted",
+                      pref.required && "opacity-60 cursor-not-allowed"
+                    )}
+                    style={{ 
+                      backgroundColor: pref.enabled ? mainColor : undefined,
+                    }}
+                    disabled={pref.required}
+                  >
+                    <span 
+                      className={cn(
+                        "pointer-events-none inline-block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform",
+                        pref.enabled ? "translate-x-5" : "translate-x-0.5"
+                      )}
+                    />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              Decline
-            </Button>
-            <Button size="sm" style={{ backgroundColor: mainColor }} className={getContrastColor(mainColor).text}>
-              Accept
-            </Button>
+
+          <div className="flex flex-col gap-2 mt-auto">
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={declineAllCookies}
+              >
+                Decline All
+              </Button>
+              
+              <Button 
+                size="sm" 
+                style={{ backgroundColor: mainColor }} 
+                className={getContrastColor(mainColor).text}
+                onClick={() => {
+                  setAllCookiePreferences(true);
+                  setCookieConsent('accepted');
+                }}
+              >
+                Accept All
+              </Button>
+            </div>
+            
+            <Dialog open={cookieDialogOpen} onOpenChange={setCookieDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="w-full justify-center mt-1"
+                >
+                  <span className="text-xs text-muted-foreground">Advanced Settings</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle style={{ color: mainColor }}>Cookie Preferences</DialogTitle>
+                  <DialogDescription>
+                    Customize which cookies you allow during your Pokémon training journey.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="py-4">
+                  <div className="flex justify-between mb-4">
+                    <span className="text-sm font-medium">Cookie Settings</span>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs h-7"
+                        onClick={() => setAllCookiePreferences(false)}
+                      >
+                        Reject All
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        style={{ backgroundColor: mainColor }}
+                        className={getContrastColor(mainColor).text}
+                        onClick={() => {
+                          setAllCookiePreferences(true);
+                          setCookieConsent('accepted');
+                        }}
+                      >
+                        Accept All
+                      </Button>
+                    </div>
+                  </div>
+
+                  <ScrollArea className="h-[200px] rounded-md border p-4">
+                    <div className="space-y-5">
+                      {cookiePreferences.map((pref) => (
+                        <div key={pref.id} className="flex items-start gap-3">
+                          <div className="pt-0.5">
+                            <button
+                              onClick={() => toggleCookiePreference(pref.id)}
+                              className={cn(
+                                "relative h-5 w-5 rounded-md border flex items-center justify-center transition-colors",
+                                pref.enabled 
+                                  ? `bg-[${mainColor}] border-[${mainColor}]` 
+                                  : "bg-background",
+                                pref.required && "opacity-60 cursor-not-allowed"
+                              )}
+                              style={{ 
+                                backgroundColor: pref.enabled ? mainColor : '',
+                                borderColor: pref.enabled ? mainColor : ''
+                              }}
+                              disabled={pref.required}
+                            >
+                              {pref.enabled && <Check className="h-3.5 w-3.5 text-white" />}
+                            </button>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center">
+                              <span className="text-sm font-medium">{pref.title}</span>
+                              {pref.required && (
+                                <Badge className="ml-2 px-1.5 py-0 text-[0.6rem]" variant="secondary">
+                                  Required
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {pref.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button 
+                    onClick={saveCookiePreferences} 
+                    style={{ backgroundColor: mainColor }}
+                    className={getContrastColor(mainColor).text}
+                  >
+                    Save Preferences
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </Card>
