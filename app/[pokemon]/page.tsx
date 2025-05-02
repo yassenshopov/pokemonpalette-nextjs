@@ -39,7 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'; // Import Tooltip and TooltipContent
-import Footer from '@/components/ui/Footer'; // Import the new Footer component
+import { Footer } from '@/components/ui/Footer'; // Import the new Footer component
 
 // Define the type for species data
 interface SpeciesData {

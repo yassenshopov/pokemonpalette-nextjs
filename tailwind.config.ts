@@ -84,9 +84,9 @@ export default {
 			'rotate': 'rotate 0.5s linear'
   		},
   		fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        display: ['var(--font-satoshi)'],
-        default: ['var(--font-inter)'],
+        sans: ['var(--font-geist)'],
+        display: ['var(--font-cal)'],
+        default: ['var(--font-geist)'],
   		},
   	}
   },

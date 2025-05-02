@@ -19,81 +19,136 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --font-satoshi: 'Satoshi', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-cal: 'Cal Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-geist: 'Geist Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
 body {
-  font-family: var(--font-inter);
+  font-family: var(--font-geist);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-satoshi);
-  letter-spacing: -0.02em;
-  font-weight: 700;
+  font-family: var(--font-cal);
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .display-text {
-  font-family: var(--font-satoshi);
-  letter-spacing: -0.03em;
+  font-family: var(--font-cal);
+  letter-spacing: -0.04em;
+  font-weight: 600;
 }
 
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 222.2 84% 4.9%;
+
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    --radius: 0.75rem;
+
+    --chart-1: 221.2 83.2% 53.3%;
+    --chart-2: 155 83.2% 53.3%;
+    --chart-3: 45 93% 47%;
+    --chart-4: 280 83.2% 53.3%;
+    --chart-5: 340 83.2% 53.3%;
   }
+ 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 224 25% 10%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 224 25% 11%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 224 25% 11%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 215 25% 27%;
+    --muted-foreground: 217 25% 70%;
+ 
+    --accent: 215 25% 27%;
+    --accent-foreground: 210 40% 98%;
+ 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 25% 27%;
+    --input: 215 25% 27%;
+    --ring: 224.3 76.3% 48%;
+
+    --chart-1: 217.2 91.2% 59.8%;
+    --chart-2: 155 91.2% 59.8%;
+    --chart-3: 45 93% 47%;
+    --chart-4: 280 91.2% 59.8%;
+    --chart-5: 340 91.2% 59.8%;
   }
 }
 
@@ -103,5 +158,6 @@ h1, h2, h3, h4, h5, h6 {
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

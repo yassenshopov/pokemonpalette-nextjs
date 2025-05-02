@@ -7,14 +7,14 @@ import speciesData from '@/data/species.json';
 import { useColors } from '@/contexts/color-context';
 import ColorThief from 'colorthief';
 import { PokemonSearch } from '@/components/pokemon-search';
-import { LoadingPokeball } from '@/app/components/loading-pokeball';
+import { LoadingPokeball } from '@/components/loading-pokeball';
 import confetti from 'canvas-confetti';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignInButton, UserButton } from "@clerk/nextjs";
-import { TypeBadge } from '@/app/components/type-badge';
-import { GameBackground } from '@/app/components/game-background';
+import { TypeBadge } from '@/components/type-badge';
+import { GameBackground } from '@/components/game-background';
 import '../styles/game-animations.css';
 import Link from "next/link";
 import Image from "next/image";
@@ -439,9 +439,11 @@ export default function GamePage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-4">
             <div>
-              <img 
+              <Image 
                 src="/logo512.png" 
                 alt="Pokemon Palette Logo" 
+                width={32}
+                height={32}
                 className={`w-8 h-8 pokemon-float ${isRotating ? 'animate-rotate' : ''}`}
                 style={{
                   filter: `hue-rotate(${

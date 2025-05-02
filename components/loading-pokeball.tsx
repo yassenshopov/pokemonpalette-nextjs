@@ -1,9 +1,13 @@
-export function LoadingPokeball() {
+import Image from 'next/image';
+
+interface LoadingPokeballProps {
+  className?: string;
+}
+
+export function LoadingPokeball({ className }: LoadingPokeballProps) {
   return (
-    <div className="relative w-16 h-16 animate-bounce">
-      <div className="absolute w-full h-full rounded-full border-4 border-t-red-500 border-b-red-500 border-l-white border-r-white animate-spin">
-        <div className="absolute inset-[45%] rounded-full bg-white border-2 border-gray-800"></div>
-      </div>
+    <div className={`animate-spin ${className}`}>
+      <Image src="/pokeball.svg" alt="Loading..." width={24} height={24} />
     </div>
   );
 } 
