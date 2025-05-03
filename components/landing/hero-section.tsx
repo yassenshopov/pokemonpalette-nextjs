@@ -5,10 +5,12 @@ import { Paintbrush, Palette, Bookmark, ArrowRight, Check, Sparkles } from "luci
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SignInButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useSaveContext } from "@/contexts/save-context";
 import { useColors } from "@/contexts/color-context";
+import { PalettePickerDialog } from "@/components/palettes/palette-picker-dialog";
+import { useRouter } from "next/navigation";
 
 interface HeroSectionProps {
   pokemonName: string;
@@ -33,6 +35,8 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
   const { isSaved, isSaving, savePaletteAction } = useSaveContext();
   const { shiny } = useColors();
   const { user } = useUser();
+  const router = useRouter();
+  const [palettePickerOpen, setPalettePickerOpen] = useState(false);
 
   // Use the first two colors from the palette, or fallback to neutral colors
   const primaryColor = colors[0] || 'rgb(209 213 219)';
@@ -41,6 +45,24 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
   // Function to handle saving palette
   const handleSavePalette = () => {
     savePaletteAction(colors, pokemonNumber, pokemonName, shiny);
+  };
+  
+  // Function to handle "check" button click after saving
+  const handleSavedClick = () => {
+    if (isSaved) {
+      // Open palette picker dialog when checkmark is clicked
+      setPalettePickerOpen(true);
+    } else {
+      // Regular save action if not already saved
+      handleSavePalette();
+    }
+  };
+  
+  // Function to handle selecting a palette
+  const handlePaletteSelect = (palette: any) => {
+    if (palette.pokemonName) {
+      router.push(`/${palette.pokemonName.toLowerCase()}`);
+    }
   };
   
   // Convert the primary color to RGB if it's a hex color
@@ -66,28 +88,36 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
         padding: '1px'
       }}
     >
+      {/* Directly control the palette picker dialog */}
+      <PalettePickerDialog
+        onSelectPalette={handlePaletteSelect}
+        open={palettePickerOpen}
+        onOpenChange={setPalettePickerOpen}
+        trigger={<div className="hidden">Hidden Trigger</div>}
+      />
+      
       {/* Content container */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 px-8 md:px-16 mx-auto max-w-7xl">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-16 px-4 sm:px-6 md:px-16 mx-auto max-w-7xl pt-6 md:pt-0">
         {/* Left content section */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex-1 text-center md:text-left space-y-8"
+          className="flex-1 text-center md:text-left space-y-4 md:space-y-8"
         >
           <div 
-            className="inline-flex items-center px-4 py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-4"
+            className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-2 md:mb-4"
             style={{ borderColor: `${primaryColor}40` }}
           >
-            <Paintbrush className="w-4 h-4 mr-2" style={{ color: primaryColor }} />
-            <span className="text-sm font-medium">Color Palette Generator</span>
+            <Paintbrush className="w-3 h-3 md:w-4 md:h-4 mr-1.5 md:mr-2" style={{ color: primaryColor }} />
+            <span className="text-xs md:text-sm font-medium">Color Palette Generator</span>
           </div>
 
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
+          <div className="space-y-3 md:space-y-6">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
               Your website - inspired by{' '}
               <span 
-                className="capitalize bg-clip-text text-transparent block mt-2"
+                className="capitalize bg-clip-text text-transparent block mt-1 md:mt-2"
                 style={{ 
                   backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`
                 }}
@@ -96,33 +126,33 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
               </span>
             </h1>
 
-            <p className="text-lg text-muted-foreground max-w-[700px] leading-relaxed">
+            <p className="text-base md:text-lg text-muted-foreground max-w-[700px] leading-relaxed">
               Create beautiful color palettes inspired by your favorite Pokemon. Just enter any Pokemon's name 
               or Pokedex number to discover its unique color scheme.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center md:justify-start pt-2 md:pt-4">
             <SignedIn>
               <Button 
                 size="lg" 
-                className="gap-2 h-12 px-8 text-base"
+                className="gap-2 h-10 md:h-12 px-6 md:px-8 text-sm md:text-base"
                 style={{ 
                   backgroundColor: primaryColor,
                   borderColor: primaryColor,
                   color: '#fff'
                 }}
-                onClick={handleSavePalette}
+                onClick={handleSavedClick}
                 disabled={isSaving || colors.length === 0}
               >
                 {isSaving || isSaved ? (
                   <>
-                    <Check className="w-5 h-5" />
+                    <Check className="w-4 h-4 md:w-5 md:h-5" />
                     Saved!
                   </>
                 ) : (
                   <>
-                    <Bookmark className="w-5 h-5" />
+                    <Bookmark className="w-4 h-4 md:w-5 md:h-5" />
                     Save Palette
                   </>
                 )}
@@ -132,14 +162,14 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
               <SignInButton mode="modal">
                 <Button 
                   size="lg" 
-                  className="gap-2 h-12 px-8 text-base"
+                  className="gap-2 h-10 md:h-12 px-6 md:px-8 text-sm md:text-base"
                   style={{ 
                     backgroundColor: primaryColor,
                     borderColor: primaryColor,
                     color: '#fff'
                   }}
                 >
-                  <Bookmark className="w-5 h-5" />
+                  <Bookmark className="w-4 h-4 md:w-5 md:h-5" />
                   Save Palette
                 </Button>
               </SignInButton>
@@ -147,7 +177,7 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
             <Button 
               size="lg" 
               variant="outline" 
-              className="gap-2 h-12 px-8 text-base"
+              className="gap-2 h-10 md:h-12 px-6 md:px-8 text-sm md:text-base"
               style={{ borderColor: `${primaryColor}40` }}
               onClick={() => {
                 const element = document.getElementById('pokemon-info');
@@ -156,7 +186,7 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
                 }
               }}
             >
-              Learn more <ArrowRight className="w-5 h-5" />
+              Learn more <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </div>
         </motion.div>
@@ -167,10 +197,10 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 flex justify-center md:justify-end"
+            className="flex-1 flex justify-center md:justify-end mt-4 md:mt-0"
           >
             <div 
-              className="relative w-[280px] h-[280px] md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] overflow-hidden"
+              className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] overflow-hidden"
             >
               <div 
                 className="absolute inset-0"
@@ -182,7 +212,7 @@ export function HeroSection({ pokemonName, officialArt, colors = [], pokemonNumb
                 src={officialArt}
                 alt={pokemonName}
                 fill
-                className="object-contain p-12 transition-all duration-300 hover:scale-105"
+                className="object-contain p-6 sm:p-8 md:p-12 transition-all duration-300 hover:scale-105"
                 priority
               />
             </div>
