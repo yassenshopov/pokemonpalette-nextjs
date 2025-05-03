@@ -17,14 +17,27 @@ interface PalettePickerDialogProps {
   onSelectPalette: (palette: SavedPalette) => void;
   trigger?: React.ReactNode;
   menuMode?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function PalettePickerDialog({ onSelectPalette, trigger, menuMode = false }: PalettePickerDialogProps) {
-  const [open, setOpen] = useState(false);
+export function PalettePickerDialog({ 
+  onSelectPalette, 
+  trigger, 
+  menuMode = false,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen 
+}: PalettePickerDialogProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  
+  // Use either controlled or uncontrolled state based on whether the open prop is provided
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = isControlled ? setControlledOpen : setUncontrolledOpen;
   
   const handleSelect = (palette: SavedPalette) => {
     onSelectPalette(palette);
-    setOpen(false);
+    setOpen?.(false);
   };
   
   return (

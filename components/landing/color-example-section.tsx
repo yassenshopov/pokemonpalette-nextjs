@@ -69,7 +69,7 @@ export function ColorExampleSection({
   }, [colors]);
 
   return (
-    <div className="max-w-6xl mx-auto p-4 pt-16 md:pt-24 space-y-8 md:space-y-12">
+    <div className="max-w-6xl mx-auto p-4 pt-1 md:pt-24 space-y-8 md:space-y-12">
       <HeroSection 
         pokemonName={pokemonName} 
         officialArt={officialArt}

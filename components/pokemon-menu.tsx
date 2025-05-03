@@ -824,12 +824,12 @@ export function PokemonMenu() {
 
   return (
     <Card
-      className="w-full h-full overflow-hidden flex flex-col border-none shadow-none px-8 mt-4"
-      style={{ maxHeight: "calc(100vh - 40px)" }}
+      className="w-full h-full overflow-hidden flex flex-col border-none shadow-none px-2 sm:px-4 md:px-8 mt-16 sm:mt-8"
+      // style={{ maxHeight: "calc(100vh - 80px)" }}
     >
 
       {/* Prominent Pokemon Sprite - INCREASED SIZE */}
-      <div className="relative flex-shrink-0 flex items-center justify-center mx-auto p-4 w-48 h-48">
+      <div className="relative flex-shrink-0 flex items-center justify-center mx-auto p-2 sm:p-4 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mt-2 sm:mt-4">
         {spriteUrl ? (
           <div
             className={`w-full h-full relative transition-all duration-300 ${
@@ -843,13 +843,12 @@ export function PokemonMenu() {
               height={180}
               quality={1}
               unoptimized={true}
-              // className="h-full w-full object-contain"
               style={{ imageRendering: 'pixelated' }}
             />
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div 
-                  className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" 
+                  className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-t-transparent rounded-full animate-spin" 
                   style={{ borderColor: bgColors[0] ? `${bgColors[0]} transparent ${bgColors[0]} ${bgColors[0]}` : 'var(--primary) transparent var(--primary) var(--primary)' }}
                 />
               </div>
@@ -865,20 +864,28 @@ export function PokemonMenu() {
         <Button
           variant="ghost"
           size="icon"
-          className={`absolute top-1 right-1 h-8 w-8 rounded-full ${isShiny ? 'bg-yellow-500/10' : 'bg-foreground/5'}`}
+          className={`absolute top-2 right-2 h-8 w-8 rounded-full ${isShiny ? 'bg-yellow-500/10' : 'bg-foreground/5'}`}
           onClick={() => setIsShiny(!isShiny)}
+          style={{
+            backgroundColor: isShiny 
+              ? `${bgColors[0] || '#ffc107'}30` 
+              : 'var(--background)/10'
+          }}
         >
-          <Sparkles className={`h-4 w-4 ${isShiny ? 'text-yellow-400' : 'text-muted-foreground'}`} />
+          <Sparkles 
+            className={`h-4 w-4 ${isShiny ? 'text-yellow-400' : 'text-muted-foreground'}`}
+            style={{ color: isShiny ? bgColors[0] || '#ffc107' : undefined }}
+          />
         </Button>
       </div>
 
-            {/* Pokemon Header with Name and Species */}
-      <div className="px-6 pb-2 text-center">
-        <div className="text-md text-muted-foreground">{speciesTitle}</div>
+      {/* Pokemon Header with Name and Species */}
+      <div className="px-2 sm:px-6 pb-1 sm:pb-2 text-center">
+        <div className="text-sm md:text-md text-muted-foreground">{speciesTitle}</div>
       </div>
 
       {/* Search and Navigation Controls */}
-      <div className="flex flex-col space-y-3 px-6 pb-4">
+      <div className="flex flex-col space-y-2 sm:space-y-3 px-2 sm:px-6 pb-2 sm:pb-4">
         {/* Name Search */}
         <div className="relative">
           <Input
@@ -892,7 +899,7 @@ export function PokemonMenu() {
                 setShowSuggestions(false);
               }
             }}
-            className="pr-12 pl-4 h-10 text-center capitalize"
+            className="pr-12 pl-4 h-9 sm:h-10 text-center capitalize text-sm sm:text-base"
             placeholder="Search Pokémon..."
           />
           <Button
@@ -905,7 +912,7 @@ export function PokemonMenu() {
           </Button>
           {showSuggestions && (
             <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg">
-              <ScrollArea className="max-h-[200px]">
+              <ScrollArea className="max-h-[150px] sm:max-h-[200px]">
                 {suggestions.map((suggestion) => (
                   <button
                     key={suggestion.name}
@@ -918,12 +925,12 @@ export function PokemonMenu() {
                       alt={suggestion.name}
                       width={32}
                       height={32}
-                      className="w-8 h-8"
+                      className="w-6 h-6 sm:w-8 sm:h-8"
                       unoptimized={true}
                       quality={1}
                       style={{ imageRendering: 'pixelated' }}
                     />
-                    <span>{suggestion.name.replace(/-/g, ' ')}</span>
+                    <span className="text-sm">{suggestion.name.replace(/-/g, ' ')}</span>
                   </button>
                 ))}
               </ScrollArea>
@@ -932,55 +939,57 @@ export function PokemonMenu() {
         </div>
 
         {/* Dex Controls and Random Button */}
-        <div className="flex items-center gap-2">
-          <div className="font-medium text-sm whitespace-nowrap">Dex #:</div>
-          <div className="flex items-center h-10 flex-1 max-w-[160px]">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-full rounded-r-none border-r-0"
-              onClick={() => handleDexNumberChange(-1)}
-              disabled={isLoading}
-            >
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-            <Input
-              type="text"
-              value={dexNumber}
-              onChange={(e) => setDexNumber(e.target.value)}
-              className="h-full w-16 text-center rounded-none border-x-0"
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-full rounded-l-none border-l-0"
-              onClick={() => handleDexNumberChange(1)}
-              disabled={isLoading}
-            >
-              <ChevronUp className="h-4 w-4" />
-            </Button>
+        <div className="flex items-center w-full">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="font-medium text-xs sm:text-sm whitespace-nowrap">Dex #:</div>
+            <div className="flex items-center h-9 sm:h-10 flex-1 max-w-[120px] sm:max-w-[160px]">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-full rounded-r-none border-r-0 w-8 sm:w-10"
+                onClick={() => handleDexNumberChange(-1)}
+                disabled={isLoading}
+              >
+                <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Button>
+              <Input
+                type="text"
+                value={dexNumber}
+                onChange={(e) => setDexNumber(e.target.value)}
+                className="h-full w-12 sm:w-16 text-center rounded-none border-x-0 text-sm sm:text-base px-0"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-full rounded-l-none border-l-0 w-8 sm:w-10"
+                onClick={() => handleDexNumberChange(1)}
+                disabled={isLoading}
+              >
+                <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Button>
+            </div>
           </div>
           
           <Button
             variant="default"
             size="sm"
-            className="h-10 ml-auto min-w-[110px]"
+            className="h-9 sm:h-10 ml-auto text-xs sm:text-sm px-3 sm:px-4"
             style={{ backgroundColor: bgColors[0] || undefined }}
             onClick={() => handlePokemonFetch(Math.floor(Math.random() * 1025) + 1)}
             disabled={isLoading}
           >
-            <Shuffle className="mr-2 h-4 w-4" />
+            <Shuffle className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
             Random
           </Button>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b px-6">
-        <div className="flex space-x-6">
+      <div className="border-b px-2 sm:px-6">
+        <div className="flex justify-between sm:justify-start sm:space-x-6 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveTab('info')}
-            className={`py-3 px-1 text-sm font-medium relative ${
+            className={`py-2 sm:py-3 px-1 text-xs sm:text-sm font-medium relative whitespace-nowrap flex-1 sm:flex-initial ${
               activeTab === 'info' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
@@ -999,7 +1008,7 @@ export function PokemonMenu() {
           </button>
           <button
             onClick={() => setActiveTab('forms')}
-            className={`py-3 px-1 text-sm font-medium relative ${
+            className={`py-2 sm:py-3 px-1 text-xs sm:text-sm font-medium relative whitespace-nowrap flex-1 sm:flex-initial ${
               activeTab === 'forms' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
@@ -1018,7 +1027,7 @@ export function PokemonMenu() {
           </button>
           <button
             onClick={() => setActiveTab('colors')}
-            className={`py-3 px-1 text-sm font-medium relative ${
+            className={`py-2 sm:py-3 px-1 text-xs sm:text-sm font-medium relative whitespace-nowrap flex-1 sm:flex-initial ${
               activeTab === 'colors' ? 'text-foreground' : 'text-muted-foreground'
             }`}
             style={
@@ -1039,22 +1048,22 @@ export function PokemonMenu() {
       </div>
 
       {/* Content Area */}
-      <ScrollArea className="flex-1 p-6">
+      <ScrollArea className="flex-1 p-2 sm:p-4 md:p-6">
         {/* Information Tab - Update with real data */}
         {activeTab === 'info' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Quick Stats Section */}
             {spriteUrl && (
               <>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                   {/* Type Display */}
-                  <div className="bg-background/60 rounded-xl p-4 flex flex-col items-center justify-center">
-                    <div className="text-sm text-muted-foreground mb-2">Type</div>
-                    <div className="flex flex-wrap gap-2 justify-center">
+                  <div className="bg-background/60 rounded-xl p-2 sm:p-4 flex flex-col items-center justify-center">
+                    <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">Type</div>
+                    <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
                       {pokemonData.types?.map((type, index) => (
                         <div 
                           key={index}
-                          className="px-3 py-1 rounded-full text-white text-xs font-medium capitalize"
+                          className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-white text-[10px] sm:text-xs font-medium capitalize"
                           style={{ backgroundColor: index === 0 ? (bgColors[0] || 'var(--primary)') : (bgColors[1] || 'var(--secondary)') }}
                         >
                           {type}
@@ -1064,21 +1073,21 @@ export function PokemonMenu() {
                   </div>
                   
                   {/* Height Display */}
-                  <div className="bg-background/60 rounded-xl p-4 flex flex-col items-center justify-center">
-                    <div className="text-sm text-muted-foreground mb-2">Height</div>
-                    <div className="font-medium">{pokemonData.height?.toFixed(1) || '?'} m</div>
+                  <div className="bg-background/60 rounded-xl p-2 sm:p-4 flex flex-col items-center justify-center">
+                    <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">Height</div>
+                    <div className="font-medium text-xs sm:text-base">{pokemonData.height?.toFixed(1) || '?'} m</div>
                   </div>
                   
                   {/* Weight Display */}
-                  <div className="bg-background/60 rounded-xl p-4 flex flex-col items-center justify-center">
-                    <div className="text-sm text-muted-foreground mb-2">Weight</div>
-                    <div className="font-medium">{pokemonData.weight?.toFixed(1) || '?'} kg</div>
+                  <div className="bg-background/60 rounded-xl p-2 sm:p-4 flex flex-col items-center justify-center">
+                    <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">Weight</div>
+                    <div className="font-medium text-xs sm:text-base">{pokemonData.weight?.toFixed(1) || '?'} kg</div>
                   </div>
                 </div>
 
                 {/* Additional Stats - Base Stats, Abilities, etc. would go here in future versions */}
                 <div className="flex items-center justify-center">
-                  <div className="text-xs text-muted-foreground text-center">
+                  <div className="text-[10px] sm:text-xs text-muted-foreground text-center">
                     More Pokémon details coming in future updates
                   </div>
                 </div>
@@ -1089,50 +1098,57 @@ export function PokemonMenu() {
 
         {/* Forms & Evolutions Tab with full evolution chain */}
         {activeTab === 'forms' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Combined Forms & Evolutions Section */}
-            <div className="bg-background/60 rounded-xl p-6 pt-3">
+            <div className="bg-background/60 rounded-xl p-3 sm:p-6 pt-2 sm:pt-3">
               
               {availableForms.length <= 1 && evolutionChain.flat().filter(pokemon => !pokemon.isCurrent).length === 0 ? (
-                <div className="text-center text-sm text-muted-foreground">
+                <div className="text-center text-xs sm:text-sm text-muted-foreground">
                   This Pokémon has no alternative forms or evolutions.
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 justify-items-center">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 justify-items-center">
                   {/* Show forms first */}
                   {availableForms
                     .filter(form => !(form.name === "Default" && availableForms.length > 1))
                     .map((form) => (
                       <button
                         key={`form-${form.id}`}
-                        className={`flex flex-col items-center group w-full max-w-[140px] ${
+                        className={`flex flex-col items-center group w-full max-w-[135px] ${
                           currentForm === form.id ? 'opacity-100' : 'opacity-80 hover:opacity-100'
                         }`}
                         onClick={() => handleFormChange(form.id)}
                       >
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-3 transition-colors ${
-                          currentForm === form.id 
-                            ? 'bg-primary/10' 
-                            : 'bg-muted/20 group-hover:bg-muted/30'
-                        }`}
-                        style={
-                          currentForm === form.id && bgColors[1]
-                            ? { backgroundColor: `${bgColors[1]}20` }
-                            : {}
-                        }>
+                        <div 
+                          className="w-18 h-18 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-2 transition-colors"
+                          style={{ 
+                            backgroundColor: currentForm === form.id 
+                              ? (bgColors[0] ? `${bgColors[0]}30` : 'rgba(var(--primary), 0.2)') 
+                              : 'rgba(0, 0, 0, 0.1)'
+                          }}
+                        >
                           <Image
                             src={form.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${form.id}.png`}
                             alt={form.name}
-                            width={56}
-                            height={56}
+                            width={72}
+                            height={72}
                             unoptimized={true}
                             quality={1}
-                            className="w-14 h-14"
+                            className="w-16 h-16 sm:w-20 sm:h-20"
                             style={{ imageRendering: 'pixelated' }}
                           />
                         </div>
-                        <div className="text-sm font-medium text-center">{form.name}</div>
-                        <div className="text-xs text-muted-foreground text-center">
+                        <div 
+                          className="text-xs sm:text-sm font-medium text-center"
+                          style={{ 
+                            color: currentForm === form.id 
+                              ? bgColors[0] || 'var(--primary)' 
+                              : undefined
+                          }}
+                        >
+                          {form.name}
+                        </div>
+                        <div className="text-[10px] sm:text-xs text-muted-foreground text-center">
                           {form.type === 'variety' ? 'Variant' : 'Form'}
                         </div>
                       </button>
@@ -1145,24 +1161,29 @@ export function PokemonMenu() {
                       <button
                         key={`evo-${pokemon.name}`}
                         onClick={() => handlePokemonFetch(pokemon.id)}
-                        className="flex flex-col items-center group w-full max-w-[140px] opacity-80 hover:opacity-100"
+                        className="flex flex-col items-center group w-full max-w-[135px] opacity-80 hover:opacity-100"
                       >
-                        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-3 bg-muted/20 group-hover:bg-muted/30 transition-colors">
+                        <div 
+                          className="w-18 h-18 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-2 transition-colors bg-black/10 group-hover:bg-black/15"
+                          style={{ 
+                            backgroundColor: bgColors[2] ? `${bgColors[2]}20` : 'rgba(0, 0, 0, 0.1)'
+                          }}
+                        >
                           <Image
                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
                               isShiny ? 'shiny/' : ''
                             }${pokemon.id}.png`}
                             alt={pokemon.name}
-                            width={56}
-                            height={56}
+                            width={72}
+                            height={72}
                             unoptimized={true}
                             quality={1}
-                            className="w-14 h-14"
+                            className="w-16 h-16 sm:w-20 sm:h-20"
                             style={{ imageRendering: 'pixelated' }}
                           />
                         </div>
-                        <div className="text-sm font-medium capitalize text-center">{pokemon.name.replace(/-/g, ' ')}</div>
-                        <div className="text-xs text-muted-foreground text-center">
+                        <div className="text-xs sm:text-sm font-medium capitalize text-center">{pokemon.name.replace(/-/g, ' ')}</div>
+                        <div className="text-[10px] sm:text-xs text-muted-foreground text-center">
                           {pokemon.condition || 'Evolution'}
                         </div>
                       </button>
@@ -1175,12 +1196,9 @@ export function PokemonMenu() {
 
         {/* Colors Tab */}
         {activeTab === 'colors' && bgColors.length > 0 && (
-          <div className="space-y-6">
-            {/* Color Preview */}
-            {/* <div className="h-28 rounded-xl overflow-hidden" style={gradientStyle} /> */}
-            
-            {/* Color Editors */}
-            <div className="space-y-4">
+          <div className="space-y-4 sm:space-y-6">
+            {/* Color Editors - Row layout on mobile, column on larger screens */}
+            <div className="flex flex-row sm:flex-col gap-2 sm:space-y-3">
               {bgColors.map((color, index) => {
                 const colorLabel = index === 0 ? 'Primary' : index === 1 ? 'Secondary' : 'Accent';
                 const hexColor = color.replace(
@@ -1192,10 +1210,11 @@ export function PokemonMenu() {
                       .join('')
                 ).toUpperCase();
                 
+                // Compact mobile card view, more detailed on larger screens
                 return (
                   <div 
                     key={index}
-                    className={`flex items-center p-4 border rounded-lg ${
+                    className={`flex-1 sm:flex-none flex flex-col sm:flex-row items-center sm:items-center p-2 sm:p-4 border rounded-lg ${
                       lockedColors[index] ? 'bg-muted/40' : ''
                     }`}
                     draggable
@@ -1217,18 +1236,19 @@ export function PokemonMenu() {
                       }
                     }}
                   >
-                    <div className="flex items-center gap-1 mr-2 text-muted-foreground">
+                    {/* Hide grip on mobile, show on larger screens */}
+                    <div className="hidden sm:flex items-center gap-1 mr-2 text-muted-foreground">
                       <LucideGripVertical className="h-4 w-4" />
                     </div>
                     
                     <div 
-                      className="w-12 h-12 rounded-full flex-shrink-0 mr-4 relative cursor-pointer"
+                      className="w-12 h-12 sm:w-10 sm:h-10 rounded-full flex-shrink-0 sm:mr-3 relative cursor-pointer"
                       style={{ backgroundColor: color }}
                     >
                       <Popover>
                         <PopoverTrigger asChild>
                           <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 bg-black/20">
-                            <Pencil className={`h-4 w-4 ${getContrastColor(color).text}`} />
+                            <Pencil className="h-4 w-4" />
                           </div>
                         </PopoverTrigger>
                         <PopoverContent className="w-64">
@@ -1273,10 +1293,11 @@ export function PokemonMenu() {
                       </Popover>
                     </div>
                     
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center">
+                    {/* Simplified info for mobile, more detailed for larger screens */}
+                    <div className="mt-1 sm:mt-0 sm:flex-1 sm:min-w-0 text-center sm:text-left">
+                      <div className="flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start">
                         <div 
-                          className="text-sm font-medium py-1 px-3 rounded-full"
+                          className="text-xs font-medium py-0.5 px-2 sm:py-1 sm:px-3 rounded-full"
                           style={{ 
                             backgroundColor: color, 
                             color: getContrastColor(color).text.replace('text-', '')
@@ -1285,33 +1306,43 @@ export function PokemonMenu() {
                           {colorLabel}
                         </div>
                         {lockedColors[index] && (
-                          <Lock className="h-3 w-3 ml-2 text-muted-foreground" />
+                          <Lock className="h-3 w-3 mt-1 sm:mt-0 sm:ml-2 text-muted-foreground" />
                         )}
                       </div>
-                      <div className="text-xs font-mono text-muted-foreground mt-1 truncate">
+                      <div className="hidden sm:block text-xs font-mono text-muted-foreground mt-1 truncate">
                         {hexColor}
                       </div>
                     </div>
                     
+                    {/* Lock/unlock button */}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="ml-2"
+                      className="h-6 w-6 sm:h-8 sm:w-8 mt-1 sm:mt-0 sm:ml-2"
                       onClick={() => toggleLock(index)}
                     >
                       {lockedColors[index] ? (
-                        <Lock className="h-4 w-4" />
+                        <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
                       ) : (
-                        <Unlock className="h-4 w-4" />
+                        <Unlock className="h-3 w-3 sm:h-4 sm:w-4" />
                       )}
                     </Button>
                   </div>
                 );
               })}
             </div>
-            
-            <div className="text-xs text-muted-foreground text-center pt-2">
-              Drag and drop colors to reorder. Lock colors to preserve them when selecting different Pokémon.
+
+            {/* Add a simple color palette preview for mobile */}
+            <div className="block sm:hidden">
+              <div className="h-12 w-full rounded-md overflow-hidden flex">
+                {bgColors.map((color, index) => (
+                  <div 
+                    key={`preview-${index}`} 
+                    className="flex-1 h-full"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         )}

@@ -109,18 +109,18 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
 
   // Get contrast text color for message bubbles based on theme
   const userBubbleColor = theme === 'dark' 
-    ? `color-mix(in srgb, ${secondaryColor}, var(--muted) 70%)`
+    ? `color-mix(in srgb, ${secondaryColor}, #1a1a2e 30%)`
     : `color-mix(in srgb, ${secondaryColor}, transparent 85%)`;
   const otherBubbleColor = theme === 'dark'
-    ? `color-mix(in srgb, ${mainColor}, var(--muted) 70%)`
+    ? `color-mix(in srgb, ${mainColor}, #1a1a2e 30%)`
     : `color-mix(in srgb, ${mainColor}, transparent 85%)`;
   const systemBubbleColor = theme === 'dark'
-    ? `color-mix(in srgb, #888888, var(--muted) 80%)`
+    ? `color-mix(in srgb, #888888, #1a1a2e 40%)`
     : `color-mix(in srgb, #888888, transparent 90%)`;
   
   // Define background colors for light and dark mode
   const messageAreaBgLight = "rgba(248, 250, 252, 0.3)";
-  const messageAreaBgDark = "rgba(30, 41, 59, 0.3)";
+  const messageAreaBgDark = "rgba(12, 15, 20, 0.15)";
   const messageAreaBg = theme === 'dark' ? messageAreaBgDark : messageAreaBgLight;
 
   // Define CSS variables for global themeing
@@ -268,23 +268,42 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
   };
 
   return (
-    <Card className="p-4 h-[400px] relative overflow-hidden shadow-md" 
+    <Card className="p-4 h-[400px] relative overflow-hidden shadow-md border-none" 
       style={{ 
         ...cssVariables,
-        backgroundColor: theme === 'dark' ? 'var(--card)' : undefined,
-        borderColor: theme === 'dark' ? 'transparent' : undefined
+        backgroundColor: theme === 'dark' ? 'rgba(18, 22, 30, 0.85)' : undefined,
+        backgroundImage: theme === 'dark' ? 'linear-gradient(to bottom right, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.6))' : undefined,
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)'
       }}
     >
-      <div className="flex flex-col h-full">
+      <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/70 to-background/50 backdrop-blur-sm rounded-xl pointer-events-none" />
+      <div className="relative z-10 flex flex-col h-full">
         {/* Header */}
-        <div className="flex justify-between items-center pb-3 border-b mb-3" style={{ borderColor: `color-mix(in srgb, ${mainColor}, transparent 85%)` }}>
+        <div className="flex justify-between items-center pb-3 border-b mb-3" 
+          style={{ 
+            borderColor: theme === 'dark' 
+              ? `color-mix(in srgb, ${mainColor}, #ffffff 20%)` 
+              : `color-mix(in srgb, ${mainColor}, transparent 85%)`
+          }}
+        >
           <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8 ring-2" style={{ borderColor: mainColor }}>
-              <AvatarImage src="/images/trainers/red.svg" alt="Trainer Red" />
-              <AvatarFallback style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 70%)` }}>
-                TR
-              </AvatarFallback>
-            </Avatar>
+            <div 
+              className="relative rounded-full p-0.5" 
+              style={{ 
+                background: theme === 'dark' 
+                  ? `linear-gradient(45deg, ${mainColor}40, ${secondaryColor}30)` 
+                  : 'transparent',
+                boxShadow: theme === 'dark' ? `0 0 12px ${mainColor}40` : 'none'
+              }}
+            >
+              <Avatar className="h-8 w-8 ring-2" style={{ borderColor: mainColor }}>
+                <AvatarImage src="/images/trainers/red.svg" alt="Trainer Red" />
+                <AvatarFallback style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 70%)` }}>
+                  TR
+                </AvatarFallback>
+              </Avatar>
+            </div>
             <div>
               <h3 className="text-sm font-semibold">Trainer Red</h3>
               <p className="text-xs text-muted-foreground">Elite Trainer</p>
@@ -307,9 +326,21 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" style={{ borderColor: `color-mix(in srgb, ${mainColor}, transparent 70%)` }}>
+              <DropdownMenuContent align="end" 
+                style={{ 
+                  borderColor: theme === 'dark' 
+                    ? `color-mix(in srgb, ${mainColor}, #ffffff 50%)` 
+                    : `color-mix(in srgb, ${mainColor}, transparent 70%)`
+                }}
+              >
                 <DropdownMenuLabel>Chat Options</DropdownMenuLabel>
-                <DropdownMenuSeparator style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 85%)` }} />
+                <DropdownMenuSeparator 
+                  style={{ 
+                    backgroundColor: theme === 'dark' 
+                      ? `color-mix(in srgb, ${mainColor}, #ffffff 40%)` 
+                      : `color-mix(in srgb, ${mainColor}, transparent 85%)`
+                  }} 
+                />
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -456,11 +487,14 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
         {/* Messages */}
         <ScrollArea 
           ref={scrollAreaRef} 
-          className="flex-1 pr-4" 
+          className="flex-1 pr-4 rounded-md" 
           style={{ 
-            backgroundColor: messageAreaBg,
+            backgroundColor: theme === 'dark' ? 'rgba(12, 15, 20, 0.4)' : messageAreaBgLight,
+            backgroundImage: theme === 'dark' ? 'linear-gradient(rgba(13, 17, 23, 0.1), rgba(18, 22, 30, 0.2))' : undefined,
             "--scrollbar-thumb": `color-mix(in srgb, ${mainColor}, transparent 50%)`,
-            "--scrollbar-track": "transparent"
+            "--scrollbar-track": "transparent",
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)'
           } as React.CSSProperties}
         >
           <AnimatePresence initial={false}>
@@ -495,7 +529,7 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
                   <div className="flex flex-col gap-1">
                     <div 
                       className={cn(
-                        "px-3 py-2 rounded-2xl max-w-full", 
+                        "px-3 py-2 rounded-2xl max-w-full backdrop-blur-sm", 
                         message.sender === 'user' ? "rounded-br-sm" : 
                         message.sender === 'other' ? "rounded-bl-sm" : 
                         "rounded-2xl text-center text-xs opacity-75"
@@ -504,10 +538,13 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
                         backgroundColor: message.sender === 'user' ? userBubbleColor : 
                                       message.sender === 'other' ? otherBubbleColor : 
                                       systemBubbleColor,
-                        color: theme === 'dark' ? 'var(--foreground)' : 'inherit',
+                        color: theme === 'dark' ? (
+                          message.sender === 'system' ? 'rgba(255, 255, 255, 0.7)' : 'var(--foreground)'
+                        ) : 'inherit',
                         borderWidth: message.sender === 'system' ? '1px' : '0',
-                        borderColor: 'rgba(0,0,0,0.1)',
-                        borderStyle: 'solid'
+                        borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        borderStyle: 'solid',
+                        boxShadow: theme === 'dark' ? '0 2px 5px rgba(0,0,0,0.25)' : undefined
                       }}
                     >
                       <p className="text-sm break-words">{message.content}</p>
@@ -542,28 +579,29 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
                     </AvatarFallback>
                   </Avatar>
                   <div 
-                    className="px-3 py-2 rounded-2xl rounded-bl-sm"
+                    className="px-3 py-2 rounded-2xl rounded-bl-sm backdrop-blur-sm"
                     style={{ 
                       backgroundColor: otherBubbleColor,
-                      color: theme === 'dark' ? 'var(--foreground)' : 'inherit' 
+                      color: theme === 'dark' ? 'var(--foreground)' : 'inherit',
+                      boxShadow: theme === 'dark' ? '0 2px 5px rgba(0,0,0,0.25)' : undefined
                     }}
                   >
                     <div className="flex gap-1.5 items-center">
                       <div className="w-2 h-2 rounded-full animate-bounce" 
                         style={{ 
-                          backgroundColor: theme === 'dark' ? 'var(--foreground)' : mainColor, 
+                          backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : mainColor, 
                           animationDelay: '0ms' 
                         }}
                       ></div>
                       <div className="w-2 h-2 rounded-full animate-bounce" 
                         style={{ 
-                          backgroundColor: theme === 'dark' ? 'var(--foreground)' : mainColor, 
+                          backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : mainColor, 
                           animationDelay: '150ms' 
                         }}
                       ></div>
                       <div className="w-2 h-2 rounded-full animate-bounce" 
                         style={{ 
-                          backgroundColor: theme === 'dark' ? 'var(--foreground)' : mainColor, 
+                          backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : mainColor, 
                           animationDelay: '300ms' 
                         }}
                       ></div>
@@ -576,7 +614,13 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
         </ScrollArea>
 
         {/* Input */}
-        <div className="flex items-center gap-2 mt-3 pt-2 border-t" style={{ borderColor: `color-mix(in srgb, ${mainColor}, transparent 85%)` }}>
+        <div className="flex items-center gap-2 mt-3 pt-2 border-t" 
+          style={{ 
+            borderColor: theme === 'dark' 
+              ? `color-mix(in srgb, ${mainColor}, #ffffff 30%)` 
+              : `color-mix(in srgb, ${mainColor}, transparent 85%)`
+          }}
+        >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
@@ -588,7 +632,13 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
                 <Smile className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="p-2" style={{ borderColor: `color-mix(in srgb, ${mainColor}, transparent 70%)` }}>
+            <DropdownMenuContent align="start" className="p-2" 
+              style={{ 
+                borderColor: theme === 'dark' 
+                  ? `color-mix(in srgb, ${mainColor}, #ffffff 50%)` 
+                  : `color-mix(in srgb, ${mainColor}, transparent 70%)`
+              }}
+            >
               <div className="grid grid-cols-5 gap-2">
                 {COMMON_EMOJIS.map((emoji, i) => (
                   <Button 
@@ -609,10 +659,10 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Type your message..."
-            className="rounded-full border-muted-foreground/20"
+            className="rounded-full border-muted-foreground/20 backdrop-blur-sm"
             style={{ 
               borderColor: `color-mix(in srgb, ${mainColor}, transparent 70%)`,
-              backgroundColor: theme === 'dark' ? 'var(--muted)' : undefined,
+              backgroundColor: theme === 'dark' ? 'rgba(18, 22, 30, 0.6)' : undefined,
               color: theme === 'dark' ? 'var(--foreground)' : undefined,
               "&:focus": { borderColor: mainColor, boxShadow: `0 0 0 2px ${secondaryColor}` }
             } as React.CSSProperties}
@@ -624,7 +674,11 @@ export function Chat({ mainColor, secondaryColor, getContrastColor }: ChatProps)
             disabled={isBlocked}
             size="icon" 
             className="rounded-full h-8 w-8"
-            style={{ backgroundColor: secondaryColor }}
+            style={{ 
+              backgroundColor: secondaryColor,
+              opacity: isBlocked ? '0.5' : '1',
+              boxShadow: theme === 'dark' ? `0 0 10px ${secondaryColor}60` : 'none'
+            }}
           >
             <Send className="h-4 w-4" />
           </Button>
