@@ -5,20 +5,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  Volume2,
-  VolumeX,
-  ChevronRight,
-  ChevronLeft
-} from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/dropdown-menu';
+import { ChevronDown, Volume2, VolumeX, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -67,7 +56,7 @@ export function PokemonInfo({
   const secondaryColor = colors[1] || mainColor;
   const tertiaryColor = colors[2] || secondaryColor;
   const { text: textColor } = getContrastColor(mainColor);
-  
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [currentDescription, setCurrentDescription] = useState('');
@@ -98,27 +87,21 @@ export function PokemonInfo({
       if (safeIndex !== currentDescriptionIndex) {
         onDescriptionChange(safeIndex);
       }
-      setCurrentDescription(
-        filteredDescriptions[safeIndex].flavor_text.replace(/\f/g, ' ')
-      );
+      setCurrentDescription(filteredDescriptions[safeIndex].flavor_text.replace(/\f/g, ' '));
     }
   }, [currentDescriptionIndex, filteredDescriptions, onDescriptionChange]);
 
   const handlePrevDescription = () => {
     if (filteredDescriptions.length <= 1) return;
     onDescriptionChange(
-      currentDescriptionIndex > 0 
-        ? currentDescriptionIndex - 1 
-        : filteredDescriptions.length - 1
+      currentDescriptionIndex > 0 ? currentDescriptionIndex - 1 : filteredDescriptions.length - 1
     );
   };
 
   const handleNextDescription = () => {
     if (filteredDescriptions.length <= 1) return;
     onDescriptionChange(
-      currentDescriptionIndex < filteredDescriptions.length - 1 
-        ? currentDescriptionIndex + 1 
-        : 0
+      currentDescriptionIndex < filteredDescriptions.length - 1 ? currentDescriptionIndex + 1 : 0
     );
   };
 
@@ -136,7 +119,7 @@ export function PokemonInfo({
 
   const playPokemonCry = () => {
     if (!pokemonCry) return;
-    
+
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
@@ -144,16 +127,19 @@ export function PokemonInfo({
 
     const newAudio = new Audio(pokemonCry);
     setAudio(newAudio);
-    
-    newAudio.play().then(() => {
-      setIsPlaying(true);
-      newAudio.addEventListener('ended', () => {
+
+    newAudio
+      .play()
+      .then(() => {
+        setIsPlaying(true);
+        newAudio.addEventListener('ended', () => {
+          setIsPlaying(false);
+        });
+      })
+      .catch(error => {
+        console.error('Error playing audio:', error);
         setIsPlaying(false);
       });
-    }).catch((error) => {
-      console.error('Error playing audio:', error);
-      setIsPlaying(false);
-    });
   };
 
   const maxStat = Math.max(...stats.map(stat => stat.base_stat));
@@ -168,17 +154,19 @@ export function PokemonInfo({
       case 'special-defense':
         return 'Sp. Def';
       default:
-        return name.split('-').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
+        return name
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
     }
   };
 
   return (
-    <div 
+    <div
       id="pokemon-info"
-      className="w-full px-8 md:px-16 mx-auto max-w-7xl rounded-2xl relative overflow-hidden bg-gradient-to-br from-transparent to-black/5" 
-      style={{ backgroundColor: mainColor }}>
+      className="w-full px-8 md:px-16 mx-auto max-w-7xl rounded-2xl relative overflow-hidden bg-gradient-to-br from-transparent to-black/5"
+      style={{ backgroundColor: mainColor }}
+    >
       {/* Pokemon Silhouette */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-12 opacity-10 pointer-events-none">
         <div className="relative w-[400px] h-[400px]">
@@ -197,38 +185,34 @@ export function PokemonInfo({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <h2 className={cn("text-3xl font-bold capitalize", textColor)}>
+              <h2 className={cn('text-3xl font-bold capitalize', textColor)}>
                 {pokemonName} #{String(pokemonNumber).padStart(3, '0')}
               </h2>
-              
+
               {pokemonCry && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={playPokemonCry}
                   className={cn(
-                    "rounded-full",
-                    "bg-black/10 hover:bg-black/20",
-                    "dark:bg-white/10 dark:hover:bg-white/20",
+                    'rounded-full',
+                    'bg-black/10 hover:bg-black/20',
+                    'dark:bg-white/10 dark:hover:bg-white/20',
                     textColor
                   )}
                 >
-                  {isPlaying ? (
-                    <VolumeX className="h-4 w-4" />
-                  ) : (
-                    <Volume2 className="h-4 w-4" />
-                  )}
+                  {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </Button>
               )}
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {pokemonTypes.map((type) => (
+              {pokemonTypes.map(type => (
                 <span
                   key={type}
                   className={cn(
-                    "px-3 py-1 rounded-full text-sm font-medium capitalize",
-                    "bg-black/10 dark:bg-white/10",
+                    'px-3 py-1 rounded-full text-sm font-medium capitalize',
+                    'bg-black/10 dark:bg-white/10',
                     textColor
                   )}
                 >
@@ -240,11 +224,11 @@ export function PokemonInfo({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 className={cn(
-                  "capitalize min-w-[150px] justify-between",
-                  "bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20",
+                  'capitalize min-w-[150px] justify-between',
+                  'bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20',
                   textColor
                 )}
               >
@@ -253,7 +237,7 @@ export function PokemonInfo({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[150px]">
-              {availableVersions.map((version) => (
+              {availableVersions.map(version => (
                 <DropdownMenuItem
                   key={version}
                   onClick={() => onVersionChange(version)}
@@ -270,15 +254,15 @@ export function PokemonInfo({
           {/* Description */}
           <div className="space-y-6">
             <div>
-              <h3 className={cn("text-lg font-semibold mb-2", textColor)}>Pokédex Entry</h3>
+              <h3 className={cn('text-lg font-semibold mb-2', textColor)}>Pokédex Entry</h3>
               <AnimatePresence mode="wait">
                 <motion.p
                   key={currentDescription}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className={cn("text-lg leading-relaxed mb-4", textColor)}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className={cn('text-lg leading-relaxed mb-4', textColor)}
                 >
                   {currentDescription}
                 </motion.p>
@@ -293,9 +277,9 @@ export function PokemonInfo({
                         size="icon"
                         onClick={handlePrevVersion}
                         className={cn(
-                          "rounded-full",
-                          "bg-black/10 hover:bg-black/20",
-                          "dark:bg-white/10 dark:hover:bg-white/20",
+                          'rounded-full',
+                          'bg-black/10 hover:bg-black/20',
+                          'dark:bg-white/10 dark:hover:bg-white/20',
                           textColor
                         )}
                       >
@@ -316,9 +300,9 @@ export function PokemonInfo({
                         size="icon"
                         onClick={handleNextVersion}
                         className={cn(
-                          "rounded-full",
-                          "bg-black/10 hover:bg-black/20",
-                          "dark:bg-white/10 dark:hover:bg-white/20",
+                          'rounded-full',
+                          'bg-black/10 hover:bg-black/20',
+                          'dark:bg-white/10 dark:hover:bg-white/20',
                           textColor
                         )}
                       >
@@ -337,27 +321,19 @@ export function PokemonInfo({
               <Button
                 variant="ghost"
                 className={cn(
-                  "group",
-                  "bg-black/10 hover:bg-black/20",
-                  "dark:bg-white/10 dark:hover:bg-white/20",
+                  'group',
+                  'bg-black/10 hover:bg-black/20',
+                  'dark:bg-white/10 dark:hover:bg-white/20',
                   textColor
                 )}
-                onClick={() => window.open(`https://bulbapedia.bulbagarden.net/wiki/${pokemonName}_(Pokémon)`, '_blank')}
+                onClick={() =>
+                  window.open(
+                    `https://bulbapedia.bulbagarden.net/wiki/${pokemonName}_(Pokémon)`,
+                    '_blank'
+                  )
+                }
               >
                 Learn More
-                <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "group",
-                  "bg-black/10 hover:bg-black/20",
-                  "dark:bg-white/10 dark:hover:bg-white/20",
-                  textColor
-                )}
-                onClick={() => window.open(`https://www.serebii.net/pokedex-sv/${pokemonNumber}/`, '_blank')}
-              >
-                View on Serebii
                 <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
@@ -365,22 +341,25 @@ export function PokemonInfo({
 
           {/* Stats */}
           <div>
-            <h3 className={cn("text-lg font-semibold mb-4", textColor)}>Base Stats</h3>
+            <h3 className={cn('text-lg font-semibold mb-4', textColor)}>Base Stats</h3>
             <div className="space-y-3">
               {stats.map((stat, index) => (
                 <div key={stat.name} className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className={cn("font-medium", textColor)}>{formatStatName(stat.name)}</span>
-                    <span className={cn("font-medium", textColor)}>{stat.base_stat}</span>
+                    <span className={cn('font-medium', textColor)}>
+                      {formatStatName(stat.name)}
+                    </span>
+                    <span className={cn('font-medium', textColor)}>{stat.base_stat}</span>
                   </div>
                   <div className="h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500 ease-out"
                       style={{
                         width: `${(stat.base_stat / maxStat) * 100}%`,
-                        backgroundColor: index % 2 === 0 
-                          ? `color-mix(in srgb, ${secondaryColor}, transparent 15%)`
-                          : `color-mix(in srgb, ${tertiaryColor}, transparent 15%)`,
+                        backgroundColor:
+                          index % 2 === 0
+                            ? `color-mix(in srgb, ${secondaryColor}, transparent 15%)`
+                            : `color-mix(in srgb, ${tertiaryColor}, transparent 15%)`,
                       }}
                     />
                   </div>
@@ -390,8 +369,8 @@ export function PokemonInfo({
               {/* Total Stats */}
               <div className="pt-2 mt-2 border-t border-black/10 dark:border-white/10">
                 <div className="flex justify-between text-sm">
-                  <span className={cn("font-semibold", textColor)}>Total</span>
-                  <span className={cn("font-semibold", textColor)}>
+                  <span className={cn('font-semibold', textColor)}>Total</span>
+                  <span className={cn('font-semibold', textColor)}>
                     {stats.reduce((sum, stat) => sum + stat.base_stat, 0)}
                   </span>
                 </div>
@@ -402,4 +381,4 @@ export function PokemonInfo({
       </div>
     </div>
   );
-} 
+}
