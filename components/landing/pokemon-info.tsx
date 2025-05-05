@@ -176,6 +176,8 @@ export function PokemonInfo({
             fill
             className="object-contain"
             style={{ filter: 'brightness(0)' }}
+            unoptimized={true}
+            quality={100}
           />
         </div>
       </div>

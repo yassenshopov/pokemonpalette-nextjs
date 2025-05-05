@@ -30,16 +30,16 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
 
   const loadPalettes = () => {
     try {
-      const savedPalettes = getPalettes().filter(palette => 
+      const savedPalettes = getPalettes().filter(palette =>
         // Show user's palettes or anonymous palettes if no user
         user ? palette.userId === user.id : !palette.userId
       );
-      
+
       // Sort by creation date (newest first)
-      savedPalettes.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      savedPalettes.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-      
+
       setPalettes(savedPalettes);
     } catch (error) {
       console.error('Error loading palettes:', error);
@@ -52,16 +52,16 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
       deletePalette(id);
       setPalettes(palettes.filter(p => p.id !== id));
       toast({
-        title: "Palette deleted",
-        description: "The palette has been removed",
+        title: 'Palette deleted',
+        description: 'The palette has been removed',
         duration: 3000,
       });
     } catch (error) {
       console.error('Error deleting palette:', error);
       toast({
-        title: "Error",
-        description: "Could not delete the palette",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Could not delete the palette',
+        variant: 'destructive',
         duration: 3000,
       });
     }
@@ -69,7 +69,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
 
   const handlePaletteSelect = (palette: SavedPalette) => {
     setSelectedPalette(palette.id);
-    
+
     if (onSelectPalette) {
       onSelectPalette(palette);
     } else if (palette.pokemonName) {
@@ -80,10 +80,10 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric'
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
@@ -92,10 +92,10 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
     // Simple algorithm to determine if text should be white or black
     const rgb = backgroundColor.match(/\d+/g);
     if (!rgb) return 'text-foreground';
-    
+
     const [r, g, b] = rgb.map(Number);
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    
+
     return brightness > 128 ? 'text-black' : 'text-white';
   };
 
@@ -106,7 +106,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
           <h2 className="text-2xl font-bold">My Saved Palettes</h2>
         </div>
       )}
-      
+
       {palettes.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">No saved palettes found.</p>
@@ -117,20 +117,20 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
       ) : (
         <ScrollArea className={isDialog ? 'h-[400px]' : 'h-full max-h-[70vh]'}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {palettes.map((palette) => {
+            {palettes.map(palette => {
               const isHovered = hoveredPalette === palette.id;
               const isSelected = selectedPalette === palette.id;
               const mainColor = palette.colors[0] || '#000000';
               const textColorClass = getContrastTextColor(mainColor);
-              
+
               return (
                 <motion.div
                   key={palette.id}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                 >
-                  <Card 
+                  <Card
                     className={`cursor-pointer transition-all duration-200 overflow-hidden h-[220px] relative ${
                       isSelected ? 'ring-2 ring-primary shadow-lg' : 'hover:shadow-md'
                     }`}
@@ -150,11 +150,12 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                             className="object-contain"
                             style={{ filter: 'brightness(0)' }}
                             unoptimized={true}
+                            quality={100}
                           />
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="p-4 h-full flex flex-col relative z-10">
                       {/* Card Header */}
                       <div className="flex justify-between items-start">
@@ -166,11 +167,13 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                             {formatDate(palette.createdAt)}
                           </p>
                         </div>
-                        
+
                         {palette.pokemonId && (
                           <div className="flex items-center bg-white/20 backdrop-blur-sm p-1 rounded-full">
                             <Image
-                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${palette.isShiny ? 'shiny/' : ''}${palette.pokemonId}.png`}
+                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
+                                palette.isShiny ? 'shiny/' : ''
+                              }${palette.pokemonId}.png`}
                               alt={palette.pokemonName || 'Pokemon'}
                               width={32}
                               height={32}
@@ -187,48 +190,54 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Color Chips */}
                       <div className="flex gap-2 mt-4">
                         {palette.colors.map((color, i) => (
-                          <motion.div 
+                          <motion.div
                             key={i}
                             initial={{ scale: 0.9, opacity: 0.7 }}
-                            animate={{ 
+                            animate={{
                               scale: isHovered ? 1 : 0.9,
-                              opacity: isHovered ? 1 : 0.7
+                              opacity: isHovered ? 1 : 0.7,
                             }}
                             transition={{ delay: i * 0.1 }}
                             className="h-10 w-10 rounded-full border-2 border-white/30 shadow-sm flex items-center justify-center"
                             style={{ backgroundColor: color }}
                           >
                             {isHovered && (
-                              <span className="text-[10px] font-mono font-bold" style={{ 
-                                color: getContrastTextColor(color) === 'text-white' ? 'white' : 'black' 
-                              }}>
-                                {i+1}
+                              <span
+                                className="text-[10px] font-mono font-bold"
+                                style={{
+                                  color:
+                                    getContrastTextColor(color) === 'text-white'
+                                      ? 'white'
+                                      : 'black',
+                                }}
+                              >
+                                {i + 1}
                               </span>
                             )}
                           </motion.div>
                         ))}
                       </div>
-                      
+
                       {/* Action bar at bottom */}
                       <div className="mt-auto pt-4 flex justify-between items-center">
                         <Button
                           size="sm"
                           variant="ghost"
                           className={`h-8 px-2 hover:bg-black/10 ${textColorClass}`}
-                          onClick={(e) => handleDeletePalette(palette.id, e)}
+                          onClick={e => handleDeletePalette(palette.id, e)}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete</span>
                         </Button>
-                        
+
                         <div className="flex gap-2">
                           {isSelected && onSelectPalette && (
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               className={`h-8 px-3 hover:bg-white/20 ${textColorClass}`}
                             >
@@ -236,13 +245,13 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                               Selected
                             </Button>
                           )}
-                          
+
                           {!onSelectPalette && palette.pokemonName && (
                             <Button
                               size="sm"
                               variant="ghost"
                               className={`h-8 px-3 border border-white/30 ${textColorClass} hover:bg-white/20`}
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation();
                                 router.push(`/${palette.pokemonName?.toLowerCase()}`);
                               }}
@@ -263,4 +272,4 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
       )}
     </div>
   );
-} 
+}
