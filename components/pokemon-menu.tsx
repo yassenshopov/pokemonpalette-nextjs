@@ -15,26 +15,15 @@ import {
   LucideGripVertical,
   Lock,
   Unlock,
-  Palette,
   Search,
 } from 'lucide-react';
 import ColorThief from 'colorthief';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useColors } from '@/contexts/color-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import speciesData from '@/data/species.json';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Image from 'next/image';
-import { SavedPalette } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
-import { SavedPalettes } from '@/components/palettes/saved-palettes';
-import { useUser } from '@clerk/nextjs';
 
 interface PokemonSpecies {
   genera: Array<{
