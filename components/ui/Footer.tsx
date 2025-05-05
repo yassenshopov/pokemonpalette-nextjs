@@ -8,13 +8,9 @@ export function Footer() {
           {/* Left side - Logo and disclaimer */}
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="font-semibold text-lg">
-                Pokemon Palette
-              </div>
+              <div className="font-semibold text-lg">Pokemon Palette</div>
               <div className="h-4 w-[1px] bg-border" />
-              <span className="text-xs text-muted-foreground font-medium">
-                2025
-              </span>
+              <span className="text-xs text-muted-foreground font-medium">2025</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-[600px]">
               Pokemon Palette by{' '}
@@ -26,8 +22,8 @@ export function Footer() {
               >
                 Yassen Shopov
               </a>{' '}
-              is not affiliated with "The Pokémon Company" and does not own or claim
-              any rights to any Nintendo trademark or the Pokémon trademark.
+              is not affiliated with "The Pokémon Company" and does not own or claim any rights to
+              any Nintendo trademark or the Pokémon trademark.
             </p>
           </div>
 
@@ -46,7 +42,7 @@ export function Footer() {
                 <span className="sr-only">Twitter</span>
               </a>
               <a
-                href="https://github.com/YassenRabie/pokemonpalette"
+                href="https://github.com/yassenshopov"
                 target="_blank"
                 rel="noreferrer"
                 className="group relative"
@@ -60,7 +56,7 @@ export function Footer() {
             {/* Quick links */}
             <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
               <a
-                href="https://github.com/YassenRabie/pokemonpalette/issues"
+                href="https://github.com/yassenshopov/pokemonpalette-nextjs/issues"
                 target="_blank"
                 rel="noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -69,7 +65,7 @@ export function Footer() {
               </a>
               <span className="text-muted-foreground">•</span>
               <a
-                href="https://github.com/YassenRabie/pokemonpalette"
+                href="https://github.com/yassenshopov/pokemonpalette-nextjs"
                 target="_blank"
                 rel="noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
