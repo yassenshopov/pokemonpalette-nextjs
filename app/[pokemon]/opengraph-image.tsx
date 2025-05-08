@@ -26,6 +26,10 @@ export async function GET(request: Request, { params }: { params: { pokemon: str
     const pokemonId = typedSpeciesData[pokemon.toLowerCase()] || 1;
     const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
 
+    // Use a system font instead of fetching from Google Fonts
+    const fontFamily =
+      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+
     return new ImageResponse(
       (
         <div
@@ -39,6 +43,7 @@ export async function GET(request: Request, { params }: { params: { pokemon: str
             justifyContent: 'center',
             position: 'relative',
             padding: '4rem',
+            fontFamily,
           }}
         >
           <div

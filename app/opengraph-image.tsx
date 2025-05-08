@@ -4,13 +4,9 @@ export const runtime = 'edge';
 
 export async function GET() {
   try {
-    // Font
-    const interSemiBold = fetch(
-      new URL(
-        'https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap',
-        import.meta.url
-      )
-    ).then(res => res.arrayBuffer());
+    // Use a system font instead of fetching from Google Fonts
+    const fontFamily =
+      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
     return new ImageResponse(
       (
@@ -26,6 +22,7 @@ export async function GET() {
             justifyContent: 'center',
             padding: '4rem',
             position: 'relative',
+            fontFamily,
           }}
         >
           <div
