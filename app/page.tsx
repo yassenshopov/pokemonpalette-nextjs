@@ -59,7 +59,7 @@ const getRGBFromString = (color: string) => {
 };
 
 const getLuminance = (r: number, g: number, b: number) => {
-  const [rs, gs, bs] = [r, g, b].map((c) => {
+  const [rs, gs, bs] = [r, g, b].map(c => {
     c = c / 255;
     return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
   });
@@ -80,9 +80,7 @@ const getContrastRatio = (color1: string, color2: string) => {
 };
 
 // Replace your existing getContrastColor function with this:
-const getContrastColor = (
-  bgColor: string
-): { text: string; overlay: string } => {
+const getContrastColor = (bgColor: string): { text: string; overlay: string } => {
   if (!bgColor) return { text: 'text-foreground', overlay: '' };
 
   const whiteContrast = getContrastRatio(bgColor, 'rgb(255, 255, 255)');
@@ -104,11 +102,11 @@ const convertColor = (color: string, format: ColorFormat) => {
 
   switch (format) {
     case 'hex':
-      return `#${rgb.map((x) => x.toString(16).padStart(2, '0')).join('')}`;
+      return `#${rgb.map(x => x.toString(16).padStart(2, '0')).join('')}`;
     case 'rgb':
       return `rgb(${rgb.join(', ')})`;
     case 'hsl':
-      const [r, g, b] = rgb.map((x) => x / 255);
+      const [r, g, b] = rgb.map(x => x / 255);
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
       const l = (max + min) / 2;
@@ -131,9 +129,7 @@ const convertColor = (color: string, format: ColorFormat) => {
           break;
       }
 
-      return `hsl(${Math.round(h * 60)}, ${Math.round(s * 100)}%, ${Math.round(
-        l * 100
-      )}%)`;
+      return `hsl(${Math.round(h * 60)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
     default:
       return color;
   }
@@ -153,13 +149,7 @@ interface PokemonSpecies {
 }
 
 export default function Home() {
-  const {
-    colors,
-    pokemonName = 'umbreon',
-    shiny,
-    form,
-    setColors,
-  } = useColors();
+  const { colors, pokemonName = 'umbreon', shiny, form, setColors } = useColors();
   const [officialArt, setOfficialArt] = useState<string>('');
   const [pokemonCry, setPokemonCry] = useState<string>('');
   const [pokemonDescription, setPokemonDescription] = useState<string>('');
@@ -168,16 +158,15 @@ export default function Home() {
   const [pokemonNumber, setPokemonNumber] = useState<number>(0);
   const [availableVersions, setAvailableVersions] = useState<string[]>([]);
   const [currentDescriptionIndex, setCurrentDescriptionIndex] = useState<number>(0);
-  const [descriptions, setDescriptions] = useState<Array<{ flavor_text: string; version: { name: string } }>>([]);
+  const [descriptions, setDescriptions] = useState<
+    Array<{ flavor_text: string; version: { name: string } }>
+  >([]);
   const [progress, setProgress] = useState(0);
-  const [selectedColorProgress, setSelectedColorProgress] = useState<string>(
-    colors[0] || ''
+  const [selectedColorProgress, setSelectedColorProgress] = useState<string>(colors[0] || '');
+  const [selectedColorNotification, setSelectedColorNotification] = useState<string>(
+    colors[1] || ''
   );
-  const [selectedColorNotification, setSelectedColorNotification] =
-    useState<string>(colors[1] || '');
-  const [selectedColorCard, setSelectedColorCard] = useState<string>(
-    colors[0] || ''
-  );
+  const [selectedColorCard, setSelectedColorCard] = useState<string>(colors[0] || '');
   const [stats, setStats] = useState<Array<{ name: string; base_stat: number }>>([]);
 
   useEffect(() => {
@@ -188,7 +177,7 @@ export default function Home() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setProgress((prev) => {
+      setProgress(prev => {
         if (prev >= 100) return 0; // Reset to 0 when reaching 100%
         return prev + 10; // Increment progress by 10%
       });
@@ -217,7 +206,9 @@ export default function Home() {
       entry => entry.version.name === selectedVersion
     );
     if (versionDescriptions.length > 0 && currentDescriptionIndex < versionDescriptions.length) {
-      setPokemonDescription(versionDescriptions[currentDescriptionIndex].flavor_text.replace(/\f/g, ' '));
+      setPokemonDescription(
+        versionDescriptions[currentDescriptionIndex].flavor_text.replace(/\f/g, ' ')
+      );
     }
   }, [currentDescriptionIndex, selectedVersion, descriptions]);
 
@@ -227,13 +218,8 @@ export default function Home() {
       if (!pokemonName) return;
       try {
         // Fetch basic Pokemon data
-        const normPokemonName = pokemonName
-          .toLowerCase()
-          .trim()
-          .replace(/\s+/g, '-');
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon/${normPokemonName}`
-        );
+        const normPokemonName = pokemonName.toLowerCase().trim().replace(/\s+/g, '-');
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${normPokemonName}`);
         const data: Pokemon = await response.json();
 
         // Set artwork, cry, types, and stats
@@ -242,18 +228,16 @@ export default function Home() {
           : data.sprites.other['official-artwork'].front_default;
         setOfficialArt(artwork);
         setPokemonCry(data.cries.latest);
-        setPokemonTypes(data.types.map((t) => t.type.name));
+        setPokemonTypes(data.types.map(t => t.type.name));
 
         // Format stats data
         const formattedStats = data.stats.map(stat => ({
           name: stat.stat.name,
-          base_stat: stat.base_stat
+          base_stat: stat.base_stat,
         }));
 
         // Fetch species data
-        const speciesName = Object.keys(speciesData).find(
-          (key) => speciesData[key] === data.id
-        );
+        const speciesName = Object.keys(speciesData).find(key => speciesData[key] === data.id);
         if (speciesName) {
           const speciesResponse = await fetch(
             `https://pokeapi.co/api/v2/pokemon-species/${speciesName.toLowerCase()}`
@@ -262,14 +246,14 @@ export default function Home() {
 
           // Get all English entries
           const englishEntries = speciesData.flavor_text_entries.filter(
-            (entry) => entry.language.name === 'en'
+            entry => entry.language.name === 'en'
           );
-          
+
           // Remove duplicate entries within the same version
           const uniqueEntries = englishEntries.reduce((acc, current) => {
             const isDuplicate = acc.some(
-              item => 
-                item.version.name === current.version.name && 
+              item =>
+                item.version.name === current.version.name &&
                 item.flavor_text.replace(/\f/g, ' ') === current.flavor_text.replace(/\f/g, ' ')
             );
             if (!isDuplicate) {
@@ -277,25 +261,23 @@ export default function Home() {
             }
             return acc;
           }, [] as typeof englishEntries);
-          
+
           // Store all descriptions
           setDescriptions(uniqueEntries);
 
           // Get unique versions
           const uniqueVersions = Array.from(
-            new Set(uniqueEntries.map((entry) => entry.version.name))
+            new Set(uniqueEntries.map(entry => entry.version.name))
           );
           setAvailableVersions(uniqueVersions);
 
           // Set initial version
-          const versionToUse = uniqueVersions.includes('red')
-            ? 'red'
-            : uniqueVersions[0];
+          const versionToUse = uniqueVersions.includes('red') ? 'red' : uniqueVersions[0];
           setSelectedVersion(versionToUse);
 
           // Set initial description
           const versionDescriptions = uniqueEntries.filter(
-            (entry) => entry.version.name === versionToUse
+            entry => entry.version.name === versionToUse
           );
           if (versionDescriptions.length > 0) {
             setPokemonDescription(versionDescriptions[0].flavor_text.replace(/\f/g, ' '));
@@ -330,7 +312,7 @@ export default function Home() {
       {/* Main Content - Adjusted margins and padding */}
       <main className="flex-1 w-full md:pl-[350px] lg:pl-[450px] min-h-screen">
         {/* Navigation - Fixed positioning */}
-        <Navbar 
+        <Navbar
           colors={colors}
           pokemonName={pokemonName}
           pokemonNumber={pokemonNumber}

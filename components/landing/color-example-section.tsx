@@ -3,8 +3,8 @@ import { HeroSection } from './hero-section';
 import { ColorPalette } from './color-palette';
 import { ExampleComponents } from './example-components';
 import { PokemonInfo } from './pokemon-info';
-import { PokeballPaletteSection } from './pokeball-palette-section';
 import { Footer } from '@/components/ui/Footer';
+import { BuyMeCoffee } from '@/components/support/buy-me-coffee';
 
 interface ColorExampleSectionProps {
   colors: string[];
@@ -48,7 +48,7 @@ export function ColorExampleSection({
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setProgress((oldProgress) => {
+      setProgress(oldProgress => {
         if (oldProgress === 100) {
           return 0;
         }
@@ -70,8 +70,8 @@ export function ColorExampleSection({
 
   return (
     <div className="max-w-6xl mx-auto p-4 pt-1 md:pt-24 space-y-8 md:space-y-12">
-      <HeroSection 
-        pokemonName={pokemonName} 
+      <HeroSection
+        pokemonName={pokemonName}
         officialArt={officialArt}
         colors={colors}
         pokemonNumber={pokemonNumber}
@@ -80,6 +80,15 @@ export function ColorExampleSection({
       <div className="space-y-8">
         <div>
           <ColorPalette colors={colors} />
+        </div>
+
+        <div>
+          <BuyMeCoffee
+            mainColor={colors[0]}
+            secondaryColor={colors[1]}
+            tertiaryColor={colors[2]}
+            getContrastColor={getContrastColor}
+          />
         </div>
 
         <div>
@@ -102,13 +111,6 @@ export function ColorExampleSection({
           />
         </div>
 
-        {/* <div>
-          <PokeballPaletteSection 
-            colors={colors}
-            pokemonTypes={pokemonTypes}
-          />
-        </div> */}
-
         <div>
           <ExampleComponents
             selectedColorProgress={selectedColorProgress}
@@ -124,4 +126,4 @@ export function ColorExampleSection({
       <Footer />
     </div>
   );
-} 
+}
