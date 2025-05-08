@@ -1,21 +1,22 @@
-import { MetadataRoute } from 'next'
-import speciesData from '@/data/species.json'
+import { MetadataRoute } from 'next';
+import speciesData from '@/data/species.json';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const pokemonRoutes = Object.keys(speciesData).map((pokemon) => ({
+  // Get all Pokemon names from species data
+  const pokemonUrls = Object.keys(speciesData).map(pokemon => ({
     url: `https://pokemonpalette.com/${pokemon}`,
     lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
+    changeFrequency: 'weekly' as const,
     priority: 0.8,
-  }))
+  }));
 
-  return [
-    {
-      url: 'https://pokemonpalette.com',
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 1,
-    },
-    ...pokemonRoutes,
-  ]
-} 
+  // Add the home page
+  const homePage = {
+    url: 'https://pokemonpalette.com',
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 1,
+  };
+
+  return [homePage, ...pokemonUrls];
+}

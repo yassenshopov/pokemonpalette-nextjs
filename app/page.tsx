@@ -5,6 +5,7 @@ import { useColors } from '@/contexts/color-context';
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/landing/navbar';
 import { ColorExampleSection } from '@/components/landing/color-example-section';
+import StructuredData from '@/app/components/StructuredData';
 
 // Define the type for species data
 interface SpeciesData {
@@ -304,6 +305,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Structured Data for SEO */}
+      <StructuredData
+        url="https://pokemonpalette.com"
+        imageUrl="https://pokemonpalette.com/og-image.jpg"
+      />
+
       {/* Sidebar - Fixed for mobile and desktop */}
       <aside className="w-full h-auto md:h-screen md:w-[350px] lg:w-[450px] md:fixed md:left-0 md:top-0 border-b-2 md:border-r-2 md:border-b-0 border-gray-500/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
         <PokemonMenu />
