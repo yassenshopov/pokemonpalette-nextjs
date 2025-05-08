@@ -1,8 +1,13 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
+export const contentType = 'image/png';
+export const size = {
+  width: 1200,
+  height: 630,
+};
 
-export async function GET() {
+export default async function Image() {
   try {
     // Use a system font instead of fetching from Google Fonts
     const fontFamily =
@@ -82,8 +87,7 @@ export async function GET() {
         </div>
       ),
       {
-        width: 1200,
-        height: 630,
+        ...size,
       }
     );
   } catch (e) {

@@ -18,8 +18,13 @@ function capitalizeWords(str: string): string {
 }
 
 export const runtime = 'edge';
+export const contentType = 'image/png';
+export const size = {
+  width: 1200,
+  height: 630,
+};
 
-export async function GET(request: Request, { params }: { params: { pokemon: string } }) {
+export default async function Image({ params }: { params: { pokemon: string } }) {
   try {
     const pokemon = params.pokemon;
     const formattedName = capitalizeWords(pokemon);
@@ -120,8 +125,7 @@ export async function GET(request: Request, { params }: { params: { pokemon: str
         </div>
       ),
       {
-        width: 1200,
-        height: 630,
+        ...size,
       }
     );
   } catch (e) {
