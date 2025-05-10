@@ -269,7 +269,7 @@ const PokemonTeamMember = memo(function PokemonTeamMember({
                 boxShadow: `0 0 15px ${mainColor}30`,
               }}
             >
-              {pokemon.sprite ? (
+              {pokemon.sprite && pokemon.sprite.trim() !== '' ? (
                 <motion.img
                   src={pokemon.sprite}
                   alt={pokemon.name}

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 interface StructuredDataProps {
-  pokemonName: string;
+  pokemonName?: string;
   url: string;
   imageUrl: string;
 }
@@ -9,15 +9,21 @@ interface StructuredDataProps {
 export default function StructuredData({ pokemonName, url, imageUrl }: StructuredDataProps) {
   useEffect(() => {
     const formattedName = pokemonName
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      ? pokemonName
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      : 'Pokemon Palette Generator';
 
     const jsonLd = {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
-      name: `${formattedName} Color Palette | Pokemon Palette Generator`,
-      description: `Explore ${formattedName}'s color palette and create stunning designs. Get exact HEX, RGB, and HSL values for ${formattedName}'s colors.`,
+      name: pokemonName
+        ? `${formattedName} Color Palette | Pokemon Palette Generator`
+        : 'Pokemon Palette Generator',
+      description: pokemonName
+        ? `Explore ${formattedName}'s color palette and create stunning designs. Get exact HEX, RGB, and HSL values for ${formattedName}'s colors.`
+        : 'Generate beautiful color palettes from your favorite Pokemon. Get exact HEX, RGB, and HSL values for your designs.',
       url: url,
       image: imageUrl,
       mainEntity: {
@@ -48,12 +54,16 @@ export default function StructuredData({ pokemonName, url, imageUrl }: Structure
             name: 'Home',
             item: 'https://pokemonpalette.com',
           },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: formattedName,
-            item: url,
-          },
+          ...(pokemonName
+            ? [
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: formattedName,
+                  item: url,
+                },
+              ]
+            : []),
         ],
       },
       publisher: {
@@ -61,7 +71,7 @@ export default function StructuredData({ pokemonName, url, imageUrl }: Structure
         name: 'Pokemon Palette',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://pokemonpalette.com/logo.png', // Add your logo URL
+          url: 'https://pokemonpalette.com/logo.png',
         },
       },
       potentialAction: {
