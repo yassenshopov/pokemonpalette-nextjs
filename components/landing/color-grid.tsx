@@ -5,7 +5,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -50,7 +50,10 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
 
   // Calculate contrasting text color for each color block
   const getContrastColor = (hexColor: string) => {
-    const rgb = hexColor.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16)) || [0, 0, 0];
+    const rgb = hexColor
+      .replace('#', '')
+      .match(/.{2}/g)
+      ?.map(x => parseInt(x, 16)) || [0, 0, 0];
     const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
     return brightness > 128 ? 'text-black' : 'text-white';
   };
@@ -58,15 +61,15 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
   const formatLabels = {
     hex: 'HEX',
     rgb: 'RGB',
-    hsl: 'HSL'
+    hsl: 'HSL',
   };
-  
+
   // Calculate the animation direction for format change
   const getFormatChangeDirection = (current: string, previous: string) => {
     const formats = ['hex', 'rgb', 'hsl'];
     const currentIndex = formats.indexOf(current);
     const prevIndex = formats.indexOf(previous);
-    
+
     if (currentIndex === prevIndex) return 0;
     return currentIndex > prevIndex ? 1 : -1;
   };
@@ -87,25 +90,25 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
           >
             <div
               className={cn(
-                "rounded-xl p-4 sm:p-6 md:p-8 h-[120px] sm:h-[140px] md:h-[160px] cursor-pointer",
-                "transition-all duration-300",
-                "border border-transparent hover:border-white/10",
-                "shadow-sm hover:shadow-md",
+                'rounded-xl p-6 sm:p-8 md:p-10 min-w-[160px] h-[180px] sm:h-[200px] md:h-[220px] cursor-pointer',
+                'transition-all duration-300',
+                'border border-transparent hover:border-white/10',
+                'shadow-sm hover:shadow-md',
                 getContrastColor(color),
-                "select-none overflow-hidden"
+                'select-none overflow-hidden'
               )}
               style={{ backgroundColor: color }}
-              onClick={(e) => copyToClipboard(color, index, e)}
+              onClick={e => copyToClipboard(color, index, e)}
             >
               <div className="flex justify-between items-start">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className={cn(
-                        "h-7 sm:h-8 md:h-9 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium",
-                        "bg-black/10 hover:bg-black/20",
-                        "dark:bg-white/10 dark:hover:bg-white/20"
+                        'h-7 sm:h-8 md:h-9 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium',
+                        'bg-black/10 hover:bg-black/20',
+                        'dark:bg-white/10 dark:hover:bg-white/20'
                       )}
                     >
                       <motion.span
@@ -116,40 +119,39 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
                         transition={{ duration: 0.2 }}
                         className="flex items-center"
                       >
-                        {formatLabels[colorFormat]} <ChevronDown className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+                        {formatLabels[colorFormat]}{' '}
+                        <ChevronDown className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                       </motion.span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => onFormatChange?.('hex')}>
-                      HEX
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onFormatChange?.('rgb')}>
-                      RGB
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onFormatChange?.('hsl')}>
-                      HSL
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onFormatChange?.('hex')}>HEX</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onFormatChange?.('rgb')}>RGB</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onFormatChange?.('hsl')}>HSL</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <div 
+                <div
                   className={cn(
-                    "flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-md sm:rounded-lg",
-                    "bg-black/10 dark:bg-white/10",
-                    "transition-all duration-200",
+                    'flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-md sm:rounded-lg',
+                    'bg-black/10 dark:bg-white/10',
+                    'transition-all duration-200',
                     // Show when copied
-                    copiedIndex === index ? "opacity-100" : 
-                    // Otherwise for non-touch devices, show on hover
-                    !isTouchDevice ? "opacity-0 group-hover:opacity-100" : 
-                    // For touch devices, show at reduced opacity
-                    "opacity-60"
+                    copiedIndex === index
+                      ? 'opacity-100'
+                      : // Otherwise for non-touch devices, show on hover
+                      !isTouchDevice
+                      ? 'opacity-0 group-hover:opacity-100'
+                      : // For touch devices, show at reduced opacity
+                        'opacity-60'
                   )}
                 >
                   {copiedIndex === index ? (
                     <>
                       <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="text-xs sm:text-sm font-medium hidden sm:inline">Copied!</span>
+                      <span className="text-xs sm:text-sm font-medium hidden sm:inline">
+                        Copied!
+                      </span>
                     </>
                   ) : (
                     <>
@@ -162,8 +164,8 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
 
               <div className="mt-auto pt-6 sm:pt-8 md:pt-12">
                 <AnimatePresence mode="wait">
-                  <motion.p 
-                    key={colorFormat + color} 
+                  <motion.p
+                    key={colorFormat + color}
                     initial={{ y: formatChangeDirection * 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: formatChangeDirection * -20, opacity: 0 }}
@@ -180,4 +182,4 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
       </div>
     </div>
   );
-} 
+}

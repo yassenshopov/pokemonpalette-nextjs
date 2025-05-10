@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   format,
@@ -191,7 +191,515 @@ const getRandomPokemonTypes = (): string[] => {
   return [primaryType];
 };
 
-export function ExampleComponents({
+// Memoize the PokemonTeamMember component
+const PokemonTeamMember = memo(function PokemonTeamMember({
+  pokemon,
+  expandedMember,
+  setExpandedMember,
+  isTeamLoading,
+  loadingPokemon,
+  mainColor,
+  secondaryColor,
+  tertiaryColor,
+}: {
+  pokemon: PokemonTeamMember;
+  expandedMember: number | null;
+  setExpandedMember: (id: number | null) => void;
+  isTeamLoading: boolean;
+  loadingPokemon: number[];
+  mainColor: string;
+  secondaryColor: string;
+  tertiaryColor: string;
+}) {
+  const handleExpand = useCallback(() => {
+    if (!isTeamLoading) {
+      setExpandedMember(expandedMember === pokemon.id ? null : pokemon.id);
+    }
+  }, [isTeamLoading, expandedMember, pokemon.id, setExpandedMember]);
+
+  return (
+    <motion.div
+      key={pokemon.id}
+      className="rounded-xl overflow-hidden transition-all backdrop-blur-sm shadow-sm"
+      style={{
+        backgroundColor:
+          expandedMember === pokemon.id
+            ? `color-mix(in srgb, ${mainColor}, transparent 90%)`
+            : 'color-mix(in srgb, var(--background), transparent 60%)',
+        borderLeft:
+          expandedMember === pokemon.id ? `3px solid ${mainColor}` : '3px solid transparent',
+      }}
+      animate={{
+        height: expandedMember === pokemon.id ? 'auto' : '72px',
+        opacity: loadingPokemon.includes(pokemon.id) ? 0.6 : 1,
+      }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+    >
+      <div className="p-4 cursor-pointer relative" onClick={handleExpand}>
+        {/* Loading overlay for individual Pokemon */}
+        {loadingPokemon.includes(pokemon.id) && (
+          <motion.div
+            className="absolute inset-0 bg-background/20 backdrop-blur-[1px] z-10 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 40%)`,
+              }}
+            >
+              <motion.div
+                className="w-5 h-5 border-2 border-transparent rounded-full"
+                style={{ borderTopColor: mainColor }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
+              style={{
+                background: `radial-gradient(circle, ${mainColor}10 0%, ${secondaryColor}15 100%)`,
+                boxShadow: `0 0 15px ${mainColor}30`,
+              }}
+            >
+              {pokemon.sprite && pokemon.sprite.trim() !== '' ? (
+                <motion.img
+                  src={pokemon.sprite}
+                  alt={pokemon.name}
+                  className="w-12 h-12 object-contain"
+                  style={{ imageRendering: 'pixelated' }}
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+                  animate={{ opacity: loadingPokemon.includes(pokemon.id) ? 0.5 : 1 }}
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
+              )}
+            </div>
+            <div>
+              <div className="font-medium text-foreground text-lg">{pokemon.name}</div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 80%)`,
+                    color: mainColor,
+                  }}
+                >
+                  #{pokemon.dexId}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-muted-foreground">Level</span>
+              <span className="font-bold text-lg" style={{ color: mainColor }}>
+                {pokemon.level}
+              </span>
+            </div>
+
+            <div className="hidden sm:flex gap-2 items-center">
+              <motion.div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{
+                  backgroundColor: pokemon.id % 2 === 0 ? secondaryColor : mainColor,
+                }}
+                animate={{
+                  scale: loadingPokemon.includes(pokemon.id) ? [1, 1.5, 1] : [1, 1.2, 1],
+                  opacity: loadingPokemon.includes(pokemon.id) ? [0.5, 1, 0.5] : [0.7, 1, 0.7],
+                }}
+                transition={{
+                  duration: loadingPokemon.includes(pokemon.id) ? 0.5 : 2,
+                  repeat: Infinity,
+                  delay: pokemon.id * 0.2,
+                }}
+              />
+              <motion.div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{
+                  backgroundColor: pokemon.id % 2 === 0 ? tertiaryColor : secondaryColor,
+                }}
+                animate={{
+                  scale: loadingPokemon.includes(pokemon.id) ? [1, 1.5, 1] : [1, 1.2, 1],
+                  opacity: loadingPokemon.includes(pokemon.id) ? [0.5, 1, 0.5] : [0.7, 1, 0.7],
+                }}
+                transition={{
+                  duration: loadingPokemon.includes(pokemon.id) ? 0.5 : 2,
+                  repeat: Infinity,
+                  delay: pokemon.id * 0.3,
+                }}
+              />
+              <motion.div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{
+                  backgroundColor: pokemon.id % 2 === 0 ? mainColor : tertiaryColor,
+                }}
+                animate={{
+                  scale: loadingPokemon.includes(pokemon.id) ? [1, 1.5, 1] : [1, 1.2, 1],
+                  opacity: loadingPokemon.includes(pokemon.id) ? [0.5, 1, 0.5] : [0.7, 1, 0.7],
+                }}
+                transition={{
+                  duration: loadingPokemon.includes(pokemon.id) ? 0.5 : 2,
+                  repeat: Infinity,
+                  delay: pokemon.id * 0.4,
+                }}
+              />
+            </div>
+
+            <motion.div
+              className={`w-6 h-6 rounded-full flex items-center justify-center`}
+              style={{
+                backgroundColor: expandedMember === pokemon.id ? mainColor : 'transparent',
+                color: expandedMember === pokemon.id ? 'white' : 'var(--muted-foreground)',
+              }}
+              whileHover={{ scale: isTeamLoading ? 1 : 1.1 }}
+            >
+              {loadingPokemon.includes(pokemon.id) ? (
+                <motion.div
+                  className="w-3 h-3 border-t-2 border-r-2 border-transparent rounded-full"
+                  style={{ borderColor: mainColor }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                />
+              ) : (
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    expandedMember === pokemon.id ? 'rotate-180' : ''
+                  }`}
+                />
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded content */}
+      <div className="px-4 pb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 pt-3">
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-1">
+                <HeartIcon className="w-3.5 h-3.5" style={{ color: mainColor }} />
+                <span className="text-muted-foreground font-medium">HP</span>
+              </div>
+              <span className="font-medium">{pokemon.stats.hp}</span>
+            </div>
+            <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: mainColor }}
+                initial={{ width: 0 }}
+                animate={{ width: `${(pokemon.stats.hp / 150) * 100}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-1">
+                <Sword className="w-3.5 h-3.5" style={{ color: secondaryColor }} />
+                <span className="text-muted-foreground font-medium">Attack</span>
+              </div>
+              <span className="font-medium">{pokemon.stats.attack}</span>
+            </div>
+            <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: secondaryColor }}
+                initial={{ width: 0 }}
+                animate={{ width: `${(pokemon.stats.attack / 150) * 100}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-1">
+                <ShieldIcon className="w-3.5 h-3.5" style={{ color: tertiaryColor }} />
+                <span className="text-muted-foreground font-medium">Defense</span>
+              </div>
+              <span className="font-medium">{pokemon.stats.defense}</span>
+            </div>
+            <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: tertiaryColor }}
+                initial={{ width: 0 }}
+                animate={{ width: `${(pokemon.stats.defense / 150) * 100}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-1">
+                <ZapIcon className="w-3.5 h-3.5" style={{ color: mainColor }} />
+                <span className="text-muted-foreground font-medium">Speed</span>
+              </div>
+              <span className="font-medium">{pokemon.stats.speed}</span>
+            </div>
+            <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: mainColor }}
+                initial={{ width: 0 }}
+                animate={{ width: `${(pokemon.stats.speed / 150) * 100}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
+// Memoize the TeamStats component
+const TeamStats = memo(function TeamStats({
+  teamSummary,
+  mainColor,
+  secondaryColor,
+  tertiaryColor,
+}: {
+  teamSummary: {
+    avgLevel: number;
+    totalWins: number;
+    recentWinRate: number;
+  };
+  mainColor: string;
+  secondaryColor: string;
+  tertiaryColor: string;
+}) {
+  return (
+    <div className="md:col-span-1 space-y-4">
+      <div
+        className="flex flex-col p-5 rounded-xl backdrop-blur-md relative overflow-hidden"
+        style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 90%)` }}
+      >
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Avg. Level</span>
+          <Star className="w-4 h-4" style={{ color: mainColor }} />
+        </div>
+        <span className="text-3xl font-bold mt-1" style={{ color: mainColor }}>
+          {teamSummary.avgLevel}
+        </span>
+        <div className="flex items-center gap-1 mt-1.5">
+          <div className="text-xs text-green-500 font-medium">+2.8</div>
+          <div className="text-xs text-muted-foreground">since last week</div>
+        </div>
+      </div>
+
+      <div
+        className="flex flex-col p-5 rounded-xl backdrop-blur-md relative overflow-hidden"
+        style={{
+          backgroundColor: `color-mix(in srgb, ${secondaryColor}, transparent 90%)`,
+        }}
+      >
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Total Wins</span>
+          <Award className="w-4 h-4" style={{ color: secondaryColor }} />
+        </div>
+        <span className="text-3xl font-bold mt-1" style={{ color: secondaryColor }}>
+          {teamSummary.totalWins}
+        </span>
+        <div className="flex items-center gap-1 mt-1.5">
+          <div className="text-xs text-green-500 font-medium">+24</div>
+          <div className="text-xs text-muted-foreground">this month</div>
+        </div>
+      </div>
+
+      <div
+        className="flex flex-col p-5 rounded-xl backdrop-blur-md relative overflow-hidden"
+        style={{ backgroundColor: `color-mix(in srgb, ${tertiaryColor}, transparent 90%)` }}
+      >
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Win Rate</span>
+          <Sword className="w-4 h-4" style={{ color: tertiaryColor }} />
+        </div>
+        <span className="text-3xl font-bold mt-1" style={{ color: tertiaryColor }}>
+          {teamSummary.recentWinRate}%
+        </span>
+        <div className="flex items-center gap-1 mt-1.5">
+          <div className="text-xs text-green-500 font-medium">+5.2%</div>
+          <div className="text-xs text-muted-foreground">past 10 battles</div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// Memoize the BattleStats component
+const BattleStats = memo(function BattleStats({
+  battleStats,
+  mainColor,
+  secondaryColor,
+  tertiaryColor,
+}: {
+  battleStats: {
+    winRate: number;
+    streak: number;
+    accuracy: number;
+    winRateChange: number;
+    accuracyChange: number;
+    nextRankPoints: number;
+    totalRankPoints: number;
+  };
+  mainColor: string;
+  secondaryColor: string;
+  tertiaryColor: string;
+}) {
+  return (
+    <Card className="p-6 md:col-span-2 min-h-[250px] relative overflow-hidden">
+      <div className="flex flex-col h-full gap-4">
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <h3 className="text-lg font-semibold text-foreground">Battle Stats</h3>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="animate-pulse whitespace-nowrap"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 90%)`,
+                borderColor: mainColor,
+              }}
+            >
+              Last Battle: 2h ago
+            </Badge>
+            <LineChart className="w-4 h-4 shrink-0" style={{ color: mainColor }} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Sword className="w-4 h-4 shrink-0" style={{ color: mainColor }} />
+              <p className="text-sm text-muted-foreground">Win Rate</p>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <p className="text-2xl font-bold" style={{ color: mainColor }}>
+                {battleStats.winRate}%
+              </p>
+              <span
+                className={`text-xs ${
+                  battleStats.winRateChange >= 0 ? 'text-green-500' : 'text-orange-500'
+                }`}
+              >
+                {battleStats.winRateChange >= 0 ? '+' : ''}
+                {battleStats.winRateChange}%
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: mainColor }}
+                initial={{ width: '0%' }}
+                animate={{ width: `${battleStats.winRate}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 shrink-0" style={{ color: secondaryColor }} />
+              <p className="text-sm text-muted-foreground">Streak</p>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <p className="text-2xl font-bold" style={{ color: secondaryColor }}>
+                {battleStats.streak}
+              </p>
+              <span className="text-xs text-muted-foreground">max 12</span>
+            </div>
+            <div className="flex gap-0.5 h-1.5">
+              {Array.from({ length: battleStats.streak }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="flex-1 rounded-full"
+                  style={{ backgroundColor: secondaryColor }}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                />
+              ))}
+              {Array.from({ length: 12 - battleStats.streak }).map((_, i) => (
+                <div key={i + battleStats.streak} className="flex-1 rounded-full bg-secondary" />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 shrink-0" style={{ color: tertiaryColor }} />
+              <p className="text-sm text-muted-foreground">Accuracy</p>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <p className="text-2xl font-bold" style={{ color: tertiaryColor }}>
+                {battleStats.accuracy}%
+              </p>
+              <span
+                className={`text-xs ${
+                  battleStats.accuracyChange >= 0 ? 'text-green-500' : 'text-orange-500'
+                }`}
+              >
+                {battleStats.accuracyChange >= 0 ? '+' : ''}
+                {battleStats.accuracyChange}%
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: tertiaryColor }}
+                initial={{ width: '0%' }}
+                animate={{ width: `${battleStats.accuracy}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-auto pt-4 border-t">
+          <div className="flex flex-wrap justify-between items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 shrink-0" style={{ color: mainColor }} />
+              <span className="text-sm text-muted-foreground">Next Rank:</span>
+              <span className="text-sm font-medium">Elite Trainer</span>
+            </div>
+            <div className="text-xs text-muted-foreground whitespace-nowrap">
+              {battleStats.nextRankPoints}/{battleStats.totalRankPoints} points
+            </div>
+          </div>
+          <motion.div
+            className="mt-2 w-full h-1.5 rounded-full bg-secondary overflow-hidden"
+            whileHover={{ scale: 1.02 }}
+          >
+            <motion.div
+              className="h-full rounded-full"
+              style={{ backgroundColor: mainColor }}
+              initial={{ width: '0%' }}
+              animate={{
+                width: `${(battleStats.nextRankPoints / battleStats.totalRankPoints) * 100}%`,
+              }}
+              transition={{ duration: 1.5, ease: 'easeOut' }}
+            />
+          </motion.div>
+        </div>
+      </div>
+    </Card>
+  );
+});
+
+export const ExampleComponents = memo(function ExampleComponents({
   selectedColorProgress,
   selectedColorNotification,
   selectedColorCard,
@@ -249,15 +757,15 @@ export function ExampleComponents({
   );
   const [cookieDialogOpen, setCookieDialogOpen] = useState(false);
 
-  // New state for randomized battle stats
+  // Memoize battle stats
   const [battleStats, setBattleStats] = useState({
-    winRate: Math.floor(Math.random() * 30) + 50, // 50-80%
-    streak: Math.floor(Math.random() * 10) + 3, // 3-12
-    accuracy: Math.floor(Math.random() * 15) + 80, // 80-95%
-    winRateChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
-    accuracyChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
-    nextRankPoints: Math.floor(Math.random() * 250) + 50, // 50-300 points
-    totalRankPoints: 300, // Fixed total needed
+    winRate: 65,
+    streak: 5,
+    accuracy: 85,
+    winRateChange: 2,
+    accuracyChange: 1,
+    nextRankPoints: 150,
+    totalRankPoints: 300,
   });
 
   const [calendarEvents] = useState<CalendarEvent[]>([
@@ -445,49 +953,28 @@ export function ExampleComponents({
     return () => clearInterval(interval);
   }, []);
 
-  // Effect to update battle stats when colors change
+  // Update battle stats periodically with useCallback
+  const updateBattleStats = useCallback(() => {
+    setBattleStats(prev => ({
+      ...prev,
+      winRate: Math.min(100, Math.max(50, prev.winRate + (Math.random() > 0.5 ? 1 : -1))),
+      streak: Math.min(12, Math.max(0, prev.streak + (Math.random() > 0.7 ? 1 : -1))),
+      accuracy: Math.min(100, Math.max(70, prev.accuracy + (Math.random() > 0.5 ? 1 : -1))),
+      winRateChange: Math.floor(Math.random() * 10) - 4,
+      accuracyChange: Math.floor(Math.random() * 10) - 4,
+      nextRankPoints: Math.min(300, prev.nextRankPoints + Math.floor(Math.random() * 10)),
+    }));
+  }, []);
+
+  // Use effect for periodic updates
   useEffect(() => {
-    setBattleStats({
-      winRate: Math.floor(Math.random() * 30) + 50, // 50-80%
-      streak: Math.floor(Math.random() * 10) + 3, // 3-12
-      accuracy: Math.floor(Math.random() * 15) + 80, // 80-95%
-      winRateChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
-      accuracyChange: Math.floor(Math.random() * 10) - 4, // -4 to +5
-      nextRankPoints: Math.floor(Math.random() * 250) + 50, // 50-300 points
-      totalRankPoints: 300, // Fixed total needed
-    });
-  }, [colors]);
+    const interval = setInterval(updateBattleStats, 5000);
+    return () => clearInterval(interval);
+  }, [updateBattleStats]);
 
-  // Helper function to determine Pokemon types based on ID
-  const getTypesFromId = (id: number): string[] => {
-    // Simple type assignment based on ID patterns
-    const types: string[] = ['normal'];
-
-    // Primary type
-    if (id % 3 === 0) return ['fire'];
-    else if (id % 5 === 0) return ['water'];
-    else if (id % 7 === 0) return ['electric'];
-    else if (id % 4 === 0) return ['grass'];
-    else if (id % 6 === 0) return ['rock'];
-    else if (id % 8 === 0) return ['ghost'];
-    else if (id % 9 === 0) return ['dark'];
-    else if (id % 10 === 0) return ['steel'];
-
-    // Add secondary type for some patterns
-    if (id % 11 === 0) types.push('flying');
-    else if (id % 13 === 0) types.push('poison');
-    else if (id % 17 === 0) types.push('psychic');
-    else if (id % 19 === 0) types.push('ground');
-
-    return types;
-  };
-
-  // Add function to randomize team
-  const randomizeTeam = () => {
-    // Set loading state
+  // Memoize the randomizeTeam function
+  const randomizeTeam = useCallback(() => {
     setIsTeamLoading(true);
-
-    // Animate each Pokémon loading in sequence
     const loadSequence = Array.from({ length: teamMembers.length }, (_, i) => i + 1);
     let index = 0;
 
@@ -497,16 +984,11 @@ export function ExampleComponents({
         index++;
       } else {
         clearInterval(loadInterval);
-
-        // Get all entries from species.json
         const pokemonEntries = Object.entries(speciesData);
-        // Shuffle and get 4 random Pokémon
         const randomSelection = shuffleArray(pokemonEntries).slice(0, 4);
 
         const newTeam = randomSelection.map(([name, dexId], idx) => {
-          // Generate random stats based on dexId
           const seed = Number(dexId) % 100;
-
           return {
             id: idx + 1,
             name: name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' '),
@@ -522,16 +1004,14 @@ export function ExampleComponents({
           };
         });
 
-        // Update team summary stats
         const avgLevel = Math.floor(newTeam.reduce((sum, p) => sum + p.level, 0) / newTeam.length);
-        setTeamSummary({
-          ...teamSummary,
-          avgLevel: avgLevel,
+        setTeamSummary(prev => ({
+          ...prev,
+          avgLevel,
           totalWins: Math.floor(Math.random() * 300) + 150,
           recentWinRate: Math.floor(Math.random() * 25) + 70,
-        });
+        }));
 
-        // Apply the new team with a slight delay for animation
         setTimeout(() => {
           setTeamMembers(newTeam);
           setLoadingPokemon([]);
@@ -539,15 +1019,48 @@ export function ExampleComponents({
         }, 600);
       }
     }, 150);
-  };
+  }, [teamMembers.length]);
 
-  // Effect to randomize team when colors change
-  useEffect(() => {
-    if (Math.random() > 0.7) {
-      // 30% chance to randomize team when colors change
-      randomizeTeam();
-    }
-  }, [colors]);
+  // Memoize the team members list
+  const teamMembersList = useMemo(() => {
+    return teamMembers.map(pokemon => (
+      <PokemonTeamMember
+        key={pokemon.id}
+        pokemon={pokemon}
+        expandedMember={expandedMember}
+        setExpandedMember={setExpandedMember}
+        isTeamLoading={isTeamLoading}
+        loadingPokemon={loadingPokemon}
+        mainColor={colors[0]}
+        secondaryColor={colors[1]}
+        tertiaryColor={colors[2]}
+      />
+    ));
+  }, [teamMembers, expandedMember, isTeamLoading, loadingPokemon, colors]);
+
+  // Memoize the team stats
+  const teamStatsComponent = useMemo(() => {
+    return (
+      <TeamStats
+        teamSummary={teamSummary}
+        mainColor={colors[0]}
+        secondaryColor={colors[1]}
+        tertiaryColor={colors[2]}
+      />
+    );
+  }, [teamSummary, colors]);
+
+  // Memoize the battle stats component
+  const battleStatsComponent = useMemo(() => {
+    return (
+      <BattleStats
+        battleStats={battleStats}
+        mainColor={colors[0]}
+        secondaryColor={colors[1]}
+        tertiaryColor={colors[2]}
+      />
+    );
+  }, [battleStats, colors]);
 
   return (
     <div className="space-y-8 pb-8">
@@ -583,144 +1096,7 @@ export function ExampleComponents({
         </Card>
 
         {/* Battle Stats Card */}
-        <Card className="p-6 md:col-span-2 min-h-[250px] relative overflow-hidden">
-          <div className="flex flex-col h-full gap-4">
-            <div className="flex flex-wrap justify-between items-center gap-2">
-              <h3 className="text-lg font-semibold text-foreground">Battle Stats</h3>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="animate-pulse whitespace-nowrap"
-                  style={{
-                    backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 90%)`,
-                    borderColor: mainColor,
-                  }}
-                >
-                  Last Battle: 2h ago
-                </Badge>
-                <LineChart className="w-4 h-4 shrink-0" style={{ color: mainColor }} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Sword className="w-4 h-4 shrink-0" style={{ color: mainColor }} />
-                  <p className="text-sm text-muted-foreground">Win Rate</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold" style={{ color: mainColor }}>
-                    {battleStats.winRate}%
-                  </p>
-                  <span
-                    className={`text-xs ${
-                      battleStats.winRateChange >= 0 ? 'text-green-500' : 'text-orange-500'
-                    }`}
-                  >
-                    {battleStats.winRateChange >= 0 ? '+' : ''}
-                    {battleStats.winRateChange}%
-                  </span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: mainColor }}
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${battleStats.winRate}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 shrink-0" style={{ color: secondaryColor }} />
-                  <p className="text-sm text-muted-foreground">Streak</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold" style={{ color: secondaryColor }}>
-                    {battleStats.streak}
-                  </p>
-                  <span className="text-xs text-muted-foreground">max 12</span>
-                </div>
-                <div className="flex gap-0.5 h-1.5">
-                  {Array.from({ length: battleStats.streak }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="flex-1 rounded-full"
-                      style={{ backgroundColor: secondaryColor }}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.1 }}
-                    />
-                  ))}
-                  {Array.from({ length: 12 - battleStats.streak }).map((_, i) => (
-                    <div
-                      key={i + battleStats.streak}
-                      className="flex-1 rounded-full bg-secondary"
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 shrink-0" style={{ color: tertiaryColor }} />
-                  <p className="text-sm text-muted-foreground">Accuracy</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold" style={{ color: tertiaryColor }}>
-                    {battleStats.accuracy}%
-                  </p>
-                  <span
-                    className={`text-xs ${
-                      battleStats.accuracyChange >= 0 ? 'text-green-500' : 'text-orange-500'
-                    }`}
-                  >
-                    {battleStats.accuracyChange >= 0 ? '+' : ''}
-                    {battleStats.accuracyChange}%
-                  </span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: tertiaryColor }}
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${battleStats.accuracy}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-auto pt-4 border-t">
-              <div className="flex flex-wrap justify-between items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 shrink-0" style={{ color: mainColor }} />
-                  <span className="text-sm text-muted-foreground">Next Rank:</span>
-                  <span className="text-sm font-medium">Elite Trainer</span>
-                </div>
-                <div className="text-xs text-muted-foreground whitespace-nowrap">
-                  {battleStats.nextRankPoints}/{battleStats.totalRankPoints} points
-                </div>
-              </div>
-              <motion.div
-                className="mt-2 w-full h-1.5 rounded-full bg-secondary overflow-hidden"
-                whileHover={{ scale: 1.02 }}
-              >
-                <motion.div
-                  className="h-full rounded-full"
-                  style={{ backgroundColor: mainColor }}
-                  initial={{ width: '0%' }}
-                  animate={{
-                    width: `${(battleStats.nextRankPoints / battleStats.totalRankPoints) * 100}%`,
-                  }}
-                  transition={{ duration: 1.5, ease: 'easeOut' }}
-                />
-              </motion.div>
-            </div>
-          </div>
-        </Card>
+        {battleStatsComponent}
 
         {/* Chat Interface Card */}
         <Chat
@@ -982,10 +1358,9 @@ export function ExampleComponents({
         </div>
       </Card>
 
-      {/* Team Stats Card - Now positioned before Cookie Banner with improved UI */}
+      {/* Team Stats Card */}
       <Card className="p-6 md:col-span-4 relative overflow-hidden border-none bg-background/80 backdrop-blur-sm shadow-md">
         <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/70 to-background/50 backdrop-blur-sm rounded-xl pointer-events-none" />
-
         <div className="relative z-10 flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
@@ -1037,385 +1412,13 @@ export function ExampleComponents({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-            {/* Team stats summary */}
-            <div className="md:col-span-1 space-y-4">
-              <div
-                className="flex flex-col p-5 rounded-xl backdrop-blur-md relative overflow-hidden"
-                style={{ backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 90%)` }}
-              >
-                {isTeamLoading && (
-                  <motion.div
-                    className="absolute inset-0 bg-background/30 backdrop-blur-sm flex items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <motion.div
-                      className="w-5 h-5 border-2 border-transparent rounded-full"
-                      style={{ borderTopColor: mainColor }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                    />
-                  </motion.div>
-                )}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Avg. Level</span>
-                  <Star className="w-4 h-4" style={{ color: mainColor }} />
-                </div>
-                <span className="text-3xl font-bold mt-1" style={{ color: mainColor }}>
-                  {teamSummary.avgLevel}
-                </span>
-                <div className="flex items-center gap-1 mt-1.5">
-                  <div className="text-xs text-green-500 font-medium">+2.8</div>
-                  <div className="text-xs text-muted-foreground">since last week</div>
-                </div>
-              </div>
-
-              <div
-                className="flex flex-col p-5 rounded-xl backdrop-blur-md relative overflow-hidden"
-                style={{
-                  backgroundColor: `color-mix(in srgb, ${secondaryColor}, transparent 90%)`,
-                }}
-              >
-                {isTeamLoading && (
-                  <motion.div
-                    className="absolute inset-0 bg-background/30 backdrop-blur-sm flex items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <motion.div
-                      className="w-5 h-5 border-2 border-transparent rounded-full"
-                      style={{ borderTopColor: secondaryColor }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 0.8, repeat: Infinity, ease: 'linear', delay: 0.2 }}
-                    />
-                  </motion.div>
-                )}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Total Wins</span>
-                  <Award className="w-4 h-4" style={{ color: secondaryColor }} />
-                </div>
-                <span className="text-3xl font-bold mt-1" style={{ color: secondaryColor }}>
-                  {teamSummary.totalWins}
-                </span>
-                <div className="flex items-center gap-1 mt-1.5">
-                  <div className="text-xs text-green-500 font-medium">+24</div>
-                  <div className="text-xs text-muted-foreground">this month</div>
-                </div>
-              </div>
-
-              <div
-                className="flex flex-col p-5 rounded-xl backdrop-blur-md relative overflow-hidden"
-                style={{ backgroundColor: `color-mix(in srgb, ${tertiaryColor}, transparent 90%)` }}
-              >
-                {isTeamLoading && (
-                  <motion.div
-                    className="absolute inset-0 bg-background/30 backdrop-blur-sm flex items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <motion.div
-                      className="w-5 h-5 border-2 border-transparent rounded-full"
-                      style={{ borderTopColor: tertiaryColor }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 0.8, repeat: Infinity, ease: 'linear', delay: 0.4 }}
-                    />
-                  </motion.div>
-                )}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Win Rate</span>
-                  <Sword className="w-4 h-4" style={{ color: tertiaryColor }} />
-                </div>
-                <span className="text-3xl font-bold mt-1" style={{ color: tertiaryColor }}>
-                  {teamSummary.recentWinRate}%
-                </span>
-                <div className="flex items-center gap-1 mt-1.5">
-                  <div className="text-xs text-green-500 font-medium">+5.2%</div>
-                  <div className="text-xs text-muted-foreground">past 10 battles</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Team members */}
-            <div className="md:col-span-4 space-y-3">
-              {teamMembers.map(pokemon => (
-                <motion.div
-                  key={pokemon.id}
-                  className="rounded-xl overflow-hidden transition-all backdrop-blur-sm shadow-sm"
-                  style={{
-                    backgroundColor:
-                      expandedMember === pokemon.id
-                        ? `color-mix(in srgb, ${mainColor}, transparent 90%)`
-                        : 'color-mix(in srgb, var(--background), transparent 60%)',
-                    borderLeft:
-                      expandedMember === pokemon.id
-                        ? `3px solid ${mainColor}`
-                        : '3px solid transparent',
-                  }}
-                  animate={{
-                    height: expandedMember === pokemon.id ? 'auto' : '72px',
-                    opacity: loadingPokemon.includes(pokemon.id) ? 0.6 : 1,
-                  }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                >
-                  <div
-                    className="p-4 cursor-pointer relative"
-                    onClick={() =>
-                      !isTeamLoading &&
-                      setExpandedMember(expandedMember === pokemon.id ? null : pokemon.id)
-                    }
-                  >
-                    {/* Loading overlay for individual Pokemon */}
-                    {loadingPokemon.includes(pokemon.id) && (
-                      <motion.div
-                        className="absolute inset-0 bg-background/20 backdrop-blur-[1px] z-10 flex items-center justify-center"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <motion.div
-                          className="w-8 h-8 rounded-full flex items-center justify-center"
-                          style={{
-                            backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 40%)`,
-                          }}
-                        >
-                          <motion.div
-                            className="w-5 h-5 border-2 border-transparent rounded-full"
-                            style={{ borderTopColor: mainColor }}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 0.6, repeat: Infinity, ease: 'linear' }}
-                          />
-                        </motion.div>
-                      </motion.div>
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
-                          style={{
-                            background: `radial-gradient(circle, ${mainColor}10 0%, ${secondaryColor}15 100%)`,
-                            boxShadow: `0 0 15px ${mainColor}30`,
-                          }}
-                        >
-                          {pokemon.sprite ? (
-                            <motion.img
-                              src={pokemon.sprite}
-                              alt={pokemon.name}
-                              className="w-12 h-12 object-contain"
-                              style={{ imageRendering: 'pixelated' }}
-                              whileHover={{ scale: 1.1 }}
-                              transition={{ type: 'spring', stiffness: 300, damping: 10 }}
-                              animate={{ opacity: loadingPokemon.includes(pokemon.id) ? 0.5 : 1 }}
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-muted-foreground/20" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium text-foreground text-lg">{pokemon.name}</div>
-                          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                            <span
-                              className="px-2 py-0.5 rounded-full text-[10px] font-medium"
-                              style={{
-                                backgroundColor: `color-mix(in srgb, ${mainColor}, transparent 80%)`,
-                                color: mainColor,
-                              }}
-                            >
-                              #{pokemon.dexId}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-6">
-                        <div className="flex flex-col items-center">
-                          <span className="text-xs text-muted-foreground">Level</span>
-                          <span className="font-bold text-lg" style={{ color: mainColor }}>
-                            {pokemon.level}
-                          </span>
-                        </div>
-
-                        <div className="hidden sm:flex gap-2 items-center">
-                          <motion.div
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{
-                              backgroundColor: pokemon.id % 2 === 0 ? secondaryColor : mainColor,
-                            }}
-                            animate={{
-                              scale: loadingPokemon.includes(pokemon.id)
-                                ? [1, 1.5, 1]
-                                : [1, 1.2, 1],
-                              opacity: loadingPokemon.includes(pokemon.id)
-                                ? [0.5, 1, 0.5]
-                                : [0.7, 1, 0.7],
-                            }}
-                            transition={{
-                              duration: loadingPokemon.includes(pokemon.id) ? 0.5 : 2,
-                              repeat: Infinity,
-                              delay: pokemon.id * 0.2,
-                            }}
-                          />
-                          <motion.div
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{
-                              backgroundColor:
-                                pokemon.id % 2 === 0 ? tertiaryColor : secondaryColor,
-                            }}
-                            animate={{
-                              scale: loadingPokemon.includes(pokemon.id)
-                                ? [1, 1.5, 1]
-                                : [1, 1.2, 1],
-                              opacity: loadingPokemon.includes(pokemon.id)
-                                ? [0.5, 1, 0.5]
-                                : [0.7, 1, 0.7],
-                            }}
-                            transition={{
-                              duration: loadingPokemon.includes(pokemon.id) ? 0.5 : 2,
-                              repeat: Infinity,
-                              delay: pokemon.id * 0.3,
-                            }}
-                          />
-                          <motion.div
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{
-                              backgroundColor: pokemon.id % 2 === 0 ? mainColor : tertiaryColor,
-                            }}
-                            animate={{
-                              scale: loadingPokemon.includes(pokemon.id)
-                                ? [1, 1.5, 1]
-                                : [1, 1.2, 1],
-                              opacity: loadingPokemon.includes(pokemon.id)
-                                ? [0.5, 1, 0.5]
-                                : [0.7, 1, 0.7],
-                            }}
-                            transition={{
-                              duration: loadingPokemon.includes(pokemon.id) ? 0.5 : 2,
-                              repeat: Infinity,
-                              delay: pokemon.id * 0.4,
-                            }}
-                          />
-                        </div>
-
-                        <motion.div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center`}
-                          style={{
-                            backgroundColor:
-                              expandedMember === pokemon.id ? mainColor : 'transparent',
-                            color:
-                              expandedMember === pokemon.id ? 'white' : 'var(--muted-foreground)',
-                          }}
-                          whileHover={{ scale: isTeamLoading ? 1 : 1.1 }}
-                        >
-                          {loadingPokemon.includes(pokemon.id) ? (
-                            <motion.div
-                              className="w-3 h-3 border-t-2 border-r-2 border-transparent rounded-full"
-                              style={{ borderColor: mainColor }}
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                            />
-                          ) : (
-                            <ChevronDown
-                              className={`w-4 h-4 transition-transform ${
-                                expandedMember === pokemon.id ? 'rotate-180' : ''
-                              }`}
-                            />
-                          )}
-                        </motion.div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expanded content */}
-                  <div className="px-4 pb-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 pt-3">
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-sm">
-                          <div className="flex items-center gap-1">
-                            <HeartIcon className="w-3.5 h-3.5" style={{ color: mainColor }} />
-                            <span className="text-muted-foreground font-medium">HP</span>
-                          </div>
-                          <span className="font-medium">{pokemon.stats.hp}</span>
-                        </div>
-                        <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: mainColor }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(pokemon.stats.hp / 150) * 100}%` }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-sm">
-                          <div className="flex items-center gap-1">
-                            <Sword className="w-3.5 h-3.5" style={{ color: secondaryColor }} />
-                            <span className="text-muted-foreground font-medium">Attack</span>
-                          </div>
-                          <span className="font-medium">{pokemon.stats.attack}</span>
-                        </div>
-                        <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: secondaryColor }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(pokemon.stats.attack / 150) * 100}%` }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-sm">
-                          <div className="flex items-center gap-1">
-                            <ShieldIcon className="w-3.5 h-3.5" style={{ color: tertiaryColor }} />
-                            <span className="text-muted-foreground font-medium">Defense</span>
-                          </div>
-                          <span className="font-medium">{pokemon.stats.defense}</span>
-                        </div>
-                        <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: tertiaryColor }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(pokemon.stats.defense / 150) * 100}%` }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-sm">
-                          <div className="flex items-center gap-1">
-                            <ZapIcon className="w-3.5 h-3.5" style={{ color: mainColor }} />
-                            <span className="text-muted-foreground font-medium">Speed</span>
-                          </div>
-                          <span className="font-medium">{pokemon.stats.speed}</span>
-                        </div>
-                        <div className="w-full h-2 bg-background/50 rounded-full overflow-hidden backdrop-blur-md">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: mainColor }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(pokemon.stats.speed / 150) * 100}%` }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {teamStatsComponent}
+            <div className="md:col-span-4 space-y-3">{teamMembersList}</div>
           </div>
         </div>
       </Card>
 
-      {/* Cookie Banner Card - Now after Team Stats Card */}
+      {/* Cookie Banner Card */}
       <Card className="md:col-span-2 relative overflow-hidden shadow-lg flex flex-col">
         <div className="p-6 flex flex-col">
           <div className="flex items-center gap-3 mb-5">
@@ -1619,4 +1622,4 @@ export function ExampleComponents({
       </Card>
     </div>
   );
-}
+});

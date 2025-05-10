@@ -5,23 +5,17 @@
 @tailwind components;
 @tailwind utilities;
 
-:root, html, body {
+:root,
+html,
+body {
   font-size: 16px;
   margin: 0;
   padding: 0;
 }
 
 @font-face {
-  font-family: 'Cal Sans';
-  src: url('/fonts/CalSans-SemiBold.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: 'Geist Sans';
-  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+  src: url('https://vercel.com/font/sans/regular') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -29,7 +23,7 @@
 
 @font-face {
   font-family: 'Geist Sans';
-  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+  src: url('https://vercel.com/font/sans/medium') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -37,7 +31,7 @@
 
 @font-face {
   font-family: 'Geist Sans';
-  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+  src: url('https://vercel.com/font/sans/semibold') format('woff2');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
@@ -45,14 +39,13 @@
 
 @font-face {
   font-family: 'Geist Sans';
-  src: url('https://assets.vercel.com/raw/upload/v1703066882/fonts/geist-sans/Geist-Bold.woff2') format('woff2');
+  src: url('https://vercel.com/font/sans/bold') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  --font-cal: 'Cal Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-geist: 'Geist Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
@@ -63,15 +56,20 @@ body {
   letter-spacing: -0.01em;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-cal);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-geist);
   letter-spacing: -0.03em;
   font-weight: 600;
   line-height: 1.2;
 }
 
 .display-text {
-  font-family: var(--font-cal);
+  font-family: var(--font-geist);
   letter-spacing: -0.04em;
   font-weight: 600;
 }
@@ -83,22 +81,22 @@ h1, h2, h3, h4, h5, h6 {
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
- 
+
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
- 
+
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
- 
+
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
- 
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
@@ -114,29 +112,29 @@ h1, h2, h3, h4, h5, h6 {
     --chart-4: 280 83.2% 53.3%;
     --chart-5: 340 83.2% 53.3%;
   }
- 
+
   .dark {
     --background: 224 25% 10%;
     --foreground: 210 40% 98%;
- 
+
     --card: 224 25% 11%;
     --card-foreground: 210 40% 98%;
- 
+
     --popover: 224 25% 11%;
     --popover-foreground: 210 40% 98%;
- 
+
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
- 
+
     --secondary: 215 25% 27%;
     --secondary-foreground: 210 40% 98%;
- 
+
     --muted: 215 25% 27%;
     --muted-foreground: 217 25% 70%;
- 
+
     --accent: 215 25% 27%;
     --accent-foreground: 210 40% 98%;
- 
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
@@ -158,6 +156,6 @@ h1, h2, h3, h4, h5, h6 {
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 }
