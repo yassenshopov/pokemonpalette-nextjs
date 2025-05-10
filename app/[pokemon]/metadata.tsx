@@ -24,43 +24,89 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pokemon = params.pokemon;
-
-  // Format the Pokemon name for display
   const formattedName = capitalizeWords(pokemon);
-
-  // Get the Pokemon ID safely with a fallback
   const pokemonId = typedSpeciesData[pokemon.toLowerCase()] || 1;
+  const baseUrl = 'https://pokemonpalette.com';
+  const pokemonUrl = `${baseUrl}/${pokemon}`;
+
+  // Enhanced description with more context
+  const description = `Explore ${formattedName}'s color palette and create stunning designs. Get exact HEX, RGB, and HSL values for ${formattedName}'s colors. Perfect for designers, artists, and Pokemon fans looking for color inspiration.`;
 
   return {
-    title: `${formattedName} Colors & Palette`,
-    description: `Generate beautiful color palettes inspired by ${formattedName}. Get matching colors, HEX, RGB, and HSL values for your next design project.`,
+    title: `${formattedName} Color Palette | Pokemon Palette Generator`,
+    description,
     keywords: [
       pokemon,
       `${pokemon} colors`,
       `${pokemon} palette`,
-      `pokemon color scheme`,
+      `${pokemon} color scheme`,
+      `${pokemon} design`,
+      `${pokemon} inspiration`,
+      'pokemon color generator',
+      'pokemon palette maker',
       'color inspiration',
       'design palette',
+      'pokemon design tools',
+      'pokemon art colors',
+      'pokemon color codes',
+      'pokemon hex colors',
+      'pokemon rgb values',
+      'pokemon hsl values',
     ],
+    authors: [{ name: 'Pokemon Palette' }],
+    creator: 'Pokemon Palette',
+    publisher: 'Pokemon Palette',
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: pokemonUrl,
+    },
     openGraph: {
-      title: `${formattedName} Color Palette | Pokemon Palette`,
-      description: `Generate beautiful color palettes inspired by ${formattedName}. Get matching colors, HEX, RGB, and HSL values for your next design project.`,
+      type: 'website',
+      locale: 'en_US',
+      url: pokemonUrl,
+      title: `${formattedName} Color Palette | Pokemon Palette Generator`,
+      description,
+      siteName: 'Pokemon Palette',
       images: [
         {
           url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`,
           width: 600,
           height: 600,
-          alt: formattedName,
+          alt: `${formattedName} official artwork`,
+          type: 'image/png',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${formattedName} Color Palette | Pokemon Palette`,
-      description: `Generate beautiful color palettes inspired by ${formattedName}. Get matching colors, HEX, RGB, and HSL values for your next design project.`,
+      title: `${formattedName} Color Palette | Pokemon Palette Generator`,
+      description,
+      creator: '@pokemonpalette',
       images: [
-        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`,
+        {
+          url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`,
+          alt: `${formattedName} official artwork`,
+        },
       ],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      google: 'your-google-site-verification', // Add your Google verification code
     },
   };
 }
