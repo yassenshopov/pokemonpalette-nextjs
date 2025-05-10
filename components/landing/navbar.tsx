@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { Bookmark, Check, Menu, Palette, Sparkles, User, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
@@ -12,13 +12,7 @@ import { PalettePickerDialog } from '@/components/palettes/palette-picker-dialog
 import { useRouter } from 'next/navigation';
 import { useSaveContext } from '@/contexts/save-context';
 import { useColors } from '@/contexts/color-context';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 interface NavbarProps {
   colors: string[];
@@ -101,7 +95,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
 
   return (
     <nav
-      className="box-border fixed top-0 left-0 md:left-[350px] lg:left-[450px] right-0 z-30 h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="box-border fixed top-0 left-0 right-0 z-30 h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       style={{
         background: `linear-gradient(to right, ${colors[0]}20, ${colors[1]}10)`,
       }}
@@ -110,33 +104,37 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
         {/* Logo/Title Section - Mobile & Desktop */}
         <div className="flex items-center space-x-2 md:space-x-4">
           {/* Mobile Only Logo */}
-          <div className="md:hidden relative h-8 w-8">
+          <Link href="/" className="md:hidden relative h-8 w-8">
             <Image
               src="/logo512.png"
               alt="Pokemon Palette Logo"
               width={32}
               height={32}
-              className={`h-full w-full object-contain transition-all ${isRotating ? 'animate-rotate' : ''}`}
+              className={`h-full w-full object-contain transition-all ${
+                isRotating ? 'animate-rotate' : ''
+              }`}
               style={{
                 filter: `hue-rotate(${colors.length > 0 ? getHueFromColor(colors[0]) : 0}deg)`,
               }}
             />
-          </div>
+          </Link>
 
           {/* Desktop Logo & Title */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="relative h-8 w-8">
+            <Link href="/" className="relative h-8 w-8">
               <Image
                 src="/logo512.png"
                 alt="Pokemon Palette Logo"
                 width={32}
                 height={32}
-                className={`h-full w-full object-contain transition-all ${isRotating ? 'animate-rotate' : ''}`}
+                className={`h-full w-full object-contain transition-all ${
+                  isRotating ? 'animate-rotate' : ''
+                }`}
                 style={{
                   filter: `hue-rotate(${colors.length > 0 ? getHueFromColor(colors[0]) : 0}deg)`,
                 }}
               />
-            </div>
+            </Link>
             <div className="font-display">
               {pokemonNumber && pokemonName ? (
                 <div className="flex flex-col">
@@ -148,9 +146,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                   </h1>
                 </div>
               ) : (
-                <h1 className="text-lg font-semibold">
-                  Pokemon Palette
-                </h1>
+                <h1 className="text-lg font-semibold">Pokemon Palette</h1>
               )}
             </div>
           </div>
@@ -167,9 +163,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                 </h1>
               </div>
             ) : (
-              <h1 className="text-sm font-semibold">
-                Pokemon Palette
-              </h1>
+              <h1 className="text-sm font-semibold">Pokemon Palette</h1>
             )}
           </div>
         </div>
@@ -180,8 +174,8 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
           <div className="md:hidden flex items-center space-x-1">
             {/* Save palette button for mobile */}
             <SignedIn>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 disabled={isSaving || colors.length === 0}
                 onClick={handleSavedClick}
@@ -194,12 +188,12 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                 )}
               </Button>
             </SignedIn>
-            
+
             {/* Mobile Menu Button - Universal */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-sm transition-colors hover:bg-primary/10"
                 >
@@ -210,19 +204,20 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
-                
+
                 {/* Different menu content based on auth state */}
                 <SignedIn>
                   <div className="py-4 flex flex-col gap-3">
                     {/* User account section at top of menu */}
                     <div className="flex items-center space-x-3 px-2 py-3 bg-accent/40 rounded-md mb-1">
-                      <UserButton 
+                      <UserButton
                         afterSignOutUrl="/"
                         appearance={{
                           elements: {
-                            avatarBox: "h-9 w-9 ring-2 ring-border hover:ring-primary transition-all",
-                            userButtonPopover: "shadow-lg rounded-lg border border-border"
-                          }
+                            avatarBox:
+                              'h-9 w-9 ring-2 ring-border hover:ring-primary transition-all',
+                            userButtonPopover: 'shadow-lg rounded-lg border border-border',
+                          },
                         }}
                       />
                       <div className="flex-1 min-w-0">
@@ -234,23 +229,19 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                         </p>
                       </div>
                     </div>
-                    
+
                     <PalettePickerDialog
                       onSelectPalette={handlePaletteSelect}
                       trigger={
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="w-full justify-start"
-                        >
+                        <Button variant="outline" size="sm" className="w-full justify-start">
                           <Palette className="h-4 w-4 mr-2" />
                           My Palettes
                         </Button>
                       }
                     />
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       size="sm"
                       disabled={isSaving || colors.length === 0}
                       onClick={handleSavedClick}
@@ -268,15 +259,16 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                         </>
                       )}
                     </Button>
-                    
+
                     <a
                       href="https://www.buymeacoffee.com/yassenshopov"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-1 inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all hover:opacity-90 active:scale-95"
-                      style={{ 
+                      style={{
                         backgroundColor: colors[0],
-                        color: getContrastColor(colors[0]).text === 'text-white' ? 'white' : 'black'
+                        color:
+                          getContrastColor(colors[0]).text === 'text-white' ? 'white' : 'black',
                       }}
                     >
                       <svg
@@ -298,7 +290,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                       </svg>
                       <span>Support</span>
                     </a>
-                    
+
                     {/* Theme toggle inside menu */}
                     <div className="mt-1 px-2 py-2 bg-accent/40 rounded-md">
                       <div className="flex items-center justify-between">
@@ -308,27 +300,26 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                     </div>
                   </div>
                 </SignedIn>
-                
+
                 <SignedOut>
                   <div className="py-4 flex flex-col gap-3">
                     {/* Sign in button at top of menu */}
                     <SignInButton mode="modal">
-                      <Button 
-                        className="w-full justify-start gap-2 mb-1"
-                      >
+                      <Button className="w-full justify-start gap-2 mb-1">
                         <LogIn className="h-4 w-4" />
                         Sign in
                       </Button>
                     </SignInButton>
-                    
+
                     <a
                       href="https://www.buymeacoffee.com/yassenshopov"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-1 inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all hover:opacity-90 active:scale-95"
-                      style={{ 
+                      style={{
                         backgroundColor: colors[0],
-                        color: getContrastColor(colors[0]).text === 'text-white' ? 'white' : 'black'
+                        color:
+                          getContrastColor(colors[0]).text === 'text-white' ? 'white' : 'black',
                       }}
                     >
                       <svg
@@ -350,7 +341,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                       </svg>
                       <span>Support</span>
                     </a>
-                    
+
                     {/* Theme toggle inside menu */}
                     <div className="mt-1 px-2 py-2 bg-accent/40 rounded-md">
                       <div className="flex items-center justify-between">
@@ -363,7 +354,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
               </SheetContent>
             </Sheet>
           </div>
-          
+
           {/* Desktop Action Buttons */}
           <SignedIn>
             <div className="hidden md:flex items-center gap-3">
@@ -374,12 +365,12 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                 onOpenChange={setPalettePickerOpen}
                 trigger={<div className="hidden">Hidden Trigger</div>}
               />
-              
+
               <PalettePickerDialog
                 onSelectPalette={handlePaletteSelect}
                 trigger={
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     className="h-8 px-3 text-sm font-medium transition-colors hover:bg-primary/10 gap-2"
                   >
@@ -388,9 +379,9 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                   </Button>
                 }
               />
-              
-              <Button 
-                variant="ghost" 
+
+              <Button
+                variant="ghost"
                 size="sm"
                 disabled={isSaving || colors.length === 0}
                 onClick={handleSavedClick}
@@ -416,9 +407,9 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
             {/* Sign In Button - Desktop only */}
             <SignedOut>
               <SignInButton mode="modal">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-8 px-3 text-sm font-medium transition-colors hover:bg-primary/10"
                 >
                   <Bookmark className="w-4 h-4 mr-2" />
@@ -429,29 +420,29 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
 
             {/* User Button - Desktop */}
             <SignedIn>
-              <UserButton 
+              <UserButton
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: "h-8 w-8 ring-2 ring-border hover:ring-primary transition-all",
-                    userButtonPopover: "shadow-lg rounded-lg border border-border"
-                  }
+                    avatarBox: 'h-8 w-8 ring-2 ring-border hover:ring-primary transition-all',
+                    userButtonPopover: 'shadow-lg rounded-lg border border-border',
+                  },
                 }}
               />
             </SignedIn>
 
             {/* Separator - Desktop only */}
             <div className="h-4 w-px bg-border/50 mx-1" />
-            
+
             {/* Support Button - Desktop only */}
             <a
               href="https://www.buymeacoffee.com/yassenshopov"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-3 h-8 text-sm font-medium rounded-lg transition-all hover:opacity-90 active:scale-95"
-              style={{ 
+              style={{
                 backgroundColor: colors[0],
-                color: getContrastColor(colors[0]).text === 'text-white' ? 'white' : 'black'
+                color: getContrastColor(colors[0]).text === 'text-white' ? 'white' : 'black',
               }}
             >
               <svg
@@ -473,10 +464,10 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
               </svg>
               <span>Support</span>
             </a>
-            
+
             {/* Separator - Desktop only */}
             <div className="h-4 w-px bg-border/50 mx-1" />
-            
+
             {/* Theme Toggle - Desktop */}
             <ThemeToggle />
           </div>
@@ -484,4 +475,4 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
       </div>
     </nav>
   );
-} 
+}

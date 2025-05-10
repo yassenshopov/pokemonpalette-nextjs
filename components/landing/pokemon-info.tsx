@@ -6,11 +6,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Volume2, VolumeX, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronDown, Volume2, VolumeX, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useColors } from '@/contexts/color-context';
 
 interface Stat {
   name: string;
@@ -52,6 +53,7 @@ export function PokemonInfo({
   currentDescriptionIndex,
   onDescriptionChange,
 }: PokemonInfoProps) {
+  const { shiny, setShiny } = useColors();
   const mainColor = colors[0] || '#000000';
   const secondaryColor = colors[1] || mainColor;
   const tertiaryColor = colors[2] || secondaryColor;
@@ -145,7 +147,9 @@ export function PokemonInfo({
   const maxStat = Math.max(...stats.map(stat => stat.base_stat));
 
   // Format stat name to be more readable
-  const formatStatName = (name: string) => {
+  const formatStatName = (name: string | undefined) => {
+    if (!name) return 'Unknown';
+
     switch (name) {
       case 'hp':
         return 'HP';
@@ -159,6 +163,10 @@ export function PokemonInfo({
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ');
     }
+  };
+
+  const handleShinyToggle = () => {
+    setShiny(!shiny);
   };
 
   return (
@@ -191,27 +199,55 @@ export function PokemonInfo({
                 {pokemonName} #{String(pokemonNumber).padStart(3, '0')}
               </h2>
 
-              {pokemonCry && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={playPokemonCry}
-                  className={cn(
-                    'rounded-full',
-                    'bg-black/10 hover:bg-black/20',
-                    'dark:bg-white/10 dark:hover:bg-white/20',
-                    textColor
-                  )}
-                >
-                  {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {/* Shiny Toggle Button */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleShinyToggle}
+                        className={cn(
+                          'rounded-full transition-all duration-300',
+                          'bg-black/10 hover:bg-black/20',
+                          'dark:bg-white/10 dark:hover:bg-white/20',
+                          textColor,
+                          shiny && 'animate-pulse'
+                        )}
+                      >
+                        <Sparkles className={cn('h-4 w-4', shiny && 'text-yellow-400')} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Toggle Shiny Form</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Cry Button */}
+                {pokemonCry && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={playPokemonCry}
+                    className={cn(
+                      'rounded-full',
+                      'bg-black/10 hover:bg-black/20',
+                      'dark:bg-white/10 dark:hover:bg-white/20',
+                      textColor
+                    )}
+                  >
+                    {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {pokemonTypes.map(type => (
+              {pokemonTypes.map((type, index) => (
                 <span
-                  key={type}
+                  key={`${type}-${index}`}
                   className={cn(
                     'px-3 py-1 rounded-full text-sm font-medium capitalize',
                     'bg-black/10 dark:bg-white/10',
@@ -239,9 +275,9 @@ export function PokemonInfo({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[150px]">
-              {availableVersions.map(version => (
+              {availableVersions.map((version, index) => (
                 <DropdownMenuItem
-                  key={version}
+                  key={`${version}-${index}`}
                   onClick={() => onVersionChange(version)}
                   className="capitalize"
                 >
@@ -346,7 +382,7 @@ export function PokemonInfo({
             <h3 className={cn('text-lg font-semibold mb-4', textColor)}>Base Stats</h3>
             <div className="space-y-3">
               {stats.map((stat, index) => (
-                <div key={stat.name} className="space-y-1">
+                <div key={`${stat.name}-${index}`} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className={cn('font-medium', textColor)}>
                       {formatStatName(stat.name)}

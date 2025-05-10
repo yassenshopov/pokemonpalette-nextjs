@@ -3,4 +3,4 @@ declare module 'colorthief' {
     getPalette(image: HTMLImageElement, colorCount: number): number[][];
     getColor(image: HTMLImageElement): number[];
   }
-} 
+}
