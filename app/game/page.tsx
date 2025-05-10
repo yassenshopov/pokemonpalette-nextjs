@@ -10,16 +10,31 @@ import { PokemonSearch } from '@/components/pokemon-search';
 import { LoadingPokeball } from '@/components/loading-pokeball';
 import confetti from 'canvas-confetti';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SignInButton, UserButton } from '@clerk/nextjs';
 import { TypeBadge } from '@/components/type-badge';
 import { GameBackground } from '@/components/game-background';
 import '../styles/game-animations.css';
-import Link from "next/link";
-import Image from "next/image";
+import Link from 'next/link';
+import Image from 'next/image';
+import Head from 'next/head';
+import { ColorPalette } from '@/components/landing/color-palette';
 
-type HintType = 'first-letter' | 'generation' | 'type' | 'size' | 'pokedex' | 'name-length' | 'common-substring';
+type HintType =
+  | 'first-letter'
+  | 'generation'
+  | 'type'
+  | 'size'
+  | 'pokedex'
+  | 'name-length'
+  | 'common-substring';
 
 interface GuessData {
   name: string;
@@ -93,7 +108,7 @@ export default function GamePage() {
     const img = new window.Image();
     img.crossOrigin = 'Anonymous';
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       img.onload = () => {
         const colorThief = new ColorThief();
         const palette = colorThief.getPalette(img, 3);
@@ -125,14 +140,14 @@ export default function GamePage() {
     const today = new Date();
     const dateString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
     const pokemonNames = Object.keys(speciesData);
-    
+
     // Use the date string to generate a consistent index for the day
     let hash = 0;
     for (let i = 0; i < dateString.length; i++) {
-      hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+      hash = (hash << 5) - hash + dateString.charCodeAt(i);
       hash = hash & hash; // Convert to 32-bit integer
     }
-    
+
     const index = Math.abs(hash) % pokemonNames.length;
     return pokemonNames[index];
   };
@@ -142,25 +157,26 @@ export default function GamePage() {
     setIsLoading(true);
     const randomPokemon = mode === 'daily' ? getDailyPokemon() : getRandomPokemon();
     setTargetPokemon(randomPokemon);
-    
+
     // Determine if this Pokemon should be shiny (1/20 chance)
     const isShiny = Math.random() < 0.05;
-    
+
     try {
       const data = await PokemonService.fetchPokemon(randomPokemon);
       setTargetPokemonData(data);
-      
+
       // Use shiny sprite if available and Pokemon is shiny
-      const spriteUrl = isShiny 
-        ? data.sprites.other['official-artwork'].front_shiny || data.sprites.other['official-artwork'].front_default
+      const spriteUrl = isShiny
+        ? data.sprites.other['official-artwork'].front_shiny ||
+          data.sprites.other['official-artwork'].front_default
         : data.sprites.other['official-artwork'].front_default;
-      
-      const pixelSpriteUrl = isShiny 
+
+      const pixelSpriteUrl = isShiny
         ? data.sprites.front_shiny || data.sprites.front_default
         : data.sprites.front_default;
-        
+
       setPokemonSprite(spriteUrl);
-      
+
       if (pixelSpriteUrl) {
         const colors = await extractColors(pixelSpriteUrl);
         setColors(colors as string[]);
@@ -169,7 +185,7 @@ export default function GamePage() {
       // Update game state with shiny status
       setGameState(prev => ({
         ...prev,
-        isShiny
+        isShiny,
       }));
     } catch (error) {
       console.error('Error fetching Pokemon:', error);
@@ -192,18 +208,18 @@ export default function GamePage() {
     const normalizedGuess = currentGuess.toLowerCase().trim().replace(/\s+/g, '-');
     const normalizedTarget = targetPokemon.toLowerCase();
 
-    console.log("Attempting guess:", {
+    console.log('Attempting guess:', {
       original: currentGuess,
       normalized: normalizedGuess,
-      target: targetPokemon
+      target: targetPokemon,
     });
 
     // First validate if it's a valid Pokemon name
     const guessId = PokemonService.getSpeciesId(normalizedGuess);
-    console.log("Pokemon ID lookup:", {
+    console.log('Pokemon ID lookup:', {
       name: normalizedGuess,
       id: guessId,
-      speciesData: (speciesData as Record<string, number>)[normalizedGuess]
+      speciesData: (speciesData as Record<string, number>)[normalizedGuess],
     });
 
     if (!guessId) {
@@ -213,18 +229,21 @@ export default function GamePage() {
       const start = Math.max(0, guessIndex - 2);
       const nearbyNames = allNames.slice(start, start + 5);
 
-      console.log("Invalid Pokemon name detected:", {
+      console.log('Invalid Pokemon name detected:', {
         input: currentGuess,
         normalized: normalizedGuess,
         nearbyNames: nearbyNames,
-        validExample: "Try Pokemon like: " + nearbyNames.join(", ")
+        validExample: 'Try Pokemon like: ' + nearbyNames.join(', '),
       });
 
       setGameState(prev => ({
         ...prev,
-        guessHistory: [...prev.guessHistory, { name: currentGuess, sprite: '', types: [], generation: 0 }],
-        hints: [...prev.hints, "Invalid Pokemon name"],
-        remainingGuesses: prev.remainingGuesses - 1
+        guessHistory: [
+          ...prev.guessHistory,
+          { name: currentGuess, sprite: '', types: [], generation: 0 },
+        ],
+        hints: [...prev.hints, 'Invalid Pokemon name'],
+        remainingGuesses: prev.remainingGuesses - 1,
       }));
       setCurrentGuess('');
       setIsLoading(false);
@@ -238,7 +257,7 @@ export default function GamePage() {
         name: currentGuess,
         sprite: guessData.sprites.front_default,
         types: guessData.types.map((t: any) => t.type.name),
-        generation: getGeneration(guessData.id)
+        generation: getGeneration(guessData.id),
       };
 
       const newGameState = { ...gameState };
@@ -246,7 +265,7 @@ export default function GamePage() {
 
       // Only decrease remaining guesses if it's not correct
       if (normalizedGuess === normalizedTarget) {
-        console.log("Correct guess!");
+        console.log('Correct guess!');
         newGameState.gameStatus = 'won';
         setShowWinDialog(true);
         // Add victory celebration
@@ -254,9 +273,9 @@ export default function GamePage() {
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-          colors: colors // Use the Pokemon's color palette!
+          colors: colors, // Use the Pokemon's color palette!
         });
-        
+
         // Fire multiple bursts for more impact
         setTimeout(() => {
           confetti({
@@ -264,33 +283,33 @@ export default function GamePage() {
             angle: 60,
             spread: 55,
             origin: { x: 0 },
-            colors: colors
+            colors: colors,
           });
           confetti({
             particleCount: 50,
             angle: 120,
             spread: 55,
             origin: { x: 1 },
-            colors: colors
+            colors: colors,
           });
         }, 250);
       } else {
         newGameState.remainingGuesses--;
         if (newGameState.remainingGuesses === 0) {
-          console.log("Game over - no more guesses");
+          console.log('Game over - no more guesses');
           newGameState.gameStatus = 'lost';
           setShowLossDialog(true);
         } else {
           try {
-            console.log("Generating hint for:", {
+            console.log('Generating hint for:', {
               guess: normalizedGuess,
               guessId: guessId,
               target: normalizedTarget,
-              targetData: targetPokemonData
+              targetData: targetPokemonData,
             });
 
             const hint = await generateHint(normalizedGuess, normalizedTarget);
-            console.log("Generated hint:", hint);
+            console.log('Generated hint:', hint);
             newGameState.hints.push(hint);
           } catch (error) {
             console.error('Error generating hint:', error);
@@ -309,14 +328,14 @@ export default function GamePage() {
   };
 
   const generateHint = async (guess: string, target: string): Promise<string> => {
-    if (!targetPokemonData) return "Loading hint...";
+    if (!targetPokemonData) return 'Loading hint...';
 
     try {
       const guessData = await PokemonService.fetchPokemon(guess);
-      
+
       // Validate the required data exists
       if (!guessData || !guessData.types || !guessData.id) {
-        return "Error: Invalid Pokemon data";
+        return 'Error: Invalid Pokemon data';
       }
 
       // Progressive hints based on guess number
@@ -327,27 +346,28 @@ export default function GamePage() {
         case 1:
           // First hint: Primary type
           return `This Pokemon is a ${targetTypes[0]} type`;
-          
+
         case 2:
           // Second hint: Single/Dual typing
-          return targetTypes.length > 1 
+          return targetTypes.length > 1
             ? `This Pokemon has a secondary ${targetTypes[1]} type`
             : `This Pokemon is a pure ${targetTypes[0]} type`;
-          
+
         case 3:
           // Third hint: Generation
           const generation = getGeneration(targetPokemonData.id);
           return `This Pokemon is from Generation ${generation}`;
-          
+
         default:
           // Fallback hint: Pokedex proximity
           const difference = Math.abs(targetPokemonData.id - guessData.id);
-          return `Pokedex difference: ${difference} (${targetPokemonData.id > guessData.id ? 'higher' : 'lower'})`;
+          return `Pokedex difference: ${difference} (${
+            targetPokemonData.id > guessData.id ? 'higher' : 'lower'
+          })`;
       }
-      
     } catch (error) {
       console.error('Error in generateHint:', error);
-      return "Error generating hint";
+      return 'Error generating hint';
     }
   };
 
@@ -355,7 +375,7 @@ export default function GamePage() {
   const toggleGameMode = () => {
     setGameState(prev => ({
       ...prev,
-      gameMode: prev.gameMode === 'unlimited' ? 'daily' : 'unlimited'
+      gameMode: prev.gameMode === 'unlimited' ? 'daily' : 'unlimited',
     }));
     initGame(gameState.gameMode === 'unlimited' ? 'daily' : 'unlimited');
   };
@@ -369,16 +389,16 @@ export default function GamePage() {
       hints: [],
       usedHintTypes: [],
       gameMode: prev.gameMode,
-      isShiny: prev.isShiny
+      isShiny: prev.isShiny,
     }));
-    
+
     if (gameState.gameMode === 'unlimited') {
       initGame('unlimited');
     } else {
       // In daily mode, only allow playing again if it's a new day
       window.location.reload();
     }
-    
+
     setShowWinDialog(false);
     setShowLossDialog(false);
   };
@@ -432,53 +452,61 @@ export default function GamePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      <Head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
       <GameBackground colors={colors} />
-      
-      <header className="w-full bg-card/80 fixed top-0 left-0 z-50 border-b game-header">
+      <div className="scanlines pointer-events-none absolute inset-0 z-30" />
+      <header className="w-full bg-card/80 fixed top-0 left-0 z-50 border-b">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-4">
-            <div>
-              <Image 
-                src="/logo512.png" 
-                alt="Pokemon Palette Logo" 
-                width={32}
-                height={32}
-                className={`w-8 h-8 pokemon-float ${isRotating ? 'animate-rotate' : ''}`}
-                style={{
-                  filter: `hue-rotate(${
-                    colors.length > 0 ? getHueFromColor(colors[0]) : 0
-                  }deg)`,
-                }}
-              />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold font-display leading-tight">
-                Pokemon Palette
-                <span className="block text-xs text-muted-foreground -mt-1">
-                  Guesser {gameState.isShiny ? '✨' : ''}
-                </span>
-              </h1>
-            </div>
-          </div>
-          
+          <Link
+            href="/"
+            className="flex items-center gap-4 group"
+            tabIndex={0}
+            aria-label="Go to homepage"
+          >
+            <Image
+              src="/logo512.png"
+              alt="Pokemon Palette Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 pokemon-float group-hover:scale-110 transition-transform"
+            />
+            <h1
+              className="text-lg font-bold font-display leading-tight font-pixel"
+              style={{ fontFamily: 'Press Start 2P, monospace' }}
+            >
+              Pokemon Palette
+              <span className="block text-xs text-muted-foreground -mt-1">Guesser</span>
+            </h1>
+          </Link>
           <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="h-8">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="h-8 font-pixel"
+              style={{ fontFamily: 'Press Start 2P, monospace' }}
+            >
               <Link href="/">Home</Link>
             </Button>
-            <Tabs 
-              value={gameState.gameMode} 
-              onValueChange={toggleGameMode}
-              className="h-8"
-            >
+            <Tabs value={gameState.gameMode} onValueChange={toggleGameMode} className="h-8">
               <TabsList className="grid w-full grid-cols-2 h-8">
-                <TabsTrigger value="daily" className="text-xs px-3">📅 Daily</TabsTrigger>
-                <TabsTrigger value="unlimited" className="text-xs px-3">🎲 Unlimited</TabsTrigger>
+                <TabsTrigger value="daily" className="text-xs px-3 font-pixel">
+                  📅 Daily
+                </TabsTrigger>
+                <TabsTrigger value="unlimited" className="text-xs px-3 font-pixel">
+                  🎲 Unlimited
+                </TabsTrigger>
               </TabsList>
             </Tabs>
             <div className="flex items-center gap-2">
               <SignInButton mode="modal">
-                <Button variant="ghost" size="sm" className="h-8">
+                <Button variant="ghost" size="sm" className="h-8 font-pixel">
                   Sign In
                 </Button>
               </SignInButton>
@@ -488,255 +516,194 @@ export default function GamePage() {
           </div>
         </div>
       </header>
-
       <main className="flex-1 flex flex-col items-center pt-20 px-4">
-        {/* Pokemon Sprite Display */}
-        <div className="max-w-[460px] sm:max-w-[200px] relative p-4 mb-4">
-          {gameState.gameStatus !== 'playing' && (
-            <div className="pokemon-sprite-container">
-              <Image
-                src={pokemonSprite}
-                alt="Pokemon"
-                width={200}
-                height={200}
-                className={`w-full h-full object-contain animate-fade-in ${
-                  gameState.isShiny ? 'shiny-effect' : ''
-                }`}
-              />
-            </div>
-          )}
+        {/* Show the color palette as the main focus */}
+        <div className="w-full max-w-lg mx-auto mb-8">
+          <ColorPalette colors={colors} />
         </div>
-
-        {/* Color Display */}
-        <div className="w-full max-w-[280px] sm:max-w-md mb-8">
-          <div className="grid grid-cols-3 gap-3">
-            {colors.map((color, index) => (
-              <div
-                key={index}
-                className="aspect-square rounded-lg shadow-lg pokemon-card"
-                style={{ backgroundColor: color }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Hearts and Guesses Display */}
-        <div className="flex flex-col items-center gap-2 mt-4">
-          <div className="flex gap-1">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <span key={i} className={`text-2xl transition-transform hover:scale-110 ${
-                i < gameState.remainingGuesses ? "animate-bounce" : ""
-              }`}>
-                {i < gameState.remainingGuesses ? "❤️" : "🖤"}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Updated Guess Input */}
-        {gameState.gameStatus === 'playing' && (
-          <div className="w-full max-w-[280px] sm:max-w-md mb-6">
-            <div className="flex gap-2">
-              <PokemonSearch
-                onSelect={(name) => {
-                  setCurrentGuess(name);
-                  handleGuess();
-                }}
-                className="flex-1 glass-effect"
-                placeholder="Enter Pokemon name..."
-                disabled={isGuessing}
-                disabledOptions={gameState.guessHistory.map(g => g.name)}
-                isShiny={gameState.isShiny}
-              />
-              <Button 
-                onClick={handleGuess}
-                className="px-4"
-                variant="secondary"
-                disabled={isGuessing}
-              >
-                {isGuessing ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  'Guess'
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Hints and History */}
-        <div className="w-full max-w-[280px] sm:max-w-md space-y-2 sm:space-y-4">
-          {gameState.hints.map((hint, index) => {
-            const guess = gameState.guessHistory[index];
-            return (
-              <Card key={index} className="pokemon-card overflow-hidden">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center gap-2">
-                    <Image 
-                      src={guess.sprite} 
-                      alt={guess.name} 
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg"
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm sm:text-base font-medium capitalize text-foreground">
-                        {guess.name}
-                      </p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {guess.types.map((type) => {
-                          const isMatch = targetPokemonData?.types.some(t => t.type.name === type);
-                          return (
-                            <TypeBadge 
-                              key={type} 
-                              type={type as any}
-                              isMatch={isMatch}
-                            />
-                          );
-                        })}
-                        <TypeBadge 
-                          type="normal"
-                          className={`${
-                            getGeneration(targetPokemonData?.id || 0) === guess.generation
-                              ? 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200'
-                              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
-                          }`}
-                        >
-                          Gen {guess.generation}
-                        </TypeBadge>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                    {hint}
-                  </p>
-                </CardContent>
-              </Card>
+        <div
+          className="gameboy-frame relative w-full max-w-lg mx-auto overflow-hidden rounded-2xl shadow-2xl z-10 mt-2"
+          style={{
+            backgroundColor: colors[2] || '#e6f2c2',
+            borderColor: colors[1] || '#bfcf9b',
+            borderWidth: 4,
+            boxShadow: `0 0 0 8px ${colors[2] || '#b8b090'}, 0 0 0 12px ${
+              colors[1] || '#7c6f57'
+            }, 0 8px 32px 0 #0008`,
+          }}
+        >
+          <div
+            className="absolute inset-0 pointer-events-none rounded-2xl"
+            style={{ border: `4px solid ${colors[1] || '#7c8a5a'}` }}
+          />
+          <div
+            className="p-6 md:p-10 flex flex-col items-center gap-8"
+            style={{ backgroundColor: `${colors[2]}20` || '#f6ffe0' }}
+          >
+            {/* Guess Input */}
+            {gameState.gameStatus === 'playing' && (
+              <div className="w-full max-w-[320px] mb-6">
+                <div className="flex gap-2">
+                  <PokemonSearch
+                    onSelect={name => {
+                      setCurrentGuess(name);
+                      handleGuess();
+                    }}
+                    className="flex-1 glass-effect font-pixel"
+                    placeholder="Guess the Pokémon by its colors..."
+                    disabled={isGuessing}
+                    disabledOptions={gameState.guessHistory.map(g => g.name)}
+                    isShiny={gameState.isShiny}
+                  />
+                  <Button
+                    onClick={handleGuess}
+                    className="px-4 font-pixel"
+                    style={{ backgroundColor: colors[0], color: '#fff', borderColor: colors[1] }}
+                    variant="secondary"
+                    disabled={isGuessing}
+                  >
+                    {isGuessing ? (
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      'Guess'
+                    )}
+                  </Button>
+                </div>
+              </div>
             )}
-          )}
-        </div>
-
-        {/* Game Over States */}
-        {gameState.gameStatus !== 'playing' && (
-          <>
-            <Dialog open={showLossDialog} onOpenChange={(open: boolean) => setShowLossDialog(open)}>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl text-center mb-2">
-                    💔 Game Over! 💔
-                  </DialogTitle>
-                  <DialogDescription className="text-center">
-                    <div className="mb-4">
-                      {gameState.gameMode === 'daily' ? (
-                        <>Come back tomorrow to try again! The Pokemon was</>
-                      ) : (
-                        <>Better luck next time! The Pokemon was</>
-                      )}{' '}
-                      <span className="font-bold capitalize">
-                        {targetPokemon.replace(/-/g, ' ')}
-                      </span>
-                    </div>
-                    <div className="w-full max-w-[200px] mx-auto mb-4">
-                      <div className="pokemon-sprite-container">
-                        <Image
-                          src={pokemonSprite}
-                          alt={targetPokemon}
-                          width={200}
-                          height={200}
-                          className="w-full h-full object-contain grayscale opacity-80"
-                        />
-                      </div>
-                    </div>
-                    <div className="text-sm opacity-75">
-                      {gameState.gameMode === 'daily' ? (
-                        <>A new Pokemon will be available in 24 hours!</>
-                      ) : (
-                        <>You ran out of guesses! Try again with a new Pokemon.</>
-                      )}
-                    </div>
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-center mt-4">
-                  <Button 
-                    onClick={handlePlayAgain}
-                    className="px-8 py-2"
+            {/* Hearts and Guesses Display */}
+            <div className="flex flex-col items-center gap-2 mt-2">
+              <div className="flex gap-1">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`text-2xl transition-transform font-pixel ${
+                      i < gameState.remainingGuesses ? 'animate-bounce' : 'opacity-40'
+                    }`}
+                    style={{ color: colors[1] }}
                   >
-                    {gameState.gameMode === 'unlimited' ? 'Play Again' : 'Back to Home'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={showWinDialog} onOpenChange={(open: boolean) => setShowWinDialog(open)}>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl text-center mb-2">
-                    🎉 Congratulations! 🎉
-                  </DialogTitle>
-                  <DialogDescription className="text-center">
-                    <div className="mb-4">
-                      {gameState.gameMode === 'daily' ? (
-                        <>You solved today's {gameState.isShiny ? 'Shiny ' : ''}Pokemon! It was</>
-                      ) : (
-                        <>You caught the {gameState.isShiny ? 'Shiny ' : ''}Pokemon! It was</>
-                      )}{' '}
-                      <span className="font-bold capitalize">
-                        {targetPokemon.replace(/-/g, ' ')}
-                      </span>
-                    </div>
-                    <div className="w-full max-w-[200px] mx-auto mb-4">
-                      <div className="pokemon-sprite-container">
-                        <Image
-                          src={pokemonSprite}
-                          alt={targetPokemon}
-                          width={200}
-                          height={200}
-                          className="w-full h-full object-contain pokemon-float"
-                        />
-                      </div>
-                    </div>
-                    <div className="text-sm opacity-75">
-                      You got it in {4 - gameState.remainingGuesses + 1} {4 - gameState.remainingGuesses + 1 === 1 ? 'try' : 'tries'}!
-                      {gameState.gameMode === 'daily' && (
-                        <><br />Come back tomorrow for a new Pokemon!</>
-                      )}
-                    </div>
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-center gap-2 mt-4">
-                  <Button 
-                    onClick={handlePlayAgain}
-                    className="px-8 py-2"
+                    {i < gameState.remainingGuesses ? '❤️' : '🖤'}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {/* Hints and History */}
+            <div className="w-full max-w-[320px] space-y-2">
+              {gameState.hints.map((hint, index) => {
+                const guess = gameState.guessHistory[index];
+                return (
+                  <Card
+                    key={index}
+                    className="pokemon-card overflow-hidden"
+                    style={{ backgroundColor: colors[2], color: '#fff', borderColor: colors[1] }}
                   >
-                    {gameState.gameMode === 'unlimited' ? 'Play Again' : 'Back to Home'}
-                  </Button>
-                  {gameState.gameMode === 'daily' && (
-                    <Button 
-                      onClick={() => {
-                        setShowWinDialog(false);
-                        setGameState({
-                          remainingGuesses: 4,
-                          gameStatus: 'playing',
-                          guessHistory: [],
-                          hints: [],
-                          usedHintTypes: [],
-                          gameMode: 'unlimited',
-                          isShiny: false
-                        });
-                        initGame('unlimited');
-                      }}
-                      variant="secondary"
-                      className="px-8 py-2"
+                    <CardContent className="p-3 flex items-center gap-3 font-pixel text-xs md:text-sm">
+                      <div className="flex-1">
+                        <p className="font-bold capitalize" style={{ color: colors[0] }}>
+                          {guess.name}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {guess.types.map(type => (
+                            <TypeBadge key={type} type={type as any} />
+                          ))}
+                        </div>
+                        <p className="mt-1" style={{ color: colors[1] }}>
+                          {hint}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            {/* Game Over States: show the sprite and result only after game ends */}
+            {gameState.gameStatus !== 'playing' && (
+              <div className="w-full max-w-[320px] mt-6">
+                <Card
+                  className="overflow-hidden"
+                  style={{ backgroundColor: colors[2], color: '#fff', borderColor: colors[1] }}
+                >
+                  <CardContent className="p-6 flex flex-col items-center gap-4 font-pixel">
+                    <div className="w-24 h-24 relative">
+                      <Image
+                        src={pokemonSprite}
+                        alt={targetPokemon}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                    <h2 className="text-xl font-bold mt-2 mb-1" style={{ color: colors[0] }}>
+                      {gameState.gameStatus === 'won' ? '🎉 You caught it! 🎉' : '💔 Game Over! 💔'}
+                    </h2>
+                    <p className="text-center">
+                      {gameState.gameStatus === 'won'
+                        ? `You caught ${targetPokemon.replace(/-/g, ' ')} in ${
+                            4 - gameState.remainingGuesses + 1
+                          } ${4 - gameState.remainingGuesses + 1 === 1 ? 'try' : 'tries'}!`
+                        : `The Pokémon was ${targetPokemon.replace(
+                            /-/g,
+                            ' '
+                          )}. Better luck next time!`}
+                    </p>
+                    <Button
+                      onClick={handlePlayAgain}
+                      className="w-full font-pixel"
+                      style={{ backgroundColor: colors[0], color: '#fff', borderColor: colors[1] }}
                     >
-                      Try Unlimited
+                      {gameState.gameMode === 'unlimited' ? 'Play Again' : 'Back to Home'}
                     </Button>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-          </>
-        )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
+      <style jsx>{`
+        .font-pixel {
+          font-family: 'Press Start 2P', monospace !important;
+        }
+        .gameboy-frame {
+          box-shadow: 0 0 0 8px #b8b090, 0 0 0 12px #7c6f57, 0 8px 32px 0 #0008;
+        }
+        .scanlines {
+          background: repeating-linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.08) 0px,
+            rgba(0, 0, 0, 0.08) 1px,
+            transparent 1px,
+            transparent 4px
+          );
+          mix-blend-mode: multiply;
+          z-index: 30;
+        }
+        .glitch-sprite {
+          animation: glitch 1.2s infinite linear alternate-reverse;
+        }
+        .shiny-glow {
+          filter: drop-shadow(0 0 16px #ffe066) drop-shadow(0 0 32px #ffe066);
+        }
+        @keyframes glitch {
+          0% {
+            transform: translate(0, 0);
+          }
+          20% {
+            transform: translate(-2px, 2px) skew(-1deg, 1deg);
+          }
+          40% {
+            transform: translate(-2px, -2px) skew(1deg, -1deg);
+          }
+          60% {
+            transform: translate(2px, 2px) skew(-1deg, 1deg);
+          }
+          80% {
+            transform: translate(2px, -2px) skew(1deg, -1deg);
+          }
+          100% {
+            transform: translate(0, 0);
+          }
+        }
+      `}</style>
     </div>
   );
-} 
+}
