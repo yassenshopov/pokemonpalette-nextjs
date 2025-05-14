@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     },
     verification: {
-      google: 'REPLACE_WITH_YOUR_GOOGLE_SITE_VERIFICATION_CODE',
+      // Google site verification not needed; verified via domain provider
     },
   };
 }
