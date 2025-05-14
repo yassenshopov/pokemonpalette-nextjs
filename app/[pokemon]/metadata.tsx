@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pokemon = params.pokemon;
   const formattedName = capitalizeWords(pokemon);
   const pokemonId = typedSpeciesData[pokemon.toLowerCase()] || 1;
-  const baseUrl = 'https://pokemonpalette.com';
+  const baseUrl = 'https://www.pokemonpalette.com';
   const pokemonUrl = `${baseUrl}/${pokemon}`;
 
   // Enhanced description with more context
@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     },
     verification: {
-      google: 'your-google-site-verification', // Add your Google verification code
+      google: 'REPLACE_WITH_YOUR_GOOGLE_SITE_VERIFICATION_CODE',
     },
   };
 }
