@@ -83,6 +83,13 @@ export function Footer() {
               </a>
               <span className="text-muted-foreground">•</span>
               <a
+                href="/shop"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Shop
+              </a>
+              <span className="text-muted-foreground">•</span>
+              <a
                 href="https://buymeacoffee.com/yassenshopov"
                 target="_blank"
                 rel="noreferrer"

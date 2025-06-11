@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
-import { Bookmark, Check, Menu, Palette, Sparkles, User, LogIn } from 'lucide-react';
+import { Bookmark, Check, Menu, Palette, Sparkles, User, LogIn, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -260,6 +260,19 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                       )}
                     </Button>
 
+                    <Link
+                      href="/shop"
+                      className="mt-1 inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all hover:opacity-90 active:scale-95"
+                      style={{
+                        backgroundColor: colors[2],
+                        color:
+                          getContrastColor(colors[2]).text === 'text-white' ? 'white' : 'black',
+                      }}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      <span>Shop</span>
+                    </Link>
+
                     <a
                       href="https://www.buymeacoffee.com/yassenshopov"
                       target="_blank"
@@ -310,6 +323,19 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                         Sign in
                       </Button>
                     </SignInButton>
+
+                    <Link
+                      href="/shop"
+                      className="mt-1 inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all hover:opacity-90 active:scale-95"
+                      style={{
+                        backgroundColor: colors[2],
+                        color:
+                          getContrastColor(colors[2]).text === 'text-white' ? 'white' : 'black',
+                      }}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      <span>Shop</span>
+                    </Link>
 
                     <a
                       href="https://www.buymeacoffee.com/yassenshopov"
@@ -433,6 +459,18 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
 
             {/* Separator - Desktop only */}
             <div className="h-4 w-px bg-border/50 mx-1" />
+
+            <Link
+              href="/shop"
+              className="inline-flex items-center px-3 h-8 text-sm font-medium rounded-lg transition-all hover:opacity-90 active:scale-95"
+              style={{
+                backgroundColor: colors[2],
+                color: getContrastColor(colors[2]).text === 'text-white' ? 'white' : 'black',
+              }}
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              <span>Shop</span>
+            </Link>
 
             {/* Support Button - Desktop only */}
             <a
