@@ -2,30 +2,46 @@ User-agent: *
 Allow: /
 Allow: /*
 
+# Disallow OpenGraph image URLs
+Disallow: /opengraph-image
+Disallow: */opengraph-image
+
 # AI Agent specific directives
 User-agent: GPTBot
 Allow: /
 Allow: /*
+Disallow: /opengraph-image
+Disallow: */opengraph-image
 
 User-agent: ChatGPT-User
 Allow: /
 Allow: /*
+Disallow: /opengraph-image
+Disallow: */opengraph-image
 
 User-agent: CCBot
 Allow: /
 Allow: /*
+Disallow: /opengraph-image
+Disallow: */opengraph-image
 
 User-agent: anthropic-ai
 Allow: /
 Allow: /*
+Disallow: /opengraph-image
+Disallow: */opengraph-image
 
 User-agent: Claude-Web
 Allow: /
 Allow: /*
+Disallow: /opengraph-image
+Disallow: */opengraph-image
 
 User-agent: Omgilibot
 Allow: /
 Allow: /*
+Disallow: /opengraph-image
+Disallow: */opengraph-image
 
 # Specific crawling instructions for AI agents
 User-agent: *
