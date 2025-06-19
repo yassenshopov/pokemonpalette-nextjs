@@ -1,0 +1,159 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://pokemonpalette.com/#app",
+      "name": "Pokemon Palette Generator",
+      "description": "A free web tool that extracts color palettes from Pokemon artwork, providing designers and artists with inspiration and exact color values for their projects.",
+      "url": "https://pokemonpalette.com",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Color palette generation",
+        "HEX color codes",
+        "RGB color values",
+        "HSL color values",
+        "Color inspiration",
+        "Design tools",
+        "Pokemon artwork analysis",
+        "One-click color copying",
+        "Responsive design"
+      ],
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Designers, Artists, Developers, Pokemon Fans"
+      },
+      "softwareVersion": "1.0",
+      "downloadUrl": "https://pokemonpalette.com",
+      "installUrl": "https://pokemonpalette.com",
+      "softwareRequirements": "Modern web browser with JavaScript enabled",
+      "permissions": "No special permissions required",
+      "releaseNotes": "Free web-based Pokemon color palette generator"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://pokemonpalette.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Pokemon Palette Generator?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pokemon Palette Generator is a free web tool that extracts color palettes from Pokemon artwork, providing designers and artists with inspiration and exact color values for their projects."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I use the Pokemon Palette Generator?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Simply select a Pokemon from the menu, and the tool will automatically extract and display the color palette with HEX, RGB, and HSL values that you can copy and use."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Pokemon Palette Generator free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Pokemon Palette Generator is completely free to use. No registration or payment required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What color formats are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Pokemon Palette Generator supports HEX, RGB, and HSL color formats, making it compatible with all major design tools and development environments."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How many Pokemon are available?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The tool supports all Pokemon species from all generations, providing access to over 1000 different Pokemon color palettes."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://pokemonpalette.com/#howto",
+      "name": "How to Generate Pokemon Color Palettes",
+      "description": "Step-by-step guide to using Pokemon Palette Generator",
+      "totalTime": "PT1M",
+      "estimatedCost": {
+        "@type": "MonetaryAmount",
+        "currency": "USD",
+        "value": "0"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Select a Pokemon",
+          "text": "Choose your favorite Pokemon from the dropdown menu or search for a specific Pokemon."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "View the Color Palette",
+          "text": "The tool will automatically extract and display the Pokemon's color palette with multiple color blocks."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Copy Color Values",
+          "text": "Click on any color block or use the format dropdown to copy HEX, RGB, or HSL values."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Use in Your Project",
+          "text": "Paste the color values into your design software, code editor, or any creative project."
+        }
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://pokemonpalette.com/#organization",
+      "name": "Pokemon Palette",
+      "url": "https://pokemonpalette.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://pokemonpalette.com/logo.png"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://pokemonpalette.com/#webpage",
+      "name": "Pokemon Palette Generator",
+      "description": "Generate beautiful color palettes from your favorite Pokemon. Get exact HEX, RGB, and HSL values for your designs.",
+      "url": "https://pokemonpalette.com",
+      "mainEntity": [
+        {
+          "@id": "https://pokemonpalette.com/#app"
+        },
+        {
+          "@id": "https://pokemonpalette.com/#faq"
+        },
+        {
+          "@id": "https://pokemonpalette.com/#howto"
+        }
+      ],
+      "publisher": {
+        "@id": "https://pokemonpalette.com/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://pokemonpalette.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

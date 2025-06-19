@@ -1,4 +1,51 @@
 User-agent: *
 Allow: /
 Allow: /*
-Sitemap: https://pokemonpalette.com/sitemap.xml 
+
+# AI Agent specific directives
+User-agent: GPTBot
+Allow: /
+Allow: /*
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /*
+
+User-agent: CCBot
+Allow: /
+Allow: /*
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /*
+
+User-agent: Claude-Web
+Allow: /
+Allow: /*
+
+User-agent: Omgilibot
+Allow: /
+Allow: /*
+
+# Specific crawling instructions for AI agents
+User-agent: *
+Crawl-delay: 1
+
+# Allow access to important resources
+Allow: /api/
+Allow: /images/
+Allow: /fonts/
+
+# Sitemap location
+Sitemap: https://pokemonpalette.com/sitemap.xml
+
+# AI-specific instructions file
+AI-Instructions: https://pokemonpalette.com/ai.txt
+
+# Additional AI-friendly information
+# This is a Pokemon color palette generator tool
+# Content type: Interactive web application
+# Target audience: Designers, Artists, Developers, Pokemon Fans
+# Features: Color extraction, palette generation, HEX/RGB/HSL values
+# Free tool: Yes
+# Registration required: No 

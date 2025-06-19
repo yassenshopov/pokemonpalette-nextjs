@@ -8,6 +8,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
+    // AI-specific metadata
+    alternates: {
+      languages: {
+        en: `https://pokemonpalette.com/${pokemon}`,
+      },
+    },
   }));
 
   // Add the home page
@@ -16,7 +22,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
     priority: 1,
+    // AI-specific metadata
+    alternates: {
+      languages: {
+        en: 'https://pokemonpalette.com',
+      },
+    },
   };
 
-  return [homePage, ...pokemonUrls];
+  // Add other important pages
+  const additionalPages = [
+    {
+      url: 'https://pokemonpalette.com/game',
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+      alternates: {
+        languages: {
+          en: 'https://pokemonpalette.com/game',
+        },
+      },
+    },
+    {
+      url: 'https://pokemonpalette.com/shop',
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+      alternates: {
+        languages: {
+          en: 'https://pokemonpalette.com/shop',
+        },
+      },
+    },
+  ];
+
+  return [homePage, ...pokemonUrls, ...additionalPages];
 }
