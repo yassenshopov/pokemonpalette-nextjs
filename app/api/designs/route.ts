@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { logger } from '@/lib/logger';
+import { designs, addDesign, getApprovedDesigns, type Design } from '@/lib/mock-db/designs';
 
 // Input sanitization and validation functions
 function sanitizeString(input: string): string {
@@ -120,56 +121,6 @@ function validateColors(colors: string[]): {
   return { isValid: true, sanitizedColors };
 }
 
-interface Design {
-  id: number;
-  title: string;
-  creator: string;
-  userId: string;
-  pokemon: string;
-  category: string;
-  description: string;
-  likes: number;
-  tags: string[];
-  date: string;
-  colors: string[];
-  imageUrl: string;
-  status: string;
-}
-
-// Mock database - in production, this would be a real database
-const designs: Design[] = [
-  {
-    id: 1,
-    title: 'Charizard Brand Identity',
-    creator: 'DesignerAlex',
-    userId: 'user_1',
-    pokemon: 'charizard',
-    category: 'branding',
-    description: "Complete brand identity using Charizard's fiery color palette",
-    likes: 127,
-    tags: ['branding', 'logo', 'fire-type'],
-    date: '2024-12-15',
-    colors: ['#FF6B35', '#F7931E', '#FFD23F', '#2E2E2E', '#FFFFFF'],
-    imageUrl: '/images/explore/charizard-brand.jpg',
-    status: 'approved',
-  },
-  {
-    id: 2,
-    title: 'Pikachu Mobile App UI',
-    creator: 'DevSarah',
-    userId: 'user_2',
-    pokemon: 'pikachu',
-    category: 'mobile-app',
-    description: "Mobile app interface inspired by Pikachu's bright yellow theme",
-    likes: 89,
-    tags: ['mobile', 'ui', 'electric-type'],
-    date: '2024-12-14',
-    colors: ['#FFD23F', '#FFE066', '#FFF2CC', '#2E2E2E', '#FFFFFF'],
-    imageUrl: '/images/explore/pikachu-app.jpg',
-    status: 'approved',
-  },
-];
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
@@ -178,7 +129,7 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get('limit') || '10');
   const offset = parseInt(searchParams.get('offset') || '0');
 
-  let filteredDesigns = designs.filter(design => design.status === 'approved');
+  let filteredDesigns = getApprovedDesigns();
 
   // Filter by category
   if (category && category !== 'all') {
@@ -268,8 +219,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new design with sanitized inputs
-    const newDesign = {
-      id: designs.length + 1,
+    const newDesign = addDesign({
       title: sanitizeString(title),
       description: sanitizeString(description),
       category: sanitizeString(category),
@@ -282,9 +232,7 @@ export async function POST(request: NextRequest) {
       likes: 0,
       date: new Date().toISOString().split('T')[0],
       status: 'pending', // For moderation
-    };
-
-    designs.push(newDesign);
+    });
 
     return NextResponse.json(
       {

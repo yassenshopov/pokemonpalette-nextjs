@@ -13,9 +13,9 @@ import {
   CallToAction,
   RelatedArticle,
   HighlightBox,
-  BlogIcons,
 } from '@/components/ui/blog-components';
-import { Users, Brain, TrendingUp, Globe, BookOpen, Zap, Star, Lightbulb } from 'lucide-react';
+import { Users, Brain, TrendingUp, Globe, BookOpen, Zap, Star } from 'lucide-react';
+import { PokemonTypeNames } from '@/types/pokemon';
 
 export const metadata: Metadata = {
   title: 'The Psychology Behind Pokemon Color Choices - Pokemon Palette Blog',
@@ -43,7 +43,7 @@ const pokemonExamples = [
   {
     name: 'Pikachu',
     id: 25,
-    types: ['electric'],
+    types: ['electric'] as PokemonTypeNames[],
     colors: ['#F7D02C', '#FFE135', '#D4A017'],
     psychology: 'Optimism, friendliness, and approachability',
     description:
@@ -52,7 +52,7 @@ const pokemonExamples = [
   {
     name: 'Charizard',
     id: 6,
-    types: ['fire', 'flying'],
+    types: ['fire', 'flying'] as PokemonTypeNames[],
     colors: ['#F08030', '#FF6600', '#CC4400'],
     psychology: 'Power, aggression, and dominance',
     description:
@@ -61,7 +61,7 @@ const pokemonExamples = [
   {
     name: 'Umbreon',
     id: 197,
-    types: ['dark'],
+    types: ['dark'] as PokemonTypeNames[],
     colors: ['#1A1A1A', '#FFE135', '#705746'],
     psychology: 'Mystery, elegance, and sophistication',
     description: 'Black represents elegance while yellow rings add supernatural mystique.',
@@ -69,7 +69,7 @@ const pokemonExamples = [
   {
     name: 'Blastoise',
     id: 9,
-    types: ['water'],
+    types: ['water'] as PokemonTypeNames[],
     colors: ['#6890F0', '#4A90E2', '#2E5BBA'],
     psychology: 'Calmness, depth, and reliability',
     description: 'Blue tones convey trustworthiness and the fluid nature of water.',
@@ -77,7 +77,7 @@ const pokemonExamples = [
   {
     name: 'Venusaur',
     id: 3,
-    types: ['grass', 'poison'],
+    types: ['grass', 'poison'] as PokemonTypeNames[],
     colors: ['#78C850', '#A8D8A8', '#4E8234'],
     psychology: 'Growth, nature, and harmony',
     description: 'Green represents life force and connection to nature.',
@@ -85,18 +85,38 @@ const pokemonExamples = [
   {
     name: 'Gengar',
     id: 94,
-    types: ['ghost', 'poison'],
+    types: ['ghost', 'poison'] as PokemonTypeNames[],
     colors: ['#705898', '#A040A0', '#483D8B'],
     psychology: 'Mystery, mischief, and the supernatural',
     description: 'Purple evokes the mystical and otherworldly nature of ghost types.',
   },
 ];
 
-const typeColorMappings = [
-  { type: 'fire', color: '#F08030', psychology: 'Energy, passion, danger, and warmth' },
-  { type: 'water', color: '#6890F0', psychology: 'Calmness, depth, adaptability, and flow' },
-  { type: 'grass', color: '#78C850', psychology: 'Growth, nature, harmony, and life' },
-  { type: 'electric', color: '#F8D030', psychology: 'Energy, speed, brightness, and power' },
+const typeColorMappings: Array<{
+  type: PokemonTypeNames;
+  color: string;
+  psychology: string;
+}> = [
+  {
+    type: 'fire',
+    color: '#F08030',
+    psychology: 'Energy, passion, danger, and warmth',
+  },
+  {
+    type: 'water',
+    color: '#6890F0',
+    psychology: 'Calmness, depth, adaptability, and flow',
+  },
+  {
+    type: 'grass',
+    color: '#78C850',
+    psychology: 'Growth, nature, harmony, and life',
+  },
+  {
+    type: 'electric',
+    color: '#F8D030',
+    psychology: 'Energy, speed, brightness, and power',
+  },
   {
     type: 'psychic',
     color: '#F85888',
@@ -107,8 +127,16 @@ const typeColorMappings = [
     color: '#705848',
     psychology: 'Mystery, power, sophistication, and sometimes malice',
   },
-  { type: 'ghost', color: '#705898', psychology: 'Supernatural, mysterious, and ethereal' },
-  { type: 'dragon', color: '#7038F8', psychology: 'Power, majesty, and ancient wisdom' },
+  {
+    type: 'ghost',
+    color: '#705898',
+    psychology: 'Supernatural, mysterious, and ethereal',
+  },
+  {
+    type: 'dragon',
+    color: '#7038F8',
+    psychology: 'Power, majesty, and ancient wisdom',
+  },
 ];
 
 const evolutionExample = {

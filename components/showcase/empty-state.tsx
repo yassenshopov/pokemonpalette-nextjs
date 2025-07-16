@@ -2,25 +2,34 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Plus, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import { SubmitDesignDialog } from '../ui/submit-design-dialog';
 import { Button } from '../ui/button';
 import speciesData from '@/data/species.json';
 
 const EmptyState = ({ selectedPokemon }: { selectedPokemon: string }) => {
-  const pokemonId =
-    selectedPokemon !== 'all' ? speciesData[selectedPokemon as keyof typeof speciesData] : null;
+  const [imageError, setImageError] = useState(false);
+
+  // Validate that selectedPokemon exists in speciesData before accessing it
+  const isValidPokemon = selectedPokemon !== 'all' && selectedPokemon in speciesData;
+  const pokemonId = isValidPokemon
+    ? speciesData[selectedPokemon as keyof typeof speciesData]
+    : null;
   const pokemonSprite = pokemonId
     ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`
     : null;
-  const pokemonName =
-    selectedPokemon !== 'all'
-      ? selectedPokemon.charAt(0).toUpperCase() + selectedPokemon.slice(1).replace(/-/g, ' ')
-      : null;
+  const pokemonName = isValidPokemon
+    ? selectedPokemon.charAt(0).toUpperCase() + selectedPokemon.slice(1).replace(/-/g, ' ')
+    : null;
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
 
   return (
     <div className="text-center py-16">
       <div className="relative w-64 h-64 mx-auto mb-12">
-        {pokemonSprite ? (
+        {pokemonSprite && !imageError ? (
           <motion.div
             className="absolute inset-0 flex items-center justify-center"
             initial={{ scale: 0 }}
@@ -36,6 +45,7 @@ const EmptyState = ({ selectedPokemon }: { selectedPokemon: string }) => {
                 className="w-64 h-64 filter brightness-0 dark:invert dark:brightness-100 opacity-30 dark:opacity-20"
                 style={{ imageRendering: 'pixelated' }}
                 quality={50}
+                onError={handleImageError}
               />
               <div className="absolute inset-0 w-64 h-64 rounded-full bg-gradient-to-r from-primary/30 to-primary/10 dark:from-primary/20 dark:to-primary/5 blur-2xl" />
             </div>

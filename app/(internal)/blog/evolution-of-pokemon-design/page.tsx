@@ -1,3 +1,5 @@
+'use client';
+
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -6,10 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import {
   BlogHero,
   BlogSection,
-  StepCard,
   RelatedArticle,
   HighlightBox,
 } from '@/components/ui/blog-components';
+import { GenerationCard } from '@/components/blog/generation-card';
+import { DesignPrinciplesSection } from '@/components/blog/design-principles-section';
+import { FutureOfDesignSection } from '@/components/blog/future-of-design-section';
+import { PokemonShowcase } from '@/components/blog/pokemon-showcase';
 import {
   Gamepad2,
   Palette,
@@ -20,6 +25,8 @@ import {
   BookOpen,
   Monitor,
   Sparkles,
+  Globe,
+  Heart,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -329,91 +336,17 @@ export default function EvolutionOfPokemonDesignPage() {
           description="Pokemon design has undergone a remarkable transformation since 1996. What started as simple 8x8 pixel sprites has evolved into complex 3D models with intricate animations. This evolution reflects not just advancing technology, but also changing artistic philosophies and cultural influences."
         />
 
+        {/* Design Principles Section */}
+        <DesignPrinciplesSection />
+
         {/* Early Generations */}
         <BlogSection
           title="The Foundation Years (Gen I-II)"
           description="The first two generations established the core principles that still guide Pokemon design today."
         >
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <HighlightBox
-              title="Generation I: Simplicity is Key"
-              icon={<Gamepad2 className="w-6 h-6 text-green-600" />}
-              variant="success"
-            >
-              <p className="text-sm text-muted-foreground mb-4">
-                Working with Game Boy's monochrome display, designers focused on creating strong
-                silhouettes that would be instantly recognizable even at tiny sizes.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span>8x8 pixel sprites</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span>Monochrome design</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span>Strong silhouettes</span>
-                </div>
-              </div>
-            </HighlightBox>
-
-            <HighlightBox
-              title="Generation II: Color Revolution"
-              icon={<Palette className="w-6 h-6 text-blue-600" />}
-              variant="info"
-            >
-              <p className="text-sm text-muted-foreground mb-4">
-                The Game Boy Color introduced limited color palettes, forcing designers to be
-                strategic about color choices and establish type-color associations.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span>56 colors available</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span>Type-color psychology</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span>Day/night variations</span>
-                </div>
-              </div>
-            </HighlightBox>
-          </div>
-
           <div className="grid md:grid-cols-3 gap-6">
             {generations.slice(0, 3).map(gen => (
-              <Card key={gen.number} className="border shadow-none">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="font-bold text-primary text-sm">G{gen.number}</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{gen.name}</h3>
-                      <p className="text-xs text-muted-foreground">{gen.year}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">{gen.designPhilosophy}</p>
-                  <div className="space-y-2">
-                    <div className="text-xs font-medium">Key Innovations:</div>
-                    {gen.innovations.slice(0, 2).map((innovation, idx) => (
-                      <div
-                        key={idx}
-                        className="text-xs text-muted-foreground flex items-start gap-2"
-                      >
-                        <div className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                        <span>{innovation}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <GenerationCard key={gen.number} generation={gen} />
             ))}
           </div>
         </BlogSection>
@@ -507,8 +440,8 @@ export default function EvolutionOfPokemonDesignPage() {
                       <h4 className="text-sm font-medium mb-2">Technical Specs:</h4>
                       <div className="text-xs text-muted-foreground space-y-1">
                         <div>Platform: {gen.platform}</div>
-                        <div>Colors: {gen.colors}</div>
                         <div>Resolution: {gen.resolution}</div>
+                        <div>Colors: {gen.colors}</div>
                       </div>
                     </div>
                   </div>
@@ -518,148 +451,8 @@ export default function EvolutionOfPokemonDesignPage() {
           </div>
         </BlogSection>
 
-        {/* Modern Era */}
-        <BlogSection
-          title="The Modern Era (Gen VIII-IX)"
-          description="Recent generations have embraced HD graphics, open-world design, and new gameplay mechanics that influence Pokemon design in unprecedented ways."
-        >
-          <div className="space-y-8">
-            {generations.slice(7, 9).map((gen, _index) => (
-              <Card key={gen.number} className="overflow-hidden border shadow-none">
-                <div className="grid md:grid-cols-3 gap-0">
-                  <div
-                    className="relative h-48 md:h-auto flex items-center justify-center p-8 border-r"
-                    style={{
-                      background: `linear-gradient(135deg, ${gen.colorPalette[0]}30, ${gen.colorPalette[1]}30)`,
-                    }}
-                  >
-                    <div className="text-center">
-                      <div className="text-3xl font-bold mb-2">Gen {gen.number}</div>
-                      <div className="text-sm opacity-75">{gen.year}</div>
-                      <div className="mt-4">
-                        <Badge variant="outline">{gen.platform}</Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="md:col-span-2 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <h3 className="text-2xl font-bold">{gen.name}</h3>
-                      <div className="flex gap-2">
-                        {gen.games.map(game => (
-                          <Badge key={game} variant="secondary">
-                            {game}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4" />
-                        Design Philosophy: {gen.designPhilosophy}
-                      </h4>
-                      <p className="text-muted-foreground mb-4">{gen.technicalLimitations}</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h5 className="text-sm font-medium mb-2">Key Innovations:</h5>
-                        <ul className="space-y-1">
-                          {gen.innovations.slice(0, 3).map((innovation, idx) => (
-                            <li
-                              key={idx}
-                              className="text-xs text-muted-foreground flex items-start gap-2"
-                            >
-                              <div className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                              <span>{innovation}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <h5 className="text-sm font-medium mb-2">Technical Specs:</h5>
-                        <div className="space-y-1 text-xs text-muted-foreground">
-                          <div>Colors: {gen.colors}</div>
-                          <div>Resolution: {gen.resolution}</div>
-                          <div>Platform: {gen.platform}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </BlogSection>
-
-        {/* Design Principles */}
-        <BlogSection
-          title="Timeless Design Principles"
-          description="Despite technological advances, certain design principles have remained constant throughout Pokemon's evolution."
-        >
-          <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-2 border-blue-200 dark:border-blue-800 shadow-none">
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  {designEvolutionSteps.slice(0, 2).map(step => (
-                    <StepCard
-                      key={step.step}
-                      step={step.step}
-                      title={step.title}
-                      description={step.description}
-                      icon={step.icon}
-                    />
-                  ))}
-                </div>
-                <div className="space-y-6">
-                  {designEvolutionSteps.slice(2, 4).map(step => (
-                    <StepCard
-                      key={step.step}
-                      step={step.step}
-                      title={step.title}
-                      description={step.description}
-                      icon={step.icon}
-                    />
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </BlogSection>
-
-        {/* Future of Design */}
-        <BlogSection title="The Future of Pokemon Design">
-          <HighlightBox
-            title="What's Next?"
-            icon={<TrendingUp className="w-6 h-6 text-green-600" />}
-            variant="success"
-          >
-            <p className="text-sm text-muted-foreground mb-4">
-              As technology continues to advance, Pokemon design will likely embrace ray tracing,
-              advanced AI assistance, and possibly AR/VR experiences. However, the core principles
-              of strong silhouettes and emotional connection will remain unchanged.
-            </p>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <h4 className="font-medium mb-2">Emerging Technologies:</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Ray tracing lighting</li>
-                  <li>• AI-assisted animation</li>
-                  <li>• Procedural textures</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">Design Trends:</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Environmental storytelling</li>
-                  <li>• Cultural authenticity</li>
-                  <li>• Accessibility focus</li>
-                </ul>
-              </div>
-            </div>
-          </HighlightBox>
-        </BlogSection>
+        {/* Future of Design Section */}
+        <FutureOfDesignSection />
 
         {/* Call to Action */}
         <BlogSection title="" description="">
@@ -716,93 +509,7 @@ export default function EvolutionOfPokemonDesignPage() {
                   </div>
                 </div>
 
-                <div className="relative">
-                  {/* Clean, organized Pokemon showcase */}
-                  <div className="space-y-6">
-                    {/* Evolution timeline header */}
-                    <div className="text-center mb-8">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-sm font-medium mb-4">
-                        <TrendingUp className="w-4 h-4" />
-                        Design Evolution Timeline
-                      </div>
-                    </div>
-
-                    {/* Three Pokemon representing eras */}
-                    <div className="grid grid-cols-3 gap-4">
-                      {/* Gen I - Pixel Era */}
-                      <div className="text-center space-y-3">
-                        <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-105 transition-transform">
-                          <Image
-                            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
-                            alt="Pikachu"
-                            width={60}
-                            height={60}
-                            className="filter brightness-110"
-                          />
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold">Pikachu</div>
-                          <div className="text-xs opacity-70">Gen I • 1996</div>
-                          <div className="text-xs mt-1 px-2 py-1 bg-green-500/20 rounded text-green-200">
-                            Pixel Era
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Gen VI - 3D Transition */}
-                      <div className="text-center space-y-3">
-                        <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-105 transition-transform">
-                          <Image
-                            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/658.png"
-                            alt="Greninja"
-                            width={60}
-                            height={60}
-                            className="filter brightness-110"
-                          />
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold">Greninja</div>
-                          <div className="text-xs opacity-70">Gen VI • 2013</div>
-                          <div className="text-xs mt-1 px-2 py-1 bg-blue-500/20 rounded text-blue-200">
-                            3D Revolution
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Gen IX - Modern Era */}
-                      <div className="text-center space-y-3">
-                        <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-105 transition-transform">
-                          <Image
-                            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png"
-                            alt="Koraidon"
-                            width={60}
-                            height={60}
-                            className="filter brightness-110"
-                          />
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold">Koraidon</div>
-                          <div className="text-xs opacity-70">Gen IX • 2022</div>
-                          <div className="text-xs mt-1 px-2 py-1 bg-purple-500/20 rounded text-purple-200">
-                            Open World
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Evolution progress bar */}
-                    <div className="relative mt-8">
-                      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-                      </div>
-                      <div className="flex justify-between text-xs mt-2 opacity-70">
-                        <span>1996</span>
-                        <span>2013</span>
-                        <span>2024</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <PokemonShowcase />
               </div>
             </CardContent>
           </Card>

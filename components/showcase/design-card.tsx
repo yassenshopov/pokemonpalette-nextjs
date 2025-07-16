@@ -40,7 +40,6 @@ const DesignCard = ({ design, isSaved, isLiked, toggleSave, toggleLike }: Design
               pokemon: design.pokemon,
               colors: design.colors,
               imageUrl: design.imageUrl,
-              savedAt: new Date().toISOString(),
             })
           }
           className={`bg-background/80 backdrop-blur-sm transition-all duration-300 ${
@@ -73,12 +72,16 @@ const DesignCard = ({ design, isSaved, isLiked, toggleSave, toggleLike }: Design
               id: design.id,
               title: design.title,
               creator: design.creator,
+              userId: design.userId,
               pokemon: design.pokemon,
               category: design.category,
+              description: design.description,
               likes: design.likes,
-              createdAt: design.date,
+              tags: design.tags,
+              date: design.date,
+              colors: design.colors,
               imageUrl: design.imageUrl,
-              likedAt: new Date().toISOString(),
+              status: design.status,
             });
           }}
           className={`bg-background/80 backdrop-blur-sm transition-all duration-300 ${
@@ -132,8 +135,11 @@ const DesignCard = ({ design, isSaved, isLiked, toggleSave, toggleLike }: Design
         {design.colors.map((color, index) => (
           <div
             key={index}
-            className="w-8 h-8 rounded border"
+            className="w-8 h-8 rounded border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             style={{ backgroundColor: color }}
+            role="img"
+            aria-label={`Color swatch ${index + 1} of ${design.colors.length}: ${color}`}
+            tabIndex={0}
             title={color}
           />
         ))}

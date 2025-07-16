@@ -29,9 +29,22 @@ const PopularCategories = ({
     </CardHeader>
     <CardContent>
       <div className="space-y-2">
-        {categories
-          .filter(cat => cat.value !== 'all')
-          .map(category => {
+        {(() => {
+          const filteredCategories = categories.filter(cat => cat.value !== 'all');
+
+          if (filteredCategories.length === 0) {
+            return (
+              <div className="text-center py-8">
+                <Palette className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">No categories available</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Categories will appear here as designs are added
+                </p>
+              </div>
+            );
+          }
+
+          return filteredCategories.map(category => {
             const count = designs.filter(d => d.category === category.value).length;
             return (
               <Button
@@ -44,7 +57,8 @@ const PopularCategories = ({
                 <Badge variant="secondary">{count}</Badge>
               </Button>
             );
-          })}
+          });
+        })()}
       </div>
     </CardContent>
   </Card>
