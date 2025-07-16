@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import { TrendingUp } from 'lucide-react';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 
 export function PokemonShowcase() {
   return (
@@ -19,12 +19,13 @@ export function PokemonShowcase() {
           {/* Gen I - Pixel Era */}
           <div className="text-center space-y-3">
             <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-105 transition-transform">
-              <Image
+              <ImageWithFallback
                 src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
                 alt="Pikachu"
                 width={60}
                 height={60}
                 className="filter brightness-110"
+                pokemonId={25}
               />
             </div>
             <div>
@@ -39,12 +40,13 @@ export function PokemonShowcase() {
           {/* Gen VI - 3D Transition */}
           <div className="text-center space-y-3">
             <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-105 transition-transform">
-              <Image
+              <ImageWithFallback
                 src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/658.png"
                 alt="Greninja"
                 width={60}
                 height={60}
                 className="filter brightness-110"
+                pokemonId={658}
               />
             </div>
             <div>
@@ -59,12 +61,13 @@ export function PokemonShowcase() {
           {/* Gen IX - Modern Era */}
           <div className="text-center space-y-3">
             <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm hover:scale-105 transition-transform">
-              <Image
+              <ImageWithFallback
                 src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1007.png"
                 alt="Koraidon"
                 width={60}
                 height={60}
                 className="filter brightness-110"
+                pokemonId={1007}
               />
             </div>
             <div>

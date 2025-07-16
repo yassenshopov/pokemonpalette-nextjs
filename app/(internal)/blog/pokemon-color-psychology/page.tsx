@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
+import { ImageWithFallback, extractPokemonIdFromUrl } from '@/components/ui/ImageWithFallback';
 import { TypeBadge } from '@/components/type-badge';
 import {
   BlogHero,
@@ -153,35 +153,39 @@ const ColorWheelHero = () => (
     <div className="absolute inset-0 rounded-full bg-gradient-conic from-red-500 via-yellow-500 via-green-500 via-cyan-500 via-blue-500 via-purple-500 to-red-500 opacity-20 border" />
 
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-      <Image
+      <ImageWithFallback
         src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
         alt="Pikachu"
         width={60}
         height={60}
+        pokemonId={25}
       />
     </div>
     <div className="absolute top-1/2 right-4 transform -translate-y-1/2">
-      <Image
+      <ImageWithFallback
         src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"
         alt="Charizard"
         width={60}
         height={60}
+        pokemonId={6}
       />
     </div>
     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-      <Image
+      <ImageWithFallback
         src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png"
         alt="Venusaur"
         width={60}
         height={60}
+        pokemonId={3}
       />
     </div>
     <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
-      <Image
+      <ImageWithFallback
         src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png"
         alt="Blastoise"
         width={60}
         height={60}
+        pokemonId={9}
       />
     </div>
 
@@ -428,19 +432,21 @@ export default function PokemonColorPsychologyPage() {
             buttonHref="/"
           >
             <div className="relative w-48 h-48 mx-auto">
-              <Image
+              <ImageWithFallback
                 src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
                 alt="Pikachu"
                 width={120}
                 height={120}
                 className="absolute top-0 right-0"
+                pokemonId={25}
               />
-              <Image
+              <ImageWithFallback
                 src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"
                 alt="Charizard"
                 width={100}
                 height={100}
                 className="absolute bottom-0 left-0 opacity-80"
+                pokemonId={6}
               />
             </div>
           </CallToAction>

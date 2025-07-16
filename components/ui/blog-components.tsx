@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -140,12 +140,13 @@ export function PokemonCard({
             background: `linear-gradient(135deg, ${colors[0]}20, ${colors[1]}20)`,
           }}
         >
-          <Image
+          <ImageWithFallback
             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`}
             alt={name}
             width={120}
             height={120}
             className="hover:scale-110 transition-transform duration-300"
+            pokemonId={id}
           />
         </div>
 
@@ -226,12 +227,13 @@ export function EvolutionStage({ name, id, color, meaning, isLast }: EvolutionSt
         className="relative w-32 h-32 mx-auto mb-4 rounded-full flex items-center justify-center border-2 group-hover:border-primary transition-colors"
         style={{ backgroundColor: `${color}20`, borderColor: color }}
       >
-        <Image
+        <ImageWithFallback
           src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`}
           alt={name}
           width={80}
           height={80}
           className="group-hover:scale-110 transition-transform duration-300"
+          pokemonId={id}
         />
       </div>
       <h4 className="font-semibold text-lg mb-2">{name}</h4>
