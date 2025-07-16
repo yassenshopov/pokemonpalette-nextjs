@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 // This would be stored in an environment variable
 const BUYMEACOFFEE_TOKEN = process.env.BUYMEACOFFEE_TOKEN;
-const BUYMEACOFFEE_USERNAME = process.env.BUYMEACOFFEE_USERNAME || 'yassenshopov';
+const _BUYMEACOFFEE_USERNAME = process.env.BUYMEACOFFEE_USERNAME || 'yassenshopov';
 
 interface Supporter {
   supporter_name: string;

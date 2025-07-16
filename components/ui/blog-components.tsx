@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { PokemonTypeNames } from '@/types/pokemon';
 import {
   ArrowLeft,
   Clock,
@@ -116,7 +117,7 @@ interface PokemonCardProps {
   colors: string[];
   psychology: string;
   description: string;
-  TypeBadge: React.ComponentType<{ type: any }>;
+  TypeBadge: React.ComponentType<{ type: PokemonTypeNames }>;
 }
 
 export function PokemonCard({
@@ -151,7 +152,7 @@ export function PokemonCard({
             <h3 className="text-2xl font-bold">{name}</h3>
             <div className="flex gap-2">
               {types.map(type => (
-                <TypeBadge key={type} type={type as any} />
+                <TypeBadge key={type} type={type as PokemonTypeNames} />
               ))}
             </div>
           </div>
@@ -187,7 +188,7 @@ interface TypeColorCardProps {
   type: string;
   color: string;
   psychology: string;
-  TypeBadge: React.ComponentType<{ type: any; className?: string }>;
+  TypeBadge: React.ComponentType<{ type: PokemonTypeNames; className?: string }>;
 }
 
 export function TypeColorCard({ type, color, psychology, TypeBadge }: TypeColorCardProps) {
@@ -197,7 +198,7 @@ export function TypeColorCard({ type, color, psychology, TypeBadge }: TypeColorC
         className="h-24 relative flex items-center justify-center border-b"
         style={{ backgroundColor: color }}
       >
-        <TypeBadge type={type as any} className="scale-125" />
+        <TypeBadge type={type as PokemonTypeNames} className="scale-125" />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
       </div>
       <CardContent className="p-4">

@@ -271,7 +271,7 @@ export function PokemonMenu() {
         setPokemonData({
           height: data.height / 10, // Convert to meters
           weight: data.weight / 10, // Convert to kg
-          types: data.types?.map((t: any) => t.type.name) || [],
+          types: data.types?.map((t: { type: { name: string } }) => t.type.name) || [],
         });
       }
 

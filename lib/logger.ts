@@ -44,10 +44,10 @@ class Logger {
 
     switch (level) {
       case 'debug':
-        console.debug(prefix, message, context || '');
+        // console.debug(prefix, message, context || '');
         break;
       case 'info':
-        console.info(prefix, message, context || '');
+        // console.info(prefix, message, context || '');
         break;
       case 'warn':
         console.warn(prefix, message, context || '');

@@ -9,6 +9,7 @@ import speciesData from '@/data/species.json';
 import { TypeBadge } from '@/components/type-badge';
 import ColorThief from 'colorthief';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PokemonTypeNames } from '@/types/pokemon';
 import { Upload, Check, X, Hash, Plus } from 'lucide-react';
 import {
   Dialog,
@@ -68,7 +69,7 @@ async function fetchPokemonData(pokemon: string) {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}`);
     const data = await response.json();
     const officialArt = data.sprites.other['official-artwork'].front_default;
-    const types = data.types.map((t: any) => t.type.name);
+    const types = data.types.map((t: { type: { name: string } }) => t.type.name);
     const number = data.id;
     return { officialArt, types, number };
   } catch {
@@ -422,7 +423,7 @@ export function SubmitDesignDialog({
                         </div>
                         <div className="flex gap-2">
                           {pokemonInfo.types.map(type => (
-                            <TypeBadge key={type} type={type as any} />
+                            <TypeBadge key={type} type={type as PokemonTypeNames} />
                           ))}
                         </div>
                       </div>

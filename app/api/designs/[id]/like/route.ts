@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
+interface Design {
+  id: number;
+  title: string;
+  creator: string;
+  userId: string;
+  pokemon: string;
+  category: string;
+  description: string;
+  likes: number;
+  likedBy: string[];
+  tags: string[];
+  date: string;
+  colors: string[];
+  imageUrl: string;
+  status: string;
+}
+
 // Mock database - in production, this would be a real database
-let designs: any[] = [
+const designs: Design[] = [
   {
     id: 1,
     title: 'Charizard Brand Identity',
@@ -37,7 +54,7 @@ let designs: any[] = [
   },
 ];
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
 
@@ -45,7 +62,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const designId = parseInt(params.id);
+    const resolvedParams = await params;
+    const designId = parseInt(resolvedParams.id);
     const design = designs.find(d => d.id === designId);
 
     if (!design) {
@@ -73,13 +91,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       likes: design.likes,
       isLiked: !isLiked,
     });
-  } catch (error) {
+  } catch (_error) {
     // Error toggling like - operation failed
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
 
@@ -87,7 +105,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const designId = parseInt(params.id);
+    const resolvedParams = await params;
+    const designId = parseInt(resolvedParams.id);
     const design = designs.find(d => d.id === designId);
 
     if (!design) {
@@ -100,7 +119,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       likes: design.likes,
       isLiked,
     });
-  } catch (error) {
+  } catch (_error) {
     // Error getting like status - returning default
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

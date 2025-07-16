@@ -169,12 +169,12 @@ export default function Home() {
   const [descriptions, setDescriptions] = useState<
     Array<{ flavor_text: string; version: { name: string } }>
   >([]);
-  const [progress, setProgress] = useState(0);
-  const [selectedColorProgress, setSelectedColorProgress] = useState<string>(colors[0] || '');
-  const [selectedColorNotification, setSelectedColorNotification] = useState<string>(
+  const [_progress, setProgress] = useState(0);
+  const [_selectedColorProgress, setSelectedColorProgress] = useState<string>(colors[0] || '');
+  const [_selectedColorNotification, setSelectedColorNotification] = useState<string>(
     colors[1] || ''
   );
-  const [selectedColorCard, setSelectedColorCard] = useState<string>(colors[0] || '');
+  const [_selectedColorCard, setSelectedColorCard] = useState<string>(colors[0] || '');
   const [stats, setStats] = useState<Array<{ name: string; base_stat: number }>>([]);
 
   useEffect(() => {

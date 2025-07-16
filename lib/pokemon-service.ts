@@ -81,9 +81,17 @@ export interface EvolutionChain {
 // Enhanced Pokemon API service with improved caching
 class PokemonAPIService {
   private baseUrl = 'https://pokeapi.co/api/v2';
-  private cache = new Map<string, any>();
+  private cache = new Map<
+    string,
+    {
+      data: unknown;
+      timestamp: number;
+      accessCount: number;
+      lastAccessed: number;
+    }
+  >();
   private cacheTimeout = 30 * 60 * 1000; // 30 minutes - longer for Pokemon data
-  private requestQueue = new Map<string, Promise<any>>();
+  private requestQueue = new Map<string, Promise<unknown>>();
   private maxCacheSize = 500; // Limit cache size to prevent memory issues
   private localStorageKey = 'pokemon-cache-v1';
 
@@ -99,13 +107,13 @@ class PokemonAPIService {
     const cached = this.cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
       logApiCall(url, 'GET', true, Date.now() - startTime);
-      return cached.data;
+      return cached.data as T;
     }
 
     // Check if request is already in progress to prevent duplicate calls
     const ongoingRequest = this.requestQueue.get(cacheKey);
     if (ongoingRequest) {
-      return ongoingRequest;
+      return ongoingRequest as Promise<T>;
     }
 
     // Create new request promise
@@ -186,13 +194,14 @@ class PokemonAPIService {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  private isRetryableError(error: any): boolean {
+  private isRetryableError(error: unknown): boolean {
     // Retry on network errors, timeouts, or 5xx server errors
     return (
       error instanceof TypeError || // Network error
-      error.message?.includes('fetch') ||
-      error.message?.includes('timeout') ||
-      error.message?.includes('5')
+      (error instanceof Error &&
+        (error.message?.includes('fetch') ||
+          error.message?.includes('timeout') ||
+          error.message?.includes('5')))
     );
   }
 
@@ -222,9 +231,23 @@ class PokemonAPIService {
         const now = Date.now();
 
         // Only load non-expired entries
-        Object.entries(parsed).forEach(([key, value]: [string, any]) => {
-          if (value.timestamp && now - value.timestamp < this.cacheTimeout) {
-            this.cache.set(key, value);
+        Object.entries(parsed).forEach(([key, value]: [string, unknown]) => {
+          if (
+            typeof value === 'object' &&
+            value !== null &&
+            'timestamp' in value &&
+            typeof value.timestamp === 'number' &&
+            now - value.timestamp < this.cacheTimeout
+          ) {
+            this.cache.set(
+              key,
+              value as {
+                data: unknown;
+                timestamp: number;
+                accessCount: number;
+                lastAccessed: number;
+              }
+            );
           }
         });
       }

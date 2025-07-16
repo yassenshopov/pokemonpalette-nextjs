@@ -25,6 +25,7 @@ import Image from 'next/image';
 import { TypeBadge } from '@/components/type-badge';
 import { SubmitDesignDialog } from '@/components/ui/submit-design-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PokemonTypeNames } from '@/types/pokemon';
 
 interface Challenge {
   id: string;
@@ -416,7 +417,7 @@ export default function ChallengesPage() {
             return (
               <motion.button
                 key={tab.value}
-                onClick={() => setFilter(tab.value as any)}
+                onClick={() => setFilter(tab.value as 'all' | 'active' | 'upcoming' | 'completed')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`px-6 py-3 rounded-xl transition-all text-sm font-medium backdrop-blur-sm border ${
@@ -514,7 +515,7 @@ export default function ChallengesPage() {
                       {/* Pokemon Types */}
                       <div className="flex gap-1">
                         {poke?.types?.map(type => (
-                          <TypeBadge key={type} type={type as any} />
+                          <TypeBadge key={type} type={type as PokemonTypeNames} />
                         ))}
                       </div>
                     </div>

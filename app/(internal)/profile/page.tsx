@@ -66,7 +66,7 @@ interface Achievement {
   id: string;
   name: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   category: 'creation' | 'social' | 'exploration' | 'milestone' | 'rare';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   unlocked: boolean;
@@ -84,16 +84,26 @@ export default function ProfilePage() {
   const { likedDesigns, removeLiked, clearLiked } = useLikes();
 
   // Get saved palettes from localStorage (from the old save functionality)
-  const [savedPalettes, setSavedPalettes] = useState<any[]>([]);
+  const [savedPalettes, setSavedPalettes] = useState<
+    Array<{
+      id: string;
+      pokemonName: string;
+      pokemonId: number;
+      name?: string;
+      isShiny: boolean;
+      colors: string[];
+      savedAt?: string;
+    }>
+  >([]);
 
   // Profile editing state
   const [isEditing, setIsEditing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [profileData, setProfileData] = useState({
     displayName: user?.fullName || user?.username || '',
-    bio: (user?.publicMetadata as any)?.bio || '',
-    location: (user?.publicMetadata as any)?.location || '',
-    website: (user?.publicMetadata as any)?.website || '',
+    bio: (user?.publicMetadata as { bio?: string })?.bio || '',
+    location: (user?.publicMetadata as { location?: string })?.location || '',
+    website: (user?.publicMetadata as { website?: string })?.website || '',
   });
 
   // Achievement detail modal state
@@ -110,9 +120,9 @@ export default function ProfilePage() {
     if (user) {
       setProfileData({
         displayName: user.fullName || user.username || '',
-        bio: (user.publicMetadata as any)?.bio || '',
-        location: (user.publicMetadata as any)?.location || '',
-        website: (user.publicMetadata as any)?.website || '',
+        bio: (user.publicMetadata as { bio?: string })?.bio || '',
+        location: (user.publicMetadata as { location?: string })?.location || '',
+        website: (user.publicMetadata as { website?: string })?.website || '',
       });
     }
   }, [user]);
@@ -156,9 +166,9 @@ export default function ProfilePage() {
     if (user) {
       setProfileData({
         displayName: user.fullName || user.username || '',
-        bio: (user.publicMetadata as any)?.bio || '',
-        location: (user.publicMetadata as any)?.location || '',
-        website: (user.publicMetadata as any)?.website || '',
+        bio: (user.publicMetadata as { bio?: string })?.bio || '',
+        location: (user.publicMetadata as { location?: string })?.location || '',
+        website: (user.publicMetadata as { website?: string })?.website || '',
       });
     }
     setIsEditing(false);

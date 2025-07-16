@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
+interface Design {
+  id: number;
+  title: string;
+  creator: string;
+  userId: string;
+  pokemon: string;
+  category: string;
+  description: string;
+  likes: number;
+  tags: string[];
+  date: string;
+  colors: string[];
+  imageUrl: string;
+  status: string;
+}
+
 // Mock database - in production, this would be a real database
-let designs: any[] = [
+const designs: Design[] = [
   {
     id: 1,
     title: 'Charizard Brand Identity',
@@ -117,7 +133,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (_error) {
     // Error submitting design - operation failed
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

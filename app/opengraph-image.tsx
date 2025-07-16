@@ -90,7 +90,7 @@ export default async function Image() {
         ...size,
       }
     );
-  } catch (e) {
+  } catch (_e) {
     return new Response(`Failed to generate the image`, {
       status: 500,
     });

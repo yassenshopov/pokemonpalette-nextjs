@@ -66,7 +66,7 @@ export function useErrorHandler(options: ErrorHandlerOptions = {}) {
   }, []);
 
   const handleError = useCallback(
-    (error: Error, context: Record<string, any> = {}) => {
+    (error: Error, context: Record<string, unknown> = {}) => {
       const errorType = determineErrorType(error);
       const errorMessage = getErrorMessage(error, errorType);
 
@@ -173,7 +173,7 @@ export function useErrorHandler(options: ErrorHandlerOptions = {}) {
   const withErrorHandling = useCallback(
     async <T>(
       operation: () => Promise<T>,
-      context: Record<string, any> = {}
+      context: Record<string, unknown> = {}
     ): Promise<T | null> => {
       try {
         const result = await operation();

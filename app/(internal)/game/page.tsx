@@ -27,6 +27,7 @@ import Head from 'next/head';
 import { ColorPalette } from '@/components/landing/color-palette';
 import { logger } from '@/lib/logger';
 import ErrorBoundary from '@/components/ui/error-boundary';
+import { PokemonTypeNames } from '@/types/pokemon';
 
 type HintType =
   | 'first-letter'
@@ -59,11 +60,21 @@ interface PokemonData {
   types: { type: { name: string } }[];
   height: number;
   weight: number;
+  sprites: {
+    front_default: string;
+    front_shiny?: string;
+    other: {
+      'official-artwork': {
+        front_default: string;
+        front_shiny?: string;
+      };
+    };
+  };
 }
 
 // Add these service functions
 const PokemonService = {
-  async fetchPokemon(identifier: string | number): Promise<any> {
+  async fetchPokemon(identifier: string | number): Promise<PokemonData> {
     const response = await fetch(
       `https://pokeapi.co/api/v2/pokemon/${identifier.toString().toLowerCase()}`
     );
@@ -244,7 +255,7 @@ export default function GamePage() {
       const guessInfo: GuessData = {
         name: currentGuess,
         sprite: guessData.sprites.front_default,
-        types: guessData.types.map((t: any) => t.type.name),
+        types: guessData.types.map((t: { type: { name: string } }) => t.type.name),
         generation: getGeneration(guessData.id),
       };
 
@@ -602,7 +613,7 @@ export default function GamePage() {
                           </p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {guess.types.map(type => (
-                              <TypeBadge key={type} type={type as any} />
+                              <TypeBadge key={type} type={type as PokemonTypeNames} />
                             ))}
                           </div>
                           <p className="mt-1" style={{ color: colors[1] }}>
