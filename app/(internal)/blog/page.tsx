@@ -1,6 +1,5 @@
 'use client';
 
-import { Metadata } from 'next';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -197,7 +196,7 @@ export default function BlogPage() {
             </motion.div>
 
             <div className="grid lg:grid-cols-2 gap-8">
-              {featuredPosts.map((post, index) => (
+              {featuredPosts.map((post, _index) => (
                 <motion.div key={post.id} variants={itemVariants}>
                   <Card className="group h-full overflow-hidden border-0 transition-all duration-500 bg-gradient-to-br from-card to-card/50">
                     <div className={`h-2 bg-gradient-to-r ${post.gradient}`} />
@@ -277,7 +276,7 @@ export default function BlogPage() {
             </motion.div>
 
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {regularPosts.map((post, index) => (
+              {regularPosts.map((post, _index) => (
                 <motion.div key={post.id} variants={itemVariants}>
                   <Card className="group h-full overflow-hidden transition-all duration-300 bg-gradient-to-br from-card to-card/30">
                     <div className={`h-1 bg-gradient-to-r ${post.gradient}`} />

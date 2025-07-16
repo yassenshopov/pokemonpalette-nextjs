@@ -19,11 +19,9 @@ import {
   Star,
   Zap,
   Sparkles,
-  ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
-import speciesData from '@/data/species.json';
-import { ColorPalette } from '@/components/landing/color-palette';
+import Image from 'next/image';
 import { TypeBadge } from '@/components/type-badge';
 import { SubmitDesignDialog } from '@/components/ui/submit-design-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -148,7 +146,7 @@ async function fetchPokemonCardData(pokemon: string): Promise<PokemonCardData> {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}`);
     const data = await response.json();
     const officialArt = data.sprites.other['official-artwork'].front_default;
-    const types = data.types.map((t: any) => t.type.name);
+    const types = data.types.map((t: { type: { name: string } }) => t.type.name);
     const number = data.id;
     // Use the first 5 colors from the artwork (fallback to challenge colors if needed)
     // We'll use the existing challenge colors for now, but you can integrate ColorThief or similar for real extraction
@@ -159,9 +157,9 @@ async function fetchPokemonCardData(pokemon: string): Promise<PokemonCardData> {
 }
 
 export default function ChallengesPage() {
-  const { user, isSignedIn } = useUser();
+  const { isSignedIn } = useUser();
   const { toast } = useToast();
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [_selectedChallenge, _setSelectedChallenge] = useState<Challenge | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'upcoming' | 'completed'>('all');
   const [pokemonData, setPokemonData] = useState<Record<string, PokemonCardData>>({});
 
@@ -231,7 +229,7 @@ export default function ChallengesPage() {
     });
   };
 
-  const handleSubmitDesign = (challenge: Challenge) => {
+  const _handleSubmitDesign = (challenge: Challenge) => {
     if (!isSignedIn) {
       toast({
         title: 'Sign in required',
@@ -255,7 +253,7 @@ export default function ChallengesPage() {
     },
   };
 
-  const itemVariants = {
+  const _itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -447,7 +445,7 @@ export default function ChallengesPage() {
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16"
         >
           <AnimatePresence mode="wait">
-            {filteredChallenges.map((challenge, index) => {
+            {filteredChallenges.map((challenge, _index) => {
               const poke = pokemonData[challenge.pokemon];
               const primaryColor = challenge.colors?.[0] || '#6366f1';
 
@@ -491,11 +489,12 @@ export default function ChallengesPage() {
                       {/* Pokemon Artwork */}
                       <div className="mb-4">
                         {poke?.officialArt ? (
-                          <img
+                          <Image
                             src={poke.officialArt}
                             alt={challenge.pokemon}
+                            width={128}
+                            height={128}
                             className="w-32 h-32 object-contain"
-                            loading="lazy"
                           />
                         ) : (
                           <div className="w-32 h-32 flex items-center justify-center bg-muted rounded-xl border-2 border-dashed">
@@ -626,9 +625,9 @@ export default function ChallengesPage() {
                           <span className="text-sm font-semibold">Challenge Requirements</span>
                         </div>
                         <div className="space-y-1">
-                          {challenge.requirements.slice(0, 2).map((req, reqIndex) => (
+                          {challenge.requirements.slice(0, 2).map((req, _reqIndex) => (
                             <div
-                              key={reqIndex}
+                              key={_reqIndex}
                               className="flex items-start gap-2 text-sm text-muted-foreground"
                             >
                               <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />

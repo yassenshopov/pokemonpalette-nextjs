@@ -3,27 +3,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TypeBadge } from '@/components/type-badge';
 import {
   BlogHero,
   BlogSection,
-  PokemonCard,
   StepCard,
-  CallToAction,
   RelatedArticle,
   HighlightBox,
-  BlogIcons,
 } from '@/components/ui/blog-components';
 import {
   Gamepad2,
   Palette,
   Cpu,
-  Smartphone,
   TrendingUp,
   Users,
   Zap,
   BookOpen,
-  Calendar,
   Monitor,
   Sparkles,
 } from 'lucide-react';
@@ -290,7 +284,7 @@ const GenerationTimeline = () => (
   <div className="relative">
     <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-border"></div>
     <div className="space-y-8">
-      {generations.slice(0, 4).map((gen, index) => (
+      {generations.slice(0, 4).map((gen, _index) => (
         <div key={gen.number} className="relative flex items-start gap-6">
           <div className="w-16 h-16 rounded-full border-2 border-primary bg-background flex items-center justify-center shadow-none relative z-10">
             <span className="font-bold text-primary">Gen {gen.number}</span>
@@ -530,7 +524,7 @@ export default function EvolutionOfPokemonDesignPage() {
           description="Recent generations have embraced HD graphics, open-world design, and new gameplay mechanics that influence Pokemon design in unprecedented ways."
         >
           <div className="space-y-8">
-            {generations.slice(7, 9).map((gen, index) => (
+            {generations.slice(7, 9).map((gen, _index) => (
               <Card key={gen.number} className="overflow-hidden border shadow-none">
                 <div className="grid md:grid-cols-3 gap-0">
                   <div
