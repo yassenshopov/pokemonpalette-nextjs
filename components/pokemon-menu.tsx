@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,8 @@ import speciesData from '@/data/species.json';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Image from 'next/image';
 import { useToast } from '@/components/ui/use-toast';
+import { logger } from '@/lib/logger';
+import { PokemonSpriteSkeleton } from '@/components/ui/skeleton';
 
 interface PokemonSpecies {
   genera: Array<{
@@ -151,7 +153,7 @@ const PokemonService = {
     return response.json();
   },
 
-  async fetchEvolutionChain(url: string) {
+  async fetchEvolutionChain(url: string): Promise<any> {
     const response = await fetch(url);
     if (!response.ok) throw new Error('Evolution chain not found');
     return response.json();
@@ -333,7 +335,7 @@ export function PokemonMenu() {
         extractColors(newSpriteUrl);
       }
     } catch (error) {
-      console.error('Error fetching Pokemon:', error);
+      logger.error('Failed to fetch Pokemon data', error, { identifier });
       setSpriteUrl('');
       if (!skipSpecies) {
         setSpeciesTitle('Select a Pokémon');
@@ -351,7 +353,7 @@ export function PokemonMenu() {
       handlePokemonFetch(speciesId);
     } else {
       // Handle invalid name
-      console.warn('Invalid Pokemon name');
+      logger.warn('Invalid Pokemon name provided', { name });
     }
   };
 
@@ -430,12 +432,15 @@ export function PokemonMenu() {
   };
 
   // Add color editing function
-  const handleColorChange = (index: number, newColor: string) => {
-    const newColors = [...bgColors];
-    newColors[index] = newColor;
-    setBgColors(newColors);
-    setColors(newColors);
-  };
+  const handleColorChange = useCallback(
+    (index: number, newColor: string) => {
+      const newColors = [...bgColors];
+      newColors[index] = newColor;
+      setBgColors(newColors);
+      setColors(newColors);
+    },
+    [bgColors, setColors]
+  );
 
   // Add these helper functions at the top of your component
   const getRGBFromString = (color: string) => {
@@ -566,12 +571,15 @@ export function PokemonMenu() {
   };
 
   // Add this to the suggestion button onClick
-  const handleSuggestionSelect = (suggestion: PokemonSuggestion) => {
-    setPokemonName(suggestion.name);
-    setShowSuggestions(false);
-    handleNameSubmit(suggestion.name);
-    inputRef.current?.focus(); // Ensure the input retains focus after selection
-  };
+  const handleSuggestionSelect = useCallback(
+    (suggestion: PokemonSuggestion) => {
+      setPokemonName(suggestion.name);
+      setShowSuggestions(false);
+      handleNameSubmit(suggestion.name);
+      inputRef.current?.focus(); // Ensure the input retains focus after selection
+    },
+    [handleNameSubmit]
+  );
 
   // Utility function to capitalize the first letter of each word
   const capitalize = (str: string) => {
@@ -721,7 +729,7 @@ export function PokemonMenu() {
 
     // Log chain data for debugging
     if (depth === 0) {
-      console.log('Evolution chain data:', JSON.stringify(chain));
+      logger.debug('Evolution chain extracted', { chain });
     }
 
     const result: EvolutionStage[][] = [
@@ -900,7 +908,9 @@ export function PokemonMenu() {
     >
       {/* Prominent Pokemon Sprite - INCREASED SIZE */}
       <div className="relative flex-shrink-0 flex items-center justify-center mx-auto p-2 sm:p-4 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mt-2 sm:mt-4">
-        {spriteUrl ? (
+        {isLoading && !spriteUrl ? (
+          <PokemonSpriteSkeleton size="lg" />
+        ) : spriteUrl ? (
           <div
             className={`w-full h-full relative transition-all duration-300 ${
               isLoading ? 'opacity-50 scale-95' : 'opacity-100 scale-100'
@@ -911,8 +921,7 @@ export function PokemonMenu() {
               alt={pokemonName}
               width={180}
               height={180}
-              quality={1}
-              unoptimized={true}
+              quality={75}
               style={{ imageRendering: 'pixelated' }}
             />
             {isLoading && (
@@ -1009,7 +1018,15 @@ export function PokemonMenu() {
                 onScrollCapture={checkScrollControls}
                 ref={suggestionScrollRef}
               >
-                {suggestions.length > 0 ? (
+                {isLoading ? (
+                  // Show skeleton loaders while searching
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <div key={`skeleton-${index}`} className="px-4 py-2 flex items-center gap-2">
+                      <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+                      <div className="h-4 bg-muted rounded flex-1 animate-pulse" />
+                    </div>
+                  ))
+                ) : suggestions.length > 0 ? (
                   suggestions.map((suggestion, index) => (
                     <button
                       key={suggestion.name}
@@ -1029,8 +1046,7 @@ export function PokemonMenu() {
                         width={32}
                         height={32}
                         className="w-6 h-6 sm:w-8 sm:h-8"
-                        unoptimized={true}
-                        quality={1}
+                        quality={50}
                         style={{ imageRendering: 'pixelated' }}
                       />
                       <span className="text-sm">{suggestion.name.replace(/-/g, ' ')}</span>
@@ -1272,8 +1288,7 @@ export function PokemonMenu() {
                             alt={form.name}
                             width={72}
                             height={72}
-                            unoptimized={true}
-                            quality={1}
+                            quality={50}
                             className="w-16 h-16 sm:w-20 sm:h-20"
                             style={{ imageRendering: 'pixelated' }}
                           />
@@ -1318,8 +1333,7 @@ export function PokemonMenu() {
                             alt={pokemon.name}
                             width={72}
                             height={72}
-                            unoptimized={true}
-                            quality={1}
+                            quality={50}
                             className="w-16 h-16 sm:w-20 sm:h-20"
                             style={{ imageRendering: 'pixelated' }}
                           />
@@ -1420,8 +1434,12 @@ export function PokemonMenu() {
                                       const b = parseInt(hex.slice(5, 7), 16);
                                       handleColorChange(index, `rgb(${r}, ${g}, ${b})`);
                                     }
-                                  } catch (e) {
-                                    console.error('Invalid color format', e);
+                                  } catch (err) {
+                                    console.error(
+                                      'Invalid color format provided:',
+                                      err,
+                                      e.target.value
+                                    );
                                   }
                                 }}
                                 className="w-full px-3 py-2 border rounded-md text-sm"

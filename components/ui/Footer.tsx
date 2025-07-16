@@ -1,35 +1,135 @@
-import { LucideTwitter, Github } from 'lucide-react';
+'use client';
+
+import { LucideTwitter, Github, BookOpen, HelpCircle, Palette, User, Compass } from 'lucide-react';
+import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
+import { Button } from '@/components/ui/button';
+import { SubmitDesignDialog } from '@/components/ui/submit-design-dialog';
 
 export function Footer() {
+  const { isSignedIn } = useUser();
+
   return (
     <footer className="border-t mt-16">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          {/* Left side - Logo and disclaimer */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Brand Section */}
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
               <div className="font-semibold text-lg">Pokemon Palette</div>
               <div className="h-4 w-[1px] bg-border" />
               <span className="text-xs text-muted-foreground font-medium">2025</span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-[600px]">
-              Pokemon Palette by{' '}
-              <a
-                href="https://github.com/yassenshopov"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-foreground hover:text-primary transition-colors"
-              >
-                Yassen Shopov
-              </a>{' '}
-              is not affiliated with "The Pokémon Company" and does not own or claim any rights to
-              any Nintendo trademark or the Pokémon trademark.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Generate beautiful color palettes from Pokemon artwork. Free design tool for artists,
+              designers, and Pokemon fans.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Not affiliated with "The Pokémon Company" or Nintendo.
             </p>
           </div>
 
-          {/* Right side - Links and social */}
-          <div className="flex flex-col md:items-end space-y-6">
-            {/* Social links */}
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-sm">Quick Links</h3>
+            <nav className="space-y-2">
+              <Link
+                href="/"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Palette Generator
+              </Link>
+              <Link
+                href="/game"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Color Game
+              </Link>
+              <Link
+                href="/explore"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              >
+                <Compass className="h-3 w-3" />
+                Explore Community
+              </Link>
+              {isSignedIn && (
+                <Link
+                  href="/profile"
+                  className="block text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                >
+                  <User className="h-3 w-3" />
+                  My Profile
+                </Link>
+              )}
+              <SubmitDesignDialog>
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                  Submit Design
+                </Button>
+              </SubmitDesignDialog>
+              <Link
+                href="/challenges"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              >
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Design Challenges
+              </Link>
+              <Link
+                href="/blog"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              >
+                <BookOpen className="h-3 w-3" />
+                Design Blog
+              </Link>
+              <Link
+                href="/resources"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              >
+                <Palette className="h-3 w-3" />
+                Resources
+              </Link>
+            </nav>
+          </div>
+
+          {/* Help & Support */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-sm">Help & Support</h3>
+            <nav className="space-y-2">
+              <Link
+                href="/faq"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              >
+                <HelpCircle className="h-3 w-3" />
+                FAQ
+              </Link>
+              <a
+                href="https://github.com/yassenshopov/pokemonpalette-nextjs/issues"
+                target="_blank"
+                rel="noreferrer"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Report an Issue
+              </a>
+              <a
+                href="https://buymeacoffee.com/yassenshopov"
+                target="_blank"
+                rel="noreferrer"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Support Project
+              </a>
+            </nav>
+          </div>
+
+          {/* Social & External */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-sm">Connect</h3>
             <div className="flex items-center gap-4">
               <a
                 href="https://x.com/yassenshopov"
@@ -52,52 +152,40 @@ export function Footer() {
                 <span className="sr-only">GitHub</span>
               </a>
             </div>
-
-            {/* Quick links */}
-            <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-              <a
-                href="https://github.com/yassenshopov/pokemonpalette-nextjs/issues"
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Report an issue
-              </a>
-              <span className="text-muted-foreground">•</span>
+            <div className="space-y-2">
               <a
                 href="https://github.com/yassenshopov/pokemonpalette-nextjs"
                 target="_blank"
                 rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Source code
+                Source Code
               </a>
-              <span className="text-muted-foreground">•</span>
               <a
                 href="https://pokeapi.co/"
                 target="_blank"
                 rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                PokéAPI
+                Powered by PokéAPI
               </a>
-              <span className="text-muted-foreground">•</span>
-              <a
-                href="https://buymeacoffee.com/yassenshopov"
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Support
-              </a>
-            </nav>
+            </div>
           </div>
         </div>
 
         {/* Bottom copyright */}
         <div className="mt-8 pt-8 border-t">
           <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Pokemon Palette. All rights reserved.
+            © {new Date().getFullYear()} Pokemon Palette by{' '}
+            <a
+              href="https://github.com/yassenshopov"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-foreground hover:text-primary transition-colors"
+            >
+              Yassen Shopov
+            </a>
+            . All rights reserved.
           </p>
         </div>
       </div>

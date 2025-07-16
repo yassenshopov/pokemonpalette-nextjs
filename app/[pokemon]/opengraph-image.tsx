@@ -18,126 +18,144 @@ function capitalizeWords(str: string): string {
 }
 
 export const runtime = 'edge';
-export const contentType = 'image/png';
+export const alt = 'Pokemon Color Palette';
 export const size = {
   width: 1200,
   height: 630,
 };
+export const contentType = 'image/png';
 
 export default async function Image({ params }: { params: { pokemon: string } }) {
-  try {
-    const pokemon = params.pokemon;
-    const formattedName = capitalizeWords(pokemon);
-    const pokemonId = typedSpeciesData[pokemon.toLowerCase()] || 1;
-    const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
+  const pokemonName =
+    params.pokemon.charAt(0).toUpperCase() + params.pokemon.slice(1).replace(/-/g, ' ');
+  const pokemonId = speciesData[params.pokemon as keyof typeof speciesData];
+  const pokemonImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
 
-    // Use a system font instead of fetching from Google Fonts
-    const fontFamily =
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-
-    return new ImageResponse(
-      (
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          background: 'linear-gradient(to bottom right, #1a1a1a, #2a2a2a)',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+        }}
+      >
         <div
           style={{
-            fontSize: 128,
-            background: 'linear-gradient(to bottom, #ffcc00, #ffaa33)',
-            width: '100%',
-            height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            position: 'relative',
-            padding: '4rem',
-            fontFamily,
+            gap: '40px',
+            marginBottom: '40px',
           }}
         >
+          {/* Pokemon Image */}
+          <div
+            style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '20px',
+              padding: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '300px',
+              height: '300px',
+            }}
+          >
+            <img
+              src={pokemonImage}
+              alt={pokemonName}
+              width={250}
+              height={250}
+              style={{
+                objectFit: 'contain',
+              }}
+            />
+          </div>
+
+          {/* Text Content */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              width: '60%',
-              height: '100%',
-              zIndex: 10,
+              gap: '20px',
+              maxWidth: '600px',
             }}
           >
-            <div style={{ fontSize: 40, fontWeight: 'bold', color: '#000' }}>Pokémon Palette</div>
-            <div
+            <h1
               style={{
-                fontSize: 72,
+                fontSize: '64px',
                 fontWeight: 'bold',
-                color: '#000',
-                marginTop: '1rem',
-                marginBottom: '2rem',
+                color: 'white',
                 lineHeight: 1.1,
+                margin: 0,
               }}
             >
-              {formattedName} Color Palette
-            </div>
-            <div
+              {pokemonName}
+              <br />
+              <span
+                style={{
+                  fontSize: '48px',
+                  color: '#9ca3af',
+                }}
+              >
+                Color Palettes
+              </span>
+            </h1>
+            <p
               style={{
-                display: 'flex',
-                gap: '1rem',
-                marginBottom: '2rem',
+                fontSize: '24px',
+                color: '#d1d5db',
+                margin: 0,
               }}
             >
-              {['#FF5555', '#55AAFF', '#FFDD44', '#66CC77', '#AA66CC'].map((color, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: 60,
-                    height: 60,
-                    backgroundColor: color,
-                    borderRadius: 30,
-                    border: '3px solid white',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                  }}
-                />
-              ))}
-            </div>
-            <div style={{ fontSize: 28, color: '#000', maxWidth: '90%' }}>
-              Beautiful color schemes inspired by {formattedName}
-            </div>
-          </div>
-          <div
-            style={{
-              position: 'absolute',
-              right: 80,
-              bottom: 0,
-              width: 400,
-              height: 400,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <img
-              src={imageUrl}
-              width={400}
-              height={400}
-              style={{
-                objectFit: 'contain',
-              }}
-              alt={formattedName}
-            />
+              Get inspired by {pokemonName}'s unique colors and create stunning designs
+            </p>
           </div>
         </div>
-      ),
-      {
-        ...size,
-        headers: {
-          'X-Robots-Tag': 'noindex, nofollow',
-        },
-      }
-    );
-  } catch (e) {
-    console.error(e);
-    return new Response(`Failed to generate the image`, {
-      status: 500,
-      headers: {
-        'X-Robots-Tag': 'noindex, nofollow',
-      },
-    });
-  }
+
+        {/* Site Info */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
+          <div
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            🎨
+          </div>
+          <p
+            style={{
+              fontSize: '24px',
+              color: 'white',
+              margin: 0,
+            }}
+          >
+            pokemonpalette.com
+          </p>
+        </div>
+      </div>
+    ),
+    {
+      ...size,
+    }
+  );
 }

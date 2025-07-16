@@ -55,7 +55,7 @@ export async function GET() {
       total: Math.min(data.total || 5, 5), // Ensure we never show more than 5 supporters in the UI
     });
   } catch (error) {
-    console.error('Error fetching supporters:', error);
+    // Error fetching supporters - returning fallback data
 
     // Return mock data as fallback
     return NextResponse.json({

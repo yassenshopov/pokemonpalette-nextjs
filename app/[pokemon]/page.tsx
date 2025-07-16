@@ -215,7 +215,7 @@ export default function Page({ params }: PageProps) {
           });
         }
       } catch (error) {
-        console.error('Error fetching Pokemon data:', error);
+        // Error fetching Pokemon data - using fallback
         setPokemonData({
           officialArt:
             'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png',

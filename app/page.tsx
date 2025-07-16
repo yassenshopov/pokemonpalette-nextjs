@@ -6,6 +6,13 @@ import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/landing/navbar';
 import { ColorExampleSection } from '@/components/landing/color-example-section';
 import StructuredData from '@/app/components/StructuredData';
+import { logger } from '@/lib/logger';
+
+// Add import for the sidebar navigation
+import { SidebarNav } from '@/components/ui/sidebar-nav';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
 
 // Define the type for species data
 interface SpeciesData {
@@ -289,7 +296,7 @@ export default function Home() {
           setStats(formattedStats);
         }
       } catch (error) {
-        console.error('Error fetching Pokemon data:', error);
+        logger.error('Failed to fetch Pokemon data', error);
         setDescriptions([]);
         setOfficialArt('');
         setPokemonCry('');

@@ -30,7 +30,7 @@ export async function fetchSupporters(): Promise<SupportersData> {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching supporters:', error);
+    console.error('Failed to fetch supporters data:', error);
 
     // Return mock data as fallback in case of client-side errors
     return {

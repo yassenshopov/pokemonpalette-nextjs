@@ -1,9 +1,129 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Accessibility styles */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: white;
+  color: black;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 1000;
+  font-weight: bold;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .type-badge {
+    border: 2px solid;
+  }
+
+  .pokemon-sprite {
+    border: 2px solid;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .pokemon-float,
+  .animate-spin,
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  .motion-reduce-transform {
+    transform: none !important;
+  }
+}
+
+/* Focus indicators */
+.focus-visible:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Better button states for accessibility */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Ensure interactive elements have minimum size for mobile */
+button,
+[role='button'],
+input[type='checkbox'],
+input[type='radio'] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Better touch targets on mobile */
+  .touch-target {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 12px;
+  }
+
+  /* Improved spacing for mobile */
+  .mobile-spacing {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+
+  /* Better text scaling on mobile */
+  .mobile-text {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* Prevent horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Better input sizing on mobile */
+  input,
+  button,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
 
 :root,
 html,
@@ -157,5 +277,105 @@ h6 {
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+/* Font utilities */
+.font-pixel {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+}
+
+/* Game-specific styles */
+.gameboy-frame {
+  box-shadow: 0 0 0 8px #b8b090, 0 0 0 12px #7c6f57, 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pokemon-card {
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.pokemon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.08) 0px,
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  mix-blend-mode: multiply;
+  z-index: 30;
+}
+
+.glitch-sprite {
+  animation: glitch 1.2s infinite linear alternate-reverse;
+}
+
+.shiny-glow {
+  filter: drop-shadow(0 0 16px #ffe066) drop-shadow(0 0 32px #ffe066);
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Enhanced tabs styling */
+[data-radix-tabs-list] {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-radix-tabs-list]::-webkit-scrollbar {
+  display: none;
+}
+
+[data-radix-tabs-trigger] {
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+
+/* Mobile tab improvements */
+@media (max-width: 640px) {
+  [data-radix-tabs-list] {
+    gap: 2px;
+    padding: 2px;
+  }
+
+  [data-radix-tabs-trigger] {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    min-height: 36px;
   }
 }

@@ -44,7 +44,7 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
     } catch (err) {
-      console.error('Failed to copy color:', err);
+      // Clipboard copy failed - fallback method used
     }
   };
 
@@ -99,6 +99,18 @@ export function ColorGrid({ colors, colorFormat, convertColor, onFormatChange }:
               )}
               style={{ backgroundColor: color }}
               onClick={e => copyToClipboard(color, index, e)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Color ${index + 1}: ${convertColor(
+                color,
+                colorFormat
+              )}. Click to copy to clipboard.`}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  copyToClipboard(color, index);
+                }
+              }}
             >
               <div className="flex justify-between items-start">
                 <DropdownMenu>

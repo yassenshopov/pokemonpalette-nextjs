@@ -42,7 +42,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
 
       setPalettes(savedPalettes);
     } catch (error) {
-      console.error('Error loading palettes:', error);
+      // Error loading palettes - using empty array as fallback
     }
   };
 
@@ -57,7 +57,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error deleting palette:', error);
+      // Error deleting palette - operation failed silently
       toast({
         title: 'Error',
         description: 'Could not delete the palette',
@@ -178,8 +178,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                               width={32}
                               height={32}
                               className="h-8 w-8 object-contain"
-                              unoptimized={true}
-                              quality={1}
+                              quality={50}
                               style={{ imageRendering: 'pixelated' }}
                             />
                             {palette.isShiny && (
