@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { SignInButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { useSaveContext } from '@/contexts/save-context';
+import { useSave } from '@/contexts/save-context';
 import { useColors } from '@/contexts/color-context';
 import { PalettePickerDialog } from '@/components/palettes/palette-picker-dialog';
 import { useRouter } from 'next/navigation';
@@ -37,7 +37,7 @@ export function HeroSection({
   colors = [],
   pokemonNumber,
 }: HeroSectionProps) {
-  const { isSaved, isSaving, savePaletteAction } = useSaveContext();
+  const { isSaved, toggleSave } = useSave();
   const { shiny } = useColors();
   const { user } = useUser();
   const router = useRouter();
@@ -49,12 +49,21 @@ export function HeroSection({
 
   // Function to handle saving palette
   const handleSavePalette = () => {
-    savePaletteAction(colors, pokemonNumber, pokemonName, shiny);
+    if (colors.length > 0) {
+      toggleSave({
+        id: pokemonNumber || Date.now(),
+        title: `${pokemonName}${shiny ? ' ✨' : ''} Palette`,
+        creator: user?.fullName || 'Anonymous',
+        pokemon: pokemonName,
+        colors: colors,
+        savedAt: new Date().toISOString(),
+      });
+    }
   };
 
   // Function to handle "check" button click after saving
   const handleSavedClick = () => {
-    if (isSaved) {
+    if (isSaved(pokemonNumber || Date.now())) {
       // Open palette picker dialog when checkmark is clicked
       setPalettePickerOpen(true);
     } else {
@@ -102,13 +111,13 @@ export function HeroSection({
       />
 
       {/* Content container */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-16 px-4 sm:px-6 md:px-16 mx-auto max-w-7xl pt-6 md:pt-0">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8 lg:gap-16 px-4 sm:px-6 lg:px-16 mx-auto max-w-7xl pt-6 lg:pt-0">
         {/* Left content section */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex-1 text-center md:text-left space-y-4 md:space-y-8"
+          className="flex-1 text-center lg:text-left space-y-4 sm:space-y-6 lg:space-y-8 w-full"
         >
           <div
             className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 rounded-full border bg-background/50 backdrop-blur-sm mb-2 md:mb-4"
@@ -140,27 +149,31 @@ export function HeroSection({
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center md:justify-start pt-2 md:pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 md:pt-4 w-full sm:w-auto">
             <SignedIn>
               <Button
                 size="lg"
-                className="gap-2 h-10 md:h-12 px-6 md:px-8 text-sm md:text-base"
+                className={`gap-2 h-12 px-6 text-base transition-all touch-target w-full sm:w-auto ${
+                  isSaved(pokemonNumber || Date.now())
+                    ? 'bg-primary text-primary-foreground shadow-lg scale-105'
+                    : ''
+                }`}
                 style={{
-                  backgroundColor: primaryColor,
-                  borderColor: primaryColor,
-                  color: '#fff',
+                  backgroundColor: isSaved(pokemonNumber || Date.now()) ? undefined : primaryColor,
+                  borderColor: isSaved(pokemonNumber || Date.now()) ? undefined : primaryColor,
+                  color: isSaved(pokemonNumber || Date.now()) ? undefined : '#fff',
                 }}
                 onClick={handleSavedClick}
-                disabled={isSaving || colors.length === 0}
+                disabled={colors.length === 0}
               >
-                {isSaving || isSaved ? (
+                {isSaved(pokemonNumber || Date.now()) ? (
                   <>
-                    <Check className="w-4 h-4 md:w-5 md:h-5" />
+                    <Check className="w-5 h-5" />
                     Saved!
                   </>
                 ) : (
                   <>
-                    <Bookmark className="w-4 h-4 md:w-5 md:h-5" />
+                    <Bookmark className="w-5 h-5" />
                     Save Palette
                   </>
                 )}
@@ -170,14 +183,14 @@ export function HeroSection({
               <SignInButton mode="modal">
                 <Button
                   size="lg"
-                  className="gap-2 h-10 md:h-12 px-6 md:px-8 text-sm md:text-base"
+                  className="gap-2 h-12 px-6 text-base touch-target w-full sm:w-auto"
                   style={{
                     backgroundColor: primaryColor,
                     borderColor: primaryColor,
                     color: '#fff',
                   }}
                 >
-                  <Bookmark className="w-4 h-4 md:w-5 md:h-5" />
+                  <Bookmark className="w-5 h-5" />
                   Save Palette
                 </Button>
               </SignInButton>
@@ -185,7 +198,7 @@ export function HeroSection({
             <Button
               size="lg"
               variant="outline"
-              className="gap-2 h-10 md:h-12 px-6 md:px-8 text-sm md:text-base"
+              className="gap-2 h-12 px-6 text-base touch-target w-full sm:w-auto"
               style={{ borderColor: `${primaryColor}40` }}
               onClick={() => {
                 const element = document.getElementById('pokemon-info');
@@ -194,7 +207,7 @@ export function HeroSection({
                 }
               }}
             >
-              Learn more <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+              Learn more <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
         </motion.div>
@@ -205,7 +218,7 @@ export function HeroSection({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 flex justify-center md:justify-end mt-4 md:mt-0"
+            className="flex-1 flex justify-center lg:justify-end mt-6 lg:mt-0"
           >
             <div className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] overflow-hidden">
               <div
@@ -219,8 +232,7 @@ export function HeroSection({
                 alt={pokemonName}
                 fill
                 className="object-contain p-6 sm:p-8 md:p-12 transition-all duration-300 hover:scale-105"
-                priority
-                unoptimized={true}
+                priority={true}
                 quality={100}
               />
             </div>

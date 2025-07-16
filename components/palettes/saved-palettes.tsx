@@ -9,6 +9,7 @@ import { Trash2, ExternalLink, Check, ChevronRight, Sparkles } from 'lucide-reac
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { logger } from '@/lib/logger';
 
 interface SavedPalettesProps {
   onSelectPalette?: (palette: SavedPalette) => void;
@@ -42,7 +43,11 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
 
       setPalettes(savedPalettes);
     } catch (error) {
-      console.error('Error loading palettes:', error);
+      // Error loading palettes - using empty array as fallback
+      logger.error('Failed to load saved palettes', error, {
+        userId: user?.id,
+        action: 'loadPalettes',
+      });
     }
   };
 
@@ -57,7 +62,12 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error deleting palette:', error);
+      // Error deleting palette - operation failed silently
+      logger.error('Failed to delete palette', error, {
+        paletteId: id,
+        userId: user?.id,
+        action: 'deletePalette',
+      });
       toast({
         title: 'Error',
         description: 'Could not delete the palette',
@@ -178,8 +188,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                               width={32}
                               height={32}
                               className="h-8 w-8 object-contain"
-                              unoptimized={true}
-                              quality={1}
+                              quality={50}
                               style={{ imageRendering: 'pixelated' }}
                             />
                             {palette.isShiny && (

@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import ColorThief from 'colorthief';
+import { logColorExtraction } from '@/lib/logger';
 
 interface PokemonColorExtractorProps {
   spriteUrl: string;
   onColorsExtracted: (colors: string[]) => void;
 }
 
-export function PokemonColorExtractor({
+export const PokemonColorExtractor = memo(function PokemonColorExtractor({
   spriteUrl,
   onColorsExtracted,
 }: PokemonColorExtractorProps) {
@@ -31,19 +32,22 @@ export function PokemonColorExtractor({
             return `rgb(${r}, ${g}, ${b})`;
           });
           onColorsExtracted(rgbColors);
+          logColorExtraction(spriteUrl, true, rgbColors);
         } catch (error) {
-          console.error('Error extracting colors:', error);
+          const fallbackColors = ['rgb(255, 255, 255)', 'rgb(200, 200, 200)', 'rgb(150, 150, 150)'];
+          logColorExtraction(spriteUrl, false, undefined, error as Error);
           // Fallback colors if extraction fails
-          onColorsExtracted(['rgb(255, 255, 255)', 'rgb(200, 200, 200)', 'rgb(150, 150, 150)']);
+          onColorsExtracted(fallbackColors);
         } finally {
           setIsLoading(false);
         }
       };
 
       img.onerror = () => {
-        console.error('Error loading image for color extraction');
+        const fallbackColors = ['rgb(255, 255, 255)', 'rgb(200, 200, 200)', 'rgb(150, 150, 150)'];
+        logColorExtraction(spriteUrl, false, undefined, new Error('Failed to load image'));
         // Fallback colors if image fails to load
-        onColorsExtracted(['rgb(255, 255, 255)', 'rgb(200, 200, 200)', 'rgb(150, 150, 150)']);
+        onColorsExtracted(fallbackColors);
         setIsLoading(false);
       };
 
@@ -54,4 +58,4 @@ export function PokemonColorExtractor({
   }, [spriteUrl, onColorsExtracted]);
 
   return null; // This is a utility component, no UI needed
-}
+});

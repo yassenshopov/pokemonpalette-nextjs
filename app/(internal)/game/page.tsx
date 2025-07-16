@@ -21,11 +21,13 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SignInButton, UserButton } from '@clerk/nextjs';
 import { TypeBadge } from '@/components/type-badge';
 import { GameBackground } from '@/components/game-background';
-import '../styles/game-animations.css';
 import Link from 'next/link';
 import Image from 'next/image';
 import Head from 'next/head';
 import { ColorPalette } from '@/components/landing/color-palette';
+import { logger } from '@/lib/logger';
+import ErrorBoundary from '@/components/ui/error-boundary';
+import { PokemonTypeNames } from '@/types/pokemon';
 
 type HintType =
   | 'first-letter'
@@ -58,11 +60,21 @@ interface PokemonData {
   types: { type: { name: string } }[];
   height: number;
   weight: number;
+  sprites: {
+    front_default: string;
+    front_shiny?: string;
+    other: {
+      'official-artwork': {
+        front_default: string;
+        front_shiny?: string;
+      };
+    };
+  };
 }
 
 // Add these service functions
 const PokemonService = {
-  async fetchPokemon(identifier: string | number): Promise<any> {
+  async fetchPokemon(identifier: string | number): Promise<PokemonData> {
     const response = await fetch(
       `https://pokeapi.co/api/v2/pokemon/${identifier.toString().toLowerCase()}`
     );
@@ -188,7 +200,7 @@ export default function GamePage() {
         isShiny,
       }));
     } catch (error) {
-      console.error('Error fetching Pokemon:', error);
+      logger.error('Error fetching Pokemon - using fallback', error);
     } finally {
       setIsLoading(false);
     }
@@ -208,19 +220,11 @@ export default function GamePage() {
     const normalizedGuess = currentGuess.toLowerCase().trim().replace(/\s+/g, '-');
     const normalizedTarget = targetPokemon.toLowerCase();
 
-    console.log('Attempting guess:', {
-      original: currentGuess,
-      normalized: normalizedGuess,
-      target: targetPokemon,
-    });
+    // Processing guess attempt
 
     // First validate if it's a valid Pokemon name
     const guessId = PokemonService.getSpeciesId(normalizedGuess);
-    console.log('Pokemon ID lookup:', {
-      name: normalizedGuess,
-      id: guessId,
-      speciesData: (speciesData as Record<string, number>)[normalizedGuess],
-    });
+    // Validating Pokemon name
 
     if (!guessId) {
       // Get a slice of Pokemon names around where this guess would be alphabetically
@@ -229,12 +233,7 @@ export default function GamePage() {
       const start = Math.max(0, guessIndex - 2);
       const nearbyNames = allNames.slice(start, start + 5);
 
-      console.log('Invalid Pokemon name detected:', {
-        input: currentGuess,
-        normalized: normalizedGuess,
-        nearbyNames: nearbyNames,
-        validExample: 'Try Pokemon like: ' + nearbyNames.join(', '),
-      });
+      // Invalid Pokemon name - providing helpful suggestions
 
       setGameState(prev => ({
         ...prev,
@@ -256,7 +255,7 @@ export default function GamePage() {
       const guessInfo: GuessData = {
         name: currentGuess,
         sprite: guessData.sprites.front_default,
-        types: guessData.types.map((t: any) => t.type.name),
+        types: guessData.types.map((t: { type: { name: string } }) => t.type.name),
         generation: getGeneration(guessData.id),
       };
 
@@ -265,7 +264,7 @@ export default function GamePage() {
 
       // Only decrease remaining guesses if it's not correct
       if (normalizedGuess === normalizedTarget) {
-        console.log('Correct guess!');
+        // Correct guess! Triggering victory celebration
         newGameState.gameStatus = 'won';
         setShowWinDialog(true);
         // Add victory celebration
@@ -296,23 +295,16 @@ export default function GamePage() {
       } else {
         newGameState.remainingGuesses--;
         if (newGameState.remainingGuesses === 0) {
-          console.log('Game over - no more guesses');
+          // Game over - no more guesses remaining
           newGameState.gameStatus = 'lost';
           setShowLossDialog(true);
         } else {
           try {
-            console.log('Generating hint for:', {
-              guess: normalizedGuess,
-              guessId: guessId,
-              target: normalizedTarget,
-              targetData: targetPokemonData,
-            });
-
+            // Generating contextual hint for player
             const hint = await generateHint(normalizedGuess, normalizedTarget);
-            console.log('Generated hint:', hint);
             newGameState.hints.push(hint);
           } catch (error) {
-            console.error('Error generating hint:', error);
+            logger.error('Error generating hint - using fallback', error);
             newGameState.hints.push('Error generating hint');
           }
         }
@@ -323,7 +315,7 @@ export default function GamePage() {
       setIsLoading(false);
       setIsGuessing(false);
     } catch (error) {
-      console.error('Error processing guess:', error);
+      // Error processing guess - operation failed
     }
   };
 
@@ -366,7 +358,7 @@ export default function GamePage() {
           })`;
       }
     } catch (error) {
-      console.error('Error in generateHint:', error);
+      // Error in generateHint - using fallback message
       return 'Error generating hint';
     }
   };
@@ -452,258 +444,239 @@ export default function GamePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
-      <Head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
-          rel="stylesheet"
-        />
-      </Head>
-      <GameBackground colors={colors} />
-      <div className="scanlines pointer-events-none absolute inset-0 z-30" />
-      <header className="w-full bg-card/80 fixed top-0 left-0 z-50 border-b">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
-          <Link
-            href="/"
-            className="flex items-center gap-4 group"
-            tabIndex={0}
-            aria-label="Go to homepage"
-          >
-            <Image
-              src="/logo512.png"
-              alt="Pokemon Palette Logo"
-              width={32}
-              height={32}
-              className="w-8 h-8 pokemon-float group-hover:scale-110 transition-transform"
-            />
-            <h1
-              className="text-lg font-bold font-display leading-tight font-pixel"
-              style={{ fontFamily: 'Press Start 2P, monospace' }}
-            >
-              Pokemon Palette
-              <span className="block text-xs text-muted-foreground -mt-1">Guesser</span>
-            </h1>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="h-8 font-pixel"
-              style={{ fontFamily: 'Press Start 2P, monospace' }}
-            >
-              <Link href="/">Home</Link>
-            </Button>
-            <Tabs value={gameState.gameMode} onValueChange={toggleGameMode} className="h-8">
-              <TabsList className="grid w-full grid-cols-2 h-8">
-                <TabsTrigger value="daily" className="text-xs px-3 font-pixel">
-                  📅 Daily
-                </TabsTrigger>
-                <TabsTrigger value="unlimited" className="text-xs px-3 font-pixel">
-                  🎲 Unlimited
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <div className="flex items-center gap-2">
-              <SignInButton mode="modal">
-                <Button variant="ghost" size="sm" className="h-8 font-pixel">
-                  Sign In
-                </Button>
-              </SignInButton>
-              <UserButton afterSignOutUrl="/" />
-            </div>
-            <ThemeToggle />
-          </div>
+    <ErrorBoundary
+      fallback={
+        <div className="min-h-screen flex flex-col items-center justify-center p-4">
+          <h1 className="text-2xl font-bold mb-4">Game Error</h1>
+          <p className="text-muted-foreground mb-4">
+            Something went wrong with the Pokemon guessing game.
+          </p>
+          <Button onClick={() => window.location.reload()}>Reload Game</Button>
         </div>
-      </header>
-      <main className="flex-1 flex flex-col items-center pt-20 px-4">
-        {/* Show the color palette as the main focus */}
-        <div className="w-full max-w-lg mx-auto mb-8">
-          <ColorPalette colors={colors} />
-        </div>
-        <div
-          className="gameboy-frame relative w-full max-w-lg mx-auto overflow-hidden rounded-2xl shadow-2xl z-10 mt-2"
-          style={{
-            backgroundColor: colors[2] || '#e6f2c2',
-            borderColor: colors[1] || '#bfcf9b',
-            borderWidth: 4,
-            boxShadow: `0 0 0 8px ${colors[2] || '#b8b090'}, 0 0 0 12px ${
-              colors[1] || '#7c6f57'
-            }, 0 8px 32px 0 #0008`,
-          }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none rounded-2xl"
-            style={{ border: `4px solid ${colors[1] || '#7c8a5a'}` }}
+      }
+    >
+      <div className="min-h-screen flex flex-col relative overflow-hidden">
+        <Head>
+          <link
+            href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+            rel="stylesheet"
           />
-          <div
-            className="p-6 md:p-10 flex flex-col items-center gap-8"
-            style={{ backgroundColor: `${colors[2]}20` || '#f6ffe0' }}
-          >
-            {/* Guess Input */}
-            {gameState.gameStatus === 'playing' && (
-              <div className="w-full max-w-[320px] mb-6">
-                <div className="flex gap-2">
-                  <PokemonSearch
-                    onSelect={name => {
-                      setCurrentGuess(name);
-                      handleGuess();
-                    }}
-                    className="flex-1 glass-effect font-pixel"
-                    placeholder="Guess the Pokémon by its colors..."
-                    disabled={isGuessing}
-                    disabledOptions={gameState.guessHistory.map(g => g.name)}
-                    isShiny={gameState.isShiny}
-                  />
-                  <Button
-                    onClick={handleGuess}
-                    className="px-4 font-pixel"
-                    style={{ backgroundColor: colors[0], color: '#fff', borderColor: colors[1] }}
-                    variant="secondary"
-                    disabled={isGuessing}
+        </Head>
+        <GameBackground colors={colors} />
+        <div className="scanlines pointer-events-none absolute inset-0 z-30" />
+        <header className="w-full bg-card/80 fixed top-0 left-0 z-50 border-b">
+          <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
+            <Link
+              href="/"
+              className="flex items-center gap-4 group"
+              tabIndex={0}
+              aria-label="Go to homepage"
+            >
+              <Image
+                src="/logo512.png"
+                alt="Pokemon Palette Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 pokemon-float group-hover:scale-110 transition-transform"
+              />
+              <h1
+                className="text-lg font-bold font-display leading-tight font-pixel"
+                style={{ fontFamily: 'Press Start 2P, monospace' }}
+              >
+                Pokemon Palette
+                <span className="block text-xs text-muted-foreground -mt-1">Guesser</span>
+              </h1>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="h-8 font-pixel"
+                style={{ fontFamily: 'Press Start 2P, monospace' }}
+              >
+                <Link href="/">Home</Link>
+              </Button>
+              <Tabs value={gameState.gameMode} onValueChange={toggleGameMode}>
+                <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+                  <TabsTrigger
+                    value="daily"
+                    className="text-xs px-3 font-pixel data-[state=active]:bg-background data-[state=active]:text-foreground"
                   >
-                    {isGuessing ? (
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      'Guess'
-                    )}
+                    📅 Daily
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="unlimited"
+                    className="text-xs px-3 font-pixel data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  >
+                    🎲 Unlimited
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <div className="flex items-center gap-2">
+                <SignInButton mode="modal">
+                  <Button variant="ghost" size="sm" className="h-8 font-pixel">
+                    Sign In
                   </Button>
+                </SignInButton>
+                <UserButton afterSignOutUrl="/" />
+              </div>
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col items-center pt-20 px-4">
+          {/* Show the color palette as the main focus */}
+          <div className="w-full max-w-lg mx-auto mb-8">
+            <ColorPalette colors={colors} />
+          </div>
+          <div
+            className="gameboy-frame relative w-full max-w-lg mx-auto overflow-hidden rounded-2xl z-10 mt-2"
+            style={{
+              backgroundColor: colors[2] || '#e6f2c2',
+              borderColor: colors[1] || '#bfcf9b',
+              borderWidth: 4,
+              boxShadow: `0 0 0 8px ${colors[2] || '#b8b090'}, 0 0 0 12px ${
+                colors[1] || '#7c6f57'
+              }, 0 8px 32px 0 #0008`,
+            }}
+          >
+            <div
+              className="absolute inset-0 pointer-events-none rounded-2xl"
+              style={{ border: `4px solid ${colors[1] || '#7c8a5a'}` }}
+            />
+            <div
+              className="p-6 md:p-10 flex flex-col items-center gap-8"
+              style={{ backgroundColor: `${colors[2]}20` || '#f6ffe0' }}
+            >
+              {/* Guess Input */}
+              {gameState.gameStatus === 'playing' && (
+                <div className="w-full max-w-[320px] mb-6">
+                  <div className="flex gap-2">
+                    <PokemonSearch
+                      onSelect={name => {
+                        setCurrentGuess(name);
+                        handleGuess();
+                      }}
+                      className="flex-1 glass-effect font-pixel"
+                      placeholder="Guess the Pokémon by its colors..."
+                      disabled={isGuessing}
+                      disabledOptions={gameState.guessHistory.map(g => g.name)}
+                      isShiny={gameState.isShiny}
+                    />
+                    <Button
+                      onClick={handleGuess}
+                      className="px-4 font-pixel touch-target"
+                      style={{ backgroundColor: colors[0], color: '#fff', borderColor: colors[1] }}
+                      variant="secondary"
+                      disabled={isGuessing}
+                    >
+                      {isGuessing ? (
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        'Guess'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {/* Hearts and Guesses Display */}
+              <div className="flex flex-col items-center gap-2 mt-2">
+                <div className="flex gap-1">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={`text-2xl transition-transform font-pixel ${
+                        i < gameState.remainingGuesses ? 'animate-bounce' : 'opacity-40'
+                      }`}
+                      style={{ color: colors[1] }}
+                    >
+                      {i < gameState.remainingGuesses ? '❤️' : '🖤'}
+                    </span>
+                  ))}
                 </div>
               </div>
-            )}
-            {/* Hearts and Guesses Display */}
-            <div className="flex flex-col items-center gap-2 mt-2">
-              <div className="flex gap-1">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`text-2xl transition-transform font-pixel ${
-                      i < gameState.remainingGuesses ? 'animate-bounce' : 'opacity-40'
-                    }`}
-                    style={{ color: colors[1] }}
-                  >
-                    {i < gameState.remainingGuesses ? '❤️' : '🖤'}
-                  </span>
-                ))}
+              {/* Hints and History */}
+              <div className="w-full max-w-[320px] space-y-2">
+                {gameState.hints.map((hint, index) => {
+                  const guess = gameState.guessHistory[index];
+                  return (
+                    <Card
+                      key={index}
+                      className="pokemon-card overflow-hidden"
+                      style={{ backgroundColor: colors[2], color: '#fff', borderColor: colors[1] }}
+                    >
+                      <CardContent className="p-3 flex items-center gap-3 font-pixel text-xs md:text-sm">
+                        <div className="flex-1">
+                          <p className="font-bold capitalize" style={{ color: colors[0] }}>
+                            {guess.name}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {guess.types.map(type => (
+                              <TypeBadge key={type} type={type as PokemonTypeNames} />
+                            ))}
+                          </div>
+                          <p className="mt-1" style={{ color: colors[1] }}>
+                            {hint}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-            </div>
-            {/* Hints and History */}
-            <div className="w-full max-w-[320px] space-y-2">
-              {gameState.hints.map((hint, index) => {
-                const guess = gameState.guessHistory[index];
-                return (
+              {/* Game Over States: show the sprite and result only after game ends */}
+              {gameState.gameStatus !== 'playing' && (
+                <div className="w-full max-w-[320px] mt-6">
                   <Card
-                    key={index}
-                    className="pokemon-card overflow-hidden"
+                    className="overflow-hidden"
                     style={{ backgroundColor: colors[2], color: '#fff', borderColor: colors[1] }}
                   >
-                    <CardContent className="p-3 flex items-center gap-3 font-pixel text-xs md:text-sm">
-                      <div className="flex-1">
-                        <p className="font-bold capitalize" style={{ color: colors[0] }}>
-                          {guess.name}
-                        </p>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {guess.types.map(type => (
-                            <TypeBadge key={type} type={type as any} />
-                          ))}
-                        </div>
-                        <p className="mt-1" style={{ color: colors[1] }}>
-                          {hint}
-                        </p>
+                    <CardContent className="p-6 flex flex-col items-center gap-4 font-pixel">
+                      <div className="w-24 h-24 relative">
+                        <Image
+                          src={pokemonSprite}
+                          alt={targetPokemon}
+                          fill
+                          className="object-contain"
+                          sizes="96px"
+                          priority
+                        />
                       </div>
+                      <h2 className="text-xl font-bold mt-2 mb-1" style={{ color: colors[0] }}>
+                        {gameState.gameStatus === 'won'
+                          ? '🎉 You caught it! 🎉'
+                          : '💔 Game Over! 💔'}
+                      </h2>
+                      <p className="text-center">
+                        {gameState.gameStatus === 'won'
+                          ? `You caught ${targetPokemon.replace(/-/g, ' ')} in ${
+                              4 - gameState.remainingGuesses + 1
+                            } ${4 - gameState.remainingGuesses + 1 === 1 ? 'try' : 'tries'}!`
+                          : `The Pokémon was ${targetPokemon.replace(
+                              /-/g,
+                              ' '
+                            )}. Better luck next time!`}
+                      </p>
+                      <Button
+                        onClick={handlePlayAgain}
+                        className="w-full font-pixel"
+                        style={{
+                          backgroundColor: colors[0],
+                          color: '#fff',
+                          borderColor: colors[1],
+                        }}
+                      >
+                        {gameState.gameMode === 'unlimited' ? 'Play Again' : 'Back to Home'}
+                      </Button>
                     </CardContent>
                   </Card>
-                );
-              })}
+                </div>
+              )}
             </div>
-            {/* Game Over States: show the sprite and result only after game ends */}
-            {gameState.gameStatus !== 'playing' && (
-              <div className="w-full max-w-[320px] mt-6">
-                <Card
-                  className="overflow-hidden"
-                  style={{ backgroundColor: colors[2], color: '#fff', borderColor: colors[1] }}
-                >
-                  <CardContent className="p-6 flex flex-col items-center gap-4 font-pixel">
-                    <div className="w-24 h-24 relative">
-                      <Image
-                        src={pokemonSprite}
-                        alt={targetPokemon}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <h2 className="text-xl font-bold mt-2 mb-1" style={{ color: colors[0] }}>
-                      {gameState.gameStatus === 'won' ? '🎉 You caught it! 🎉' : '💔 Game Over! 💔'}
-                    </h2>
-                    <p className="text-center">
-                      {gameState.gameStatus === 'won'
-                        ? `You caught ${targetPokemon.replace(/-/g, ' ')} in ${
-                            4 - gameState.remainingGuesses + 1
-                          } ${4 - gameState.remainingGuesses + 1 === 1 ? 'try' : 'tries'}!`
-                        : `The Pokémon was ${targetPokemon.replace(
-                            /-/g,
-                            ' '
-                          )}. Better luck next time!`}
-                    </p>
-                    <Button
-                      onClick={handlePlayAgain}
-                      className="w-full font-pixel"
-                      style={{ backgroundColor: colors[0], color: '#fff', borderColor: colors[1] }}
-                    >
-                      {gameState.gameMode === 'unlimited' ? 'Play Again' : 'Back to Home'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
           </div>
-        </div>
-      </main>
-      <style jsx>{`
-        .font-pixel {
-          font-family: 'Press Start 2P', monospace !important;
-        }
-        .gameboy-frame {
-          box-shadow: 0 0 0 8px #b8b090, 0 0 0 12px #7c6f57, 0 8px 32px 0 #0008;
-        }
-        .scanlines {
-          background: repeating-linear-gradient(
-            to bottom,
-            rgba(0, 0, 0, 0.08) 0px,
-            rgba(0, 0, 0, 0.08) 1px,
-            transparent 1px,
-            transparent 4px
-          );
-          mix-blend-mode: multiply;
-          z-index: 30;
-        }
-        .glitch-sprite {
-          animation: glitch 1.2s infinite linear alternate-reverse;
-        }
-        .shiny-glow {
-          filter: drop-shadow(0 0 16px #ffe066) drop-shadow(0 0 32px #ffe066);
-        }
-        @keyframes glitch {
-          0% {
-            transform: translate(0, 0);
-          }
-          20% {
-            transform: translate(-2px, 2px) skew(-1deg, 1deg);
-          }
-          40% {
-            transform: translate(-2px, -2px) skew(1deg, -1deg);
-          }
-          60% {
-            transform: translate(2px, 2px) skew(-1deg, 1deg);
-          }
-          80% {
-            transform: translate(2px, -2px) skew(1deg, -1deg);
-          }
-          100% {
-            transform: translate(0, 0);
-          }
-        }
-      `}</style>
-    </div>
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 }

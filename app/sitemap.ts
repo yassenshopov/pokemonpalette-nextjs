@@ -44,13 +44,68 @@ export default function sitemap(): MetadataRoute.Sitemap {
       },
     },
     {
-      url: 'https://pokemonpalette.com/shop',
+      url: 'https://pokemonpalette.com/blog',
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+      alternates: {
+        languages: {
+          en: 'https://pokemonpalette.com/blog',
+        },
+      },
+    },
+    {
+      url: 'https://pokemonpalette.com/blog/pokemon-color-psychology',
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+      alternates: {
+        languages: {
+          en: 'https://pokemonpalette.com/blog/pokemon-color-psychology',
+        },
+      },
+    },
+    {
+      url: 'https://pokemonpalette.com/resources',
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+      alternates: {
+        languages: {
+          en: 'https://pokemonpalette.com/resources',
+        },
+      },
+    },
+    {
+      url: 'https://pokemonpalette.com/explore',
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+      alternates: {
+        languages: {
+          en: 'https://pokemonpalette.com/explore',
+        },
+      },
+    },
+    {
+      url: 'https://pokemonpalette.com/submit-design',
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
       alternates: {
         languages: {
-          en: 'https://pokemonpalette.com/shop',
+          en: 'https://pokemonpalette.com/submit-design',
+        },
+      },
+    },
+    {
+      url: 'https://pokemonpalette.com/faq',
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+      alternates: {
+        languages: {
+          en: 'https://pokemonpalette.com/faq',
         },
       },
     },

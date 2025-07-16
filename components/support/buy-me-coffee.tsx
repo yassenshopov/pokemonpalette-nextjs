@@ -47,7 +47,7 @@ export function BuyMeCoffee({
           setSupporterCount(data.total || 0);
         }
       } catch (err) {
-        console.error('Error loading supporters:', err);
+        // Error loading supporters - using fallback data
       } finally {
         setIsLoading(false);
       }

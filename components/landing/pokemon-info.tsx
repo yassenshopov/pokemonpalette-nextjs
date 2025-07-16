@@ -139,7 +139,7 @@ export function PokemonInfo({
         });
       })
       .catch(error => {
-        console.error('Error playing audio:', error);
+        // Audio playback failed - user needs to interact first
         setIsPlaying(false);
       });
   };
@@ -184,7 +184,7 @@ export function PokemonInfo({
             fill
             className="object-contain"
             style={{ filter: 'brightness(0)' }}
-            unoptimized={true}
+            priority={true}
             quality={100}
           />
         </div>

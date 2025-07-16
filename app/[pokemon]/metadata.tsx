@@ -18,40 +18,47 @@ function capitalizeWords(str: string): string {
 }
 
 // Define TypeScript interface for params
-type Props = {
+interface Props {
   params: { pokemon: string };
-};
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const pokemon = params.pokemon;
-  const formattedName = capitalizeWords(pokemon);
-  const pokemonId = typedSpeciesData[pokemon.toLowerCase()] || 1;
-  const baseUrl = 'https://www.pokemonpalette.com';
-  const pokemonUrl = `${baseUrl}/${pokemon}`;
+  const pokemonName =
+    params.pokemon.charAt(0).toUpperCase() + params.pokemon.slice(1).replace(/-/g, ' ');
+  const pokemonId = typedSpeciesData[params.pokemon.toLowerCase()] || 1;
 
-  // Enhanced description with more context
-  const description = `Explore ${formattedName}'s color palette and create stunning designs. Get exact HEX, RGB, and HSL values for ${formattedName}'s colors. Perfect for designers, artists, and Pokemon fans looking for color inspiration.`;
+  // Fetch Pokemon info for description
+  let colorPsychology = '';
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/ai-info/pokemon/${params.pokemon}`
+    );
+    const data = await response.json();
+    colorPsychology = data.colorPsychology || '';
+  } catch (error) {
+    // Error fetching Pokemon metadata - using fallback
+    console.error(`Failed to fetch color psychology metadata for ${params.pokemon}:`, error);
+  }
+
+  let description = `Explore ${pokemonName} color palettes and designs. Get inspired by ${pokemonName}'s unique colors and create your own designs.`;
+  if (colorPsychology) {
+    description += ` Learn about the color psychology and design principles behind ${pokemonName}'s appearance: ${colorPsychology}`;
+  } else {
+    description += ` Learn about the color psychology and design principles behind ${pokemonName}'s appearance.`;
+  }
 
   return {
-    title: `${formattedName} Color Palette | Pokemon Palette Generator`,
+    title: `${pokemonName} Color Palettes & Design Inspiration | PokemonPalette`,
     description,
     keywords: [
-      pokemon,
-      `${pokemon} colors`,
-      `${pokemon} palette`,
-      `${pokemon} color scheme`,
-      `${pokemon} design`,
-      `${pokemon} inspiration`,
-      'pokemon color generator',
-      'pokemon palette maker',
-      'color inspiration',
-      'design palette',
-      'pokemon design tools',
-      'pokemon art colors',
-      'pokemon color codes',
-      'pokemon hex colors',
-      'pokemon rgb values',
-      'pokemon hsl values',
+      pokemonName,
+      'Pokemon colors',
+      'color palette',
+      'design inspiration',
+      'Pokemon design',
+      'color psychology',
+      'Pokemon art',
+      'Pokemon inspiration',
     ],
     authors: [{ name: 'Pokemon Palette' }],
     creator: 'Pokemon Palette',
@@ -61,37 +68,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       address: false,
       telephone: false,
     },
-    metadataBase: new URL(baseUrl),
-    alternates: {
-      canonical: pokemonUrl,
-    },
+    metadataBase: new URL('https://pokemonpalette.com'),
     openGraph: {
       type: 'website',
       locale: 'en_US',
-      url: pokemonUrl,
-      title: `${formattedName} Color Palette | Pokemon Palette Generator`,
+      url: `https://pokemonpalette.com/${params.pokemon}`,
+      title: `${pokemonName} Color Palettes & Design Inspiration`,
       description,
       siteName: 'Pokemon Palette',
       images: [
         {
           url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`,
-          width: 600,
-          height: 600,
-          alt: `${formattedName} official artwork`,
-          type: 'image/png',
+          width: 800,
+          height: 800,
+          alt: pokemonName,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${formattedName} Color Palette | Pokemon Palette Generator`,
+      title: `${pokemonName} Color Palettes & Design Inspiration`,
       description,
       creator: '@pokemonpalette',
       images: [
-        {
-          url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`,
-          alt: `${formattedName} official artwork`,
-        },
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`,
       ],
     },
     robots: {
@@ -100,13 +100,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       googleBot: {
         index: true,
         follow: true,
-        'max-video-preview': -1,
         'max-image-preview': 'large',
-        'max-snippet': -1,
       },
     },
     verification: {
       // Google site verification not needed; verified via domain provider
+    },
+    alternates: {
+      canonical: `https://pokemonpalette.com/${params.pokemon}`,
     },
   };
 }
