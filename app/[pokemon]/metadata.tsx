@@ -37,9 +37,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     colorPsychology = data.colorPsychology || '';
   } catch (error) {
     // Error fetching Pokemon metadata - using fallback
+    console.error(`Failed to fetch color psychology metadata for ${params.pokemon}:`, error);
   }
 
-  const description = `Explore ${pokemonName} color palettes and designs. Get inspired by ${pokemonName}'s unique colors and create your own designs. Learn about the color psychology and design principles behind ${pokemonName}'s appearance.`;
+  let description = `Explore ${pokemonName} color palettes and designs. Get inspired by ${pokemonName}'s unique colors and create your own designs.`;
+  if (colorPsychology) {
+    description += ` Learn about the color psychology and design principles behind ${pokemonName}'s appearance: ${colorPsychology}`;
+  } else {
+    description += ` Learn about the color psychology and design principles behind ${pokemonName}'s appearance.`;
+  }
 
   return {
     title: `${pokemonName} Color Palettes & Design Inspiration | PokemonPalette`,

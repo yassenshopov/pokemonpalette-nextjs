@@ -131,14 +131,11 @@ export function useMultipleLoading<T extends string>(
   keys: readonly T[],
   options: UseLoadingOptions = {}
 ) {
-  const [states, setStates] = useState<Record<T, LoadingState>>(() =>
-    keys.reduce(
-      (acc, key) => ({
-        ...acc,
-        [key]: { isLoading: false, error: null, startTime: null },
-      }),
-      {} as Record<T, LoadingState>
-    )
+  const [states, setStates] = useState<Record<T, LoadingState>>(
+    () =>
+      Object.fromEntries(
+        keys.map(key => [key, { isLoading: false, error: null, startTime: null }])
+      ) as Record<T, LoadingState>
   );
 
   const startLoading = useCallback((key: T) => {

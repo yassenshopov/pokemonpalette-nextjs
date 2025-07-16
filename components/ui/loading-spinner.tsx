@@ -35,7 +35,11 @@ export function LoadingSpinner({
 }: LoadingSpinnerProps) {
   if (variant === 'minimal') {
     return (
-      <div className={cn('flex items-center justify-center', className)}>
+      <div
+        className={cn('flex items-center justify-center', className)}
+        role="status"
+        aria-label={message}
+      >
         <div className={cn(componentClasses.spinner, SIZES[size])} />
       </div>
     );
@@ -43,7 +47,11 @@ export function LoadingSpinner({
 
   if (variant === 'pokemon') {
     return (
-      <div className={cn('flex flex-col items-center justify-center gap-4', className)}>
+      <div
+        className={cn('flex flex-col items-center justify-center gap-4', className)}
+        role="status"
+        aria-label={message}
+      >
         <div className="relative">
           {/* Pokemon-style Pokeball spinner */}
           <motion.div
@@ -92,7 +100,11 @@ export function LoadingSpinner({
 
   // Default variant with improved design
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-4', className)}>
+    <div
+      className={cn('flex flex-col items-center justify-center gap-4', className)}
+      role="status"
+      aria-label={message}
+    >
       <div className="relative">
         <motion.div
           animate={{

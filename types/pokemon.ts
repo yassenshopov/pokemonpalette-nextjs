@@ -49,6 +49,55 @@ export interface PokemonAbility {
   slot: number;
 }
 
+export interface HeldItem {
+  item: {
+    name: string;
+    url: string;
+  };
+  version_details: Array<{
+    rarity: number;
+    version: {
+      name: string;
+      url: string;
+    };
+  }>;
+}
+
+export interface Move {
+  move: {
+    name: string;
+    url: string;
+  };
+  version_group_details: Array<{
+    level_learned_at: number;
+    version_group: {
+      name: string;
+      url: string;
+    };
+    move_learn_method: {
+      name: string;
+      url: string;
+    };
+  }>;
+}
+
+export interface PalParkEncounter {
+  base_score: number;
+  rate: number;
+  area: {
+    name: string;
+    url: string;
+  };
+}
+
+export interface FormDescription {
+  description: string;
+  language: {
+    name: string;
+    url: string;
+  };
+}
+
 export interface Pokemon {
   id: number;
   name: string;
@@ -70,9 +119,9 @@ export interface Pokemon {
       url: string;
     };
   }>;
-  held_items: any[];
+  held_items: HeldItem[];
   location_area_encounters: string;
-  moves: any[];
+  moves: Move[];
   species: {
     name: string;
     url: string;
@@ -143,7 +192,7 @@ export interface PokemonSpecies {
       url: string;
     };
   }>;
-  pal_park_encounters: any[];
+  pal_park_encounters: PalParkEncounter[];
   flavor_text_entries: Array<{
     flavor_text: string;
     language: {
@@ -155,7 +204,7 @@ export interface PokemonSpecies {
       url: string;
     };
   }>;
-  form_descriptions: any[];
+  form_descriptions: FormDescription[];
   genera: Array<{
     genus: string;
     language: {
@@ -276,7 +325,7 @@ export interface LoadingState {
   progress?: number;
 }
 
-export interface ErrorState {
+export interface PokemonErrorState {
   hasError: boolean;
   message: string;
   code?: string;
@@ -290,7 +339,7 @@ export interface PokemonMenuState {
   currentForm: string;
   isShiny: boolean;
   isLoading: boolean;
-  error: ErrorState;
+  error: PokemonErrorState;
 }
 
 // Color extraction types
@@ -418,3 +467,20 @@ export const isPokemonType = (type: string): type is PokemonTypeNames => {
 export const isColorFormat = (format: string): format is ColorFormat => {
   return ['hex', 'rgb', 'hsl', 'oklch'].includes(format);
 };
+
+export interface Design {
+  id: number;
+  title: string;
+  creator: string;
+  userId: string;
+  pokemon: string;
+  category: string;
+  description: string;
+  likes: number;
+  tags: string[];
+  date: string;
+  colors: string[];
+  imageUrl?: string;
+  status: string;
+  savedAt?: string;
+}

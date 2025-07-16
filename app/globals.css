@@ -82,8 +82,8 @@ button:disabled {
 }
 
 /* Ensure interactive elements have minimum size for mobile */
-button,
-[role='button'],
+button:not(.sm),
+[role='button']:not(.sm),
 input[type='checkbox'],
 input[type='radio'] {
   min-width: 44px;

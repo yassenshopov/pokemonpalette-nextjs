@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { logColorExtraction } from '@/lib/logger';
@@ -111,9 +111,9 @@ const getContrastColor = (bgColor: string): { text: string; overlay: string } =>
   if (!bgColor) return { text: 'text-foreground', overlay: '' };
 
   const hex = bgColor.replace('#', '');
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
 
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
@@ -135,6 +135,7 @@ export function SubmitDesignDialog({
   prefilledPokemon,
 }: SubmitDesignDialogProps) {
   const { user, isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -155,6 +156,7 @@ export function SubmitDesignDialog({
     number: number;
   }>({ officialArt: '', types: [], number: 0 });
   const [extractingColors, setExtractingColors] = useState(false);
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 
   useEffect(() => {
     if (prefilledPokemon && !formData.pokemon) {
@@ -173,9 +175,12 @@ export function SubmitDesignDialog({
 
     const loadPokemonData = async () => {
       setExtractingColors(true);
+      let imageUrl = '';
+
       try {
         const data = await fetchPokemonData(formData.pokemon);
         setPokemonInfo(data);
+        imageUrl = data.officialArt || '';
 
         if (data.officialArt) {
           const extractedColors = await extractColorsFromImage(data.officialArt);
@@ -184,7 +189,7 @@ export function SubmitDesignDialog({
           setFormData(f => ({ ...f, colors: DEFAULT_COLORS }));
         }
       } catch (error) {
-        logColorExtraction('', false, undefined, error as Error);
+        logColorExtraction(imageUrl, false, undefined, error as Error);
         setFormData(f => ({ ...f, colors: DEFAULT_COLORS }));
       } finally {
         setExtractingColors(false);
@@ -335,11 +340,8 @@ export function SubmitDesignDialog({
                 color: getContrastColor(mainColor).text,
               }}
               onClick={() => {
-                // Trigger Clerk sign-in
-                const signInButton = document.querySelector('[data-clerk-sign-in]');
-                if (signInButton instanceof HTMLElement) {
-                  signInButton.click();
-                }
+                // Trigger Clerk sign-in using the official API
+                openSignIn();
               }}
             >
               Sign In to Submit
@@ -718,38 +720,32 @@ export function SubmitDesignDialog({
                 <input
                   type="checkbox"
                   required
+                  checked={isTermsAccepted}
+                  onChange={e => setIsTermsAccepted(e.target.checked)}
                   className="sr-only peer"
-                  onChange={e => {
-                    // Force re-render to ensure visual update
-                    const checkboxContainer = e.target.nextElementSibling;
-                    if (checkboxContainer) {
-                      const isChecked = e.target.checked.toString();
-                      checkboxContainer.setAttribute('data-checked', isChecked);
-                      // Update all child elements
-                      const children = checkboxContainer.querySelectorAll('[data-checked]');
-                      children.forEach(child => child.setAttribute('data-checked', isChecked));
-                    }
-                  }}
                 />
                 <div
-                  className="w-5 h-5 border-2 rounded-md transition-all duration-200 flex items-center justify-center group-hover:border-current/80 relative overflow-hidden data-[checked=true]:scale-105"
+                  className={`w-5 h-5 border-2 rounded-md transition-all duration-200 flex items-center justify-center group-hover:border-current/80 relative overflow-hidden ${
+                    isTermsAccepted ? 'scale-105' : ''
+                  }`}
                   style={{
                     borderColor: `${mainColor}80`,
                     backgroundColor: 'transparent',
                   }}
-                  data-checked="false"
                 >
                   {/* Background fill when checked */}
                   <div
-                    className="absolute inset-0 rounded-sm transition-all duration-200 data-[checked=true]:scale-100 scale-0"
+                    className={`absolute inset-0 rounded-sm transition-all duration-200 ${
+                      isTermsAccepted ? 'scale-100' : 'scale-0'
+                    }`}
                     style={{ backgroundColor: mainColor }}
-                    data-checked="false"
                   />
                   {/* Checkmark */}
                   <Check
-                    className="w-3 h-3 text-white relative z-10 transition-opacity duration-200 data-[checked=true]:opacity-100 opacity-0"
+                    className={`w-3 h-3 text-white relative z-10 transition-opacity duration-200 ${
+                      isTermsAccepted ? 'opacity-100' : 'opacity-0'
+                    }`}
                     strokeWidth={3}
-                    data-checked="false"
                   />
                 </div>
               </div>

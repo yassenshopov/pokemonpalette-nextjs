@@ -30,15 +30,24 @@ export function LikesProvider({ children }: { children: React.ReactNode }) {
 
   // Load liked designs from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('likedDesigns');
-    if (saved) {
-      setLikedDesigns(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem('likedDesigns');
+      if (saved) {
+        setLikedDesigns(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Failed to load liked designs from localStorage:', error);
+      setLikedDesigns([]);
     }
   }, []);
 
   // Save to localStorage whenever likedDesigns changes
   useEffect(() => {
-    localStorage.setItem('likedDesigns', JSON.stringify(likedDesigns));
+    try {
+      localStorage.setItem('likedDesigns', JSON.stringify(likedDesigns));
+    } catch (error) {
+      console.error('Failed to save liked designs to localStorage:', error);
+    }
   }, [likedDesigns]);
 
   const isLiked = (id: number) => likedDesigns.some(design => design.id === id);

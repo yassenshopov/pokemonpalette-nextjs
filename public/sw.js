@@ -1,6 +1,17 @@
 const CACHE_NAME = 'pokemon-palette-v1';
 const STATIC_CACHE = 'pokemon-palette-static-v1';
 const DYNAMIC_CACHE = 'pokemon-palette-dynamic-v1';
+const MAX_CACHE_ITEMS = 50; // Maximum number of items to keep in dynamic cache
+
+// Fallback Pokemon data for offline scenarios
+const FALLBACK_POKEMON_DATA = {
+  id: 1,
+  name: 'bulbasaur',
+  sprites: {
+    front_default: '/images/fallback-pokemon.png',
+  },
+  types: [{ type: { name: 'grass' } }],
+};
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -72,24 +83,15 @@ self.addEventListener('fetch', event => {
               // Only cache successful responses
               if (networkResponse.status === 200) {
                 cache.put(request, networkResponse.clone());
+                limitCacheSize(DYNAMIC_CACHE, MAX_CACHE_ITEMS);
               }
               return networkResponse;
             })
             .catch(() => {
               // Return a fallback response for Pokemon data
-              return new Response(
-                JSON.stringify({
-                  id: 1,
-                  name: 'bulbasaur',
-                  sprites: {
-                    front_default: '/images/fallback-pokemon.png',
-                  },
-                  types: [{ type: { name: 'grass' } }],
-                }),
-                {
-                  headers: { 'Content-Type': 'application/json' },
-                }
-              );
+              return new Response(JSON.stringify(FALLBACK_POKEMON_DATA), {
+                headers: { 'Content-Type': 'application/json' },
+              });
             });
         });
       })
@@ -112,6 +114,7 @@ self.addEventListener('fetch', event => {
               const responseClone = networkResponse.clone();
               caches.open(DYNAMIC_CACHE).then(cache => {
                 cache.put(request, responseClone);
+                limitCacheSize(DYNAMIC_CACHE, MAX_CACHE_ITEMS);
               });
             }
             return networkResponse;
@@ -133,45 +136,64 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// Background sync for saving favorites
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-favorites') {
-    event.waitUntil(syncFavorites());
+// Background sync for saving favorites - DISABLED until IndexedDB implementation is ready
+// self.addEventListener('sync', event => {
+//   if (event.tag === 'sync-favorites') {
+//     event.waitUntil(syncFavorites());
+//   }
+// });
+
+// async function syncFavorites() {
+//   try {
+//     // Get pending favorites from IndexedDB
+//     const pendingFavorites = await getPendingFavorites();
+
+//     for (const favorite of pendingFavorites) {
+//       try {
+//         await fetch('/api/favorites', {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//           },
+//           body: JSON.stringify(favorite),
+//         });
+
+//         // Remove from pending after successful sync
+//         await removePendingFavorite(favorite.id);
+//       } catch (error) {
+//         console.error('Failed to sync favorite:', error);
+//       }
+//     }
+//   } catch (error) {
+//     console.error('Background sync failed:', error);
+//   }
+// }
+
+// Helper functions for IndexedDB operations - DISABLED until implementation is ready
+// async function getPendingFavorites() {
+//   // Implementation would use IndexedDB to get pending items
+//   return [];
+// }
+
+// async function removePendingFavorite(id) {
+//   // Implementation would remove item from IndexedDB
+// }
+
+// Function to limit cache size
+async function limitCacheSize(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+
+  if (keys.length > maxItems) {
+    // Sort keys by creation time (oldest first)
+    const sortedKeys = keys.sort((a, b) => {
+      const aTime = a.headers.get('date') || 0;
+      const bTime = b.headers.get('date') || 0;
+      return new Date(aTime) - new Date(bTime);
+    });
+
+    // Delete oldest entries to maintain size limit
+    const keysToDelete = sortedKeys.slice(0, keys.length - maxItems);
+    await Promise.all(keysToDelete.map(key => cache.delete(key)));
   }
-});
-
-async function syncFavorites() {
-  try {
-    // Get pending favorites from IndexedDB
-    const pendingFavorites = await getPendingFavorites();
-
-    for (const favorite of pendingFavorites) {
-      try {
-        await fetch('/api/favorites', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(favorite),
-        });
-
-        // Remove from pending after successful sync
-        await removePendingFavorite(favorite.id);
-      } catch (error) {
-        console.error('Failed to sync favorite:', error);
-      }
-    }
-  } catch (error) {
-    console.error('Background sync failed:', error);
-  }
-}
-
-// Helper functions for IndexedDB operations
-async function getPendingFavorites() {
-  // Implementation would use IndexedDB to get pending items
-  return [];
-}
-
-async function removePendingFavorite(id) {
-  // Implementation would remove item from IndexedDB
 }

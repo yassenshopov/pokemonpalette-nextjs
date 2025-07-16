@@ -56,7 +56,7 @@
       "@type": "EntryPoint",
       "urlTemplate": "https://pokemonpalette.com/search?q={search_term_string}"
     },
-    "query-input": "required name=search_term_string"
+    "query-input": "required name=search-term-string"
   },
   "mainEntity": {
     "@type": "WebPage",

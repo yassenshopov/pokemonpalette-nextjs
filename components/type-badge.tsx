@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { PokemonTypeNames } from '@/types/pokemon';
 
-interface TypeBadgeProps {
+export interface TypeBadgeProps {
   type: PokemonTypeNames;
   isMatch?: boolean;
   className?: string;

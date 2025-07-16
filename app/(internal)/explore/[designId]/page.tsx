@@ -127,6 +127,40 @@ export default function DesignDetailPage() {
     }
   };
 
+  const downloadPalette = () => {
+    if (!design) return;
+
+    const paletteData = {
+      title: design.title,
+      creator: design.creator,
+      pokemon: design.pokemon,
+      category: design.category,
+      description: design.description,
+      colors: design.colors,
+      tags: design.tags,
+      date: design.date,
+      exportedAt: new Date().toISOString(),
+    };
+
+    const dataStr = JSON.stringify(paletteData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${design.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_palette.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Palette downloaded!',
+      description: `${design.title} palette has been downloaded as JSON.`,
+      duration: 3000,
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -380,7 +414,7 @@ export default function DesignDetailPage() {
                   Share Design
                 </Button>
 
-                <Button className="w-full gap-2" variant="outline">
+                <Button className="w-full gap-2" variant="outline" onClick={downloadPalette}>
                   <Download className="w-4 h-4" />
                   Download Palette
                 </Button>

@@ -85,7 +85,7 @@ export const restoreFocus = (element: HTMLElement | null): void => {
 
 // ARIA utilities
 export const generateId = (prefix: string = 'id'): string => {
-  return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+  return `${prefix}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 export const getAriaLabelForPokemonType = (type: PokemonTypeNames): string => {
@@ -156,6 +156,28 @@ export const getContrastRatio = (color1: string, color2: string): number => {
   };
 
   const parseColor = (color: string): number[] => {
+    // Handle hex colors (#RRGGBB or #RGB)
+    if (color.startsWith('#')) {
+      const hex = color.substring(1);
+
+      // Handle 3-digit hex (#RGB)
+      if (hex.length === 3) {
+        const r = parseInt(hex[0] + hex[0], 16);
+        const g = parseInt(hex[1] + hex[1], 16);
+        const b = parseInt(hex[2] + hex[2], 16);
+        return [r, g, b];
+      }
+
+      // Handle 6-digit hex (#RRGGBB)
+      if (hex.length === 6) {
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return [r, g, b];
+      }
+    }
+
+    // Handle RGB numeric strings (existing functionality)
     const rgb = color.match(/\d+/g);
     return rgb ? rgb.map(Number) : [0, 0, 0];
   };

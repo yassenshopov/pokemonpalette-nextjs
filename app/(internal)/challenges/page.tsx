@@ -22,10 +22,12 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { TypeBadge } from '@/components/type-badge';
 import { SubmitDesignDialog } from '@/components/ui/submit-design-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PokemonTypeNames } from '@/types/pokemon';
+import { logger } from '@/lib/logger';
 
 interface Challenge {
   id: string;
@@ -152,7 +154,14 @@ async function fetchPokemonCardData(pokemon: string): Promise<PokemonCardData> {
     // Use the first 5 colors from the artwork (fallback to challenge colors if needed)
     // We'll use the existing challenge colors for now, but you can integrate ColorThief or similar for real extraction
     return { officialArt, types, number, colors: [] };
-  } catch {
+  } catch (error) {
+    // Log the error for debugging and monitoring purposes
+    logger.error('Failed to fetch Pokemon card data', error, {
+      pokemon,
+      endpoint: 'https://pokeapi.co/api/v2/pokemon/',
+      function: 'fetchPokemonCardData',
+    });
+
     return { officialArt: '', types: [], number: 0, colors: [] };
   }
 }
@@ -160,20 +169,53 @@ async function fetchPokemonCardData(pokemon: string): Promise<PokemonCardData> {
 export default function ChallengesPage() {
   const { isSignedIn } = useUser();
   const { toast } = useToast();
+  const router = useRouter();
   const [_selectedChallenge, _setSelectedChallenge] = useState<Challenge | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'upcoming' | 'completed'>('all');
   const [pokemonData, setPokemonData] = useState<Record<string, PokemonCardData>>({});
 
   useEffect(() => {
+    // Create AbortController for cleanup
+    const abortController = new AbortController();
+    const isMounted = { current: true };
+
     // Fetch Pokémon data for all challenges
-    challenges.forEach(async challenge => {
-      if (!pokemonData[challenge.pokemon]) {
-        const data = await fetchPokemonCardData(challenge.pokemon);
-        setPokemonData(prev => ({ ...prev, [challenge.pokemon]: data }));
+    const fetchPokemonData = async () => {
+      try {
+        for (const challenge of challenges) {
+          // Check if component is still mounted
+          if (!isMounted.current || abortController.signal.aborted) {
+            return;
+          }
+
+          // Only fetch if we don't already have the data
+          if (!pokemonData[challenge.pokemon]) {
+            const data = await fetchPokemonCardData(challenge.pokemon);
+
+            // Check again before updating state
+            if (isMounted.current && !abortController.signal.aborted) {
+              setPokemonData(prev => ({ ...prev, [challenge.pokemon]: data }));
+            }
+          }
+        }
+      } catch (error) {
+        // Only log error if component is still mounted
+        if (isMounted.current && !abortController.signal.aborted) {
+          logger.error('Failed to fetch Pokemon data for challenges', error, {
+            challenges: challenges.map(c => c.pokemon),
+          });
+        }
       }
-    });
-    // eslint-disable-next-line
-  }, []);
+    };
+
+    fetchPokemonData();
+
+    // Cleanup function
+    return () => {
+      isMounted.current = false;
+      abortController.abort();
+    };
+  }, [challenges, pokemonData]);
 
   const filteredChallenges = challenges.filter(challenge => {
     if (filter === 'all') return true;
@@ -240,8 +282,8 @@ export default function ChallengesPage() {
       return;
     }
 
-    // Redirect to submit design page with challenge context
-    window.location.href = `/submit-design?challenge=${challenge.id}`;
+    // Navigate to submit design page with challenge context using Next.js router
+    router.push(`/submit-design?challenge=${challenge.id}`);
   };
 
   const containerVariants = {

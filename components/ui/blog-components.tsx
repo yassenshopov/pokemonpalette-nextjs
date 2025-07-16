@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { PokemonTypeNames } from '@/types/pokemon';
+import { cn } from '@/lib/utils';
+import type { TypeBadgeProps } from '@/components/type-badge';
 import {
   ArrowLeft,
   Clock,
@@ -113,11 +115,11 @@ export function BlogSection({ title, description, children, className = '' }: Bl
 interface PokemonCardProps {
   name: string;
   id: number;
-  types: string[];
+  types: PokemonTypeNames[];
   colors: string[];
   psychology: string;
   description: string;
-  TypeBadge: React.ComponentType<{ type: PokemonTypeNames }>;
+  TypeBadge: React.ComponentType<TypeBadgeProps>;
 }
 
 export function PokemonCard({
@@ -152,7 +154,7 @@ export function PokemonCard({
             <h3 className="text-2xl font-bold">{name}</h3>
             <div className="flex gap-2">
               {types.map(type => (
-                <TypeBadge key={type} type={type as PokemonTypeNames} />
+                <TypeBadge key={type} type={type} />
               ))}
             </div>
           </div>
@@ -185,10 +187,10 @@ export function PokemonCard({
 }
 
 interface TypeColorCardProps {
-  type: string;
+  type: PokemonTypeNames;
   color: string;
   psychology: string;
-  TypeBadge: React.ComponentType<{ type: PokemonTypeNames; className?: string }>;
+  TypeBadge: React.ComponentType<TypeBadgeProps>;
 }
 
 export function TypeColorCard({ type, color, psychology, TypeBadge }: TypeColorCardProps) {
@@ -198,7 +200,7 @@ export function TypeColorCard({ type, color, psychology, TypeBadge }: TypeColorC
         className="h-24 relative flex items-center justify-center border-b"
         style={{ backgroundColor: color }}
       >
-        <TypeBadge type={type as PokemonTypeNames} className="scale-125" />
+        <TypeBadge type={type} className="scale-125" />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
       </div>
       <CardContent className="p-4">
@@ -364,7 +366,17 @@ export function RelatedArticle({
     : 'group-hover:text-primary';
 
   return (
-    <Card className={`group border-2 hover:${borderColor} transition-colors shadow-none`}>
+    <Card
+      className={cn('group border-2 transition-colors shadow-none', {
+        'hover:border-purple-200 dark:hover:border-purple-800': borderColor.includes('purple'),
+        'hover:border-orange-200 dark:hover:border-orange-800': borderColor.includes('orange'),
+        'hover:border-blue-200 dark:hover:border-blue-800': borderColor.includes('blue'),
+        'hover:border-primary/20':
+          !borderColor.includes('purple') &&
+          !borderColor.includes('orange') &&
+          !borderColor.includes('blue'),
+      })}
+    >
       <CardContent className="p-6">
         <Link href={href} className="block">
           <div className="flex items-start gap-4">

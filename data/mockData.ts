@@ -287,8 +287,8 @@ export const mockDesigns: MockDesign[] = [
     likes: 27,
     views: 78,
     comments: 10,
-    tags: ['ground', 'desert', 'vibrava', 'spirit', 'vibrava'],
-    date: '2025-05-15T12:30:00.000Z',
+    tags: ['ground', 'desert', 'vibrava', 'spirit'],
+    date: '2024-05-15T12:30:00.000Z',
     colors: ['#708090', '#87CEEB', '#4169E1', '#6495ED', '#87CEFA'],
     status: 'published',
   },
@@ -316,7 +316,14 @@ export const getRandomUser = (): MockUser => {
 
 // Helper function to get random designs
 export const getRandomDesigns = (count: number): MockDesign[] => {
-  const shuffled = [...mockDesigns].sort(() => 0.5 - Math.random());
+  const shuffled = [...mockDesigns];
+
+  // Fisher-Yates shuffle algorithm
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
   return shuffled.slice(0, count);
 };
 
