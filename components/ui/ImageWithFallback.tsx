@@ -1,7 +1,7 @@
 'use client';
 
 import Image, { ImageProps } from 'next/image';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 interface ImageWithFallbackProps extends Omit<ImageProps, 'onError'> {
   fallbackSrc?: string;
@@ -53,11 +53,13 @@ export function ImageWithFallback({
   }, [src, retries, retryCount, fallbackSrc, defaultFallback, pokemonId, onLoadError]);
 
   // Reset state when src changes
-  if (src !== currentSrc && !hasError) {
-    setCurrentSrc(src);
-    setRetries(0);
-    setHasError(false);
-  }
+  useEffect(() => {
+    if (src !== currentSrc) {
+      setCurrentSrc(src);
+      setRetries(0);
+      setHasError(false);
+    }
+  }, [src, currentSrc]);
 
   return <Image {...props} src={currentSrc} alt={alt} onError={handleError} />;
 }
