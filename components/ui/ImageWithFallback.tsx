@@ -54,12 +54,12 @@ export function ImageWithFallback({
 
   // Reset state when src changes
   useEffect(() => {
-    if (src !== currentSrc && !hasError) {
+    if (src !== currentSrc) {
       setCurrentSrc(src);
       setRetries(0);
       setHasError(false);
     }
-  }, [src, currentSrc, hasError]);
+  }, [src, currentSrc]);
 
   return <Image {...props} src={currentSrc} alt={alt} onError={handleError} />;
 }
