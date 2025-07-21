@@ -109,11 +109,19 @@ interface PokemonSpecies {
 
 // Define the type for your params
 interface PageProps {
-  params: { pokemon: string };
+  params: Promise<{ pokemon: string }>;
 }
 
 export default function Page({ params }: PageProps) {
-  const pokemonName = decodeURIComponent(params.pokemon);
+  const [pokemonName, setPokemonName] = useState<string>('');
+
+  useEffect(() => {
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setPokemonName(decodeURIComponent(resolvedParams.pokemon));
+    };
+    getParams();
+  }, [params]);
 
   const { colors, shiny, setColors } = useColors();
   const [isLoading, setIsLoading] = useState(true);
