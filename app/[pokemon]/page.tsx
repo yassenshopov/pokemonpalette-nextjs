@@ -1,7 +1,8 @@
 'use client';
 
 import { useColors } from '@/contexts/color-context';
-import { useState, useEffect, use, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useParams } from 'next/navigation';
 import { ColorExampleSection } from '@/components/landing/color-example-section';
 import { PokemonColorExtractor } from '@/components/pokemon-color-extractor';
 import StructuredData from '@/app/components/StructuredData';
@@ -107,21 +108,9 @@ interface PokemonSpecies {
   }[];
 }
 
-// Define the type for your params
-interface PageProps {
-  params: Promise<{ pokemon: string }>;
-}
-
-export default function Page({ params }: PageProps) {
-  const [pokemonName, setPokemonName] = useState<string>('');
-
-  useEffect(() => {
-    const getParams = async () => {
-      const resolvedParams = await params;
-      setPokemonName(decodeURIComponent(resolvedParams.pokemon));
-    };
-    getParams();
-  }, [params]);
+export default function Page() {
+  const params = useParams();
+  const pokemonName = decodeURIComponent(params.pokemon as string);
 
   const { colors, shiny, setColors } = useColors();
   const [isLoading, setIsLoading] = useState(true);
