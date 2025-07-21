@@ -177,7 +177,7 @@ export default function ShowcasePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pb-8">
         {/* Header */}
         <div className="text-center space-y-4 mb-8">
           <h1 className="text-4xl font-bold">Design Showcase</h1>
