@@ -19,25 +19,30 @@ function capitalizeWords(str: string): string {
 
 // Define TypeScript interface for params
 interface Props {
-  params: { pokemon: string };
+  params: Promise<{ pokemon: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params;
   const pokemonName =
-    params.pokemon.charAt(0).toUpperCase() + params.pokemon.slice(1).replace(/-/g, ' ');
-  const pokemonId = typedSpeciesData[params.pokemon.toLowerCase()] || 1;
+    resolvedParams.pokemon.charAt(0).toUpperCase() +
+    resolvedParams.pokemon.slice(1).replace(/-/g, ' ');
+  const pokemonId = typedSpeciesData[resolvedParams.pokemon.toLowerCase()] || 1;
 
   // Fetch Pokemon info for description
   let colorPsychology = '';
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/ai-info/pokemon/${params.pokemon}`
+      `${process.env.NEXT_PUBLIC_API_URL}/api/ai-info/pokemon/${resolvedParams.pokemon}`
     );
     const data = await response.json();
     colorPsychology = data.colorPsychology || '';
   } catch (error) {
     // Error fetching Pokemon metadata - using fallback
-    console.error(`Failed to fetch color psychology metadata for ${params.pokemon}:`, error);
+    console.error(
+      `Failed to fetch color psychology metadata for ${resolvedParams.pokemon}:`,
+      error
+    );
   }
 
   let description = `Explore ${pokemonName} color palettes and designs. Get inspired by ${pokemonName}'s unique colors and create your own designs.`;
@@ -72,7 +77,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: 'website',
       locale: 'en_US',
-      url: `https://pokemonpalette.com/${params.pokemon}`,
+      url: `https://pokemonpalette.com/${resolvedParams.pokemon}`,
       title: `${pokemonName} Color Palettes & Design Inspiration`,
       description,
       siteName: 'Pokemon Palette',
@@ -107,7 +112,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       // Google site verification not needed; verified via domain provider
     },
     alternates: {
-      canonical: `https://pokemonpalette.com/${params.pokemon}`,
+      canonical: `https://pokemonpalette.com/${resolvedParams.pokemon}`,
     },
   };
 }

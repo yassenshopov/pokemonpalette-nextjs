@@ -24,6 +24,7 @@ export function BuyMeCoffee({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [supporterCount, setSupporterCount] = useState<number>(0);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
 
   // Handle support click
   const handleSupportClick = () => {
@@ -56,8 +57,10 @@ export function BuyMeCoffee({
     loadSupporters();
   }, []);
 
-  // Detect dark mode
+  // Prevent hydration mismatch by only detecting theme after mount
   useEffect(() => {
+    setMounted(true);
+
     // Check initial dark mode
     setIsDarkMode(
       window.matchMedia('(prefers-color-scheme: dark)').matches ||
@@ -78,9 +81,9 @@ export function BuyMeCoffee({
   // Get text color for the button based on contrast
   const buttonTextColor = getContrastColor(tertiaryColor).text === 'text-white' ? 'white' : '#333';
 
-  // Dark mode adjusted colors
-  const darkMainColor = isDarkMode ? `${mainColor}` : mainColor;
-  const darkSecondaryColor = isDarkMode ? `${secondaryColor}` : secondaryColor;
+  // Dark mode adjusted colors - only apply after mounting to prevent hydration mismatch
+  const darkMainColor = mounted && isDarkMode ? `${mainColor}` : mainColor;
+  const darkSecondaryColor = mounted && isDarkMode ? `${secondaryColor}` : secondaryColor;
 
   // Helper function to convert rgb to rgba with opacity
   const rgbToRgba = (rgbColor: string, opacity: number): string => {
@@ -94,7 +97,7 @@ export function BuyMeCoffee({
   };
 
   // Create diluted version of the primary color for card background
-  const cardBgOpacity = isDarkMode ? 0.3 : 0.15; // Less opacity in light mode
+  const cardBgOpacity = mounted && isDarkMode ? 0.3 : 0.15; // Less opacity in light mode
   const cardBgStyle = {
     backgroundColor: rgbToRgba(mainColor, cardBgOpacity),
   };
@@ -165,8 +168,8 @@ export function BuyMeCoffee({
                   style={{
                     backgroundColor:
                       i % 2 === 0
-                        ? rgbToRgba(darkMainColor, isDarkMode ? 0.3 : 0.15)
-                        : rgbToRgba(darkSecondaryColor, isDarkMode ? 0.3 : 0.15),
+                        ? rgbToRgba(darkMainColor, cardBgOpacity)
+                        : rgbToRgba(darkSecondaryColor, cardBgOpacity),
                   }}
                 >
                   <div className="flex items-center gap-2">
@@ -174,7 +177,7 @@ export function BuyMeCoffee({
                       className="w-8 h-8 rounded-full flex items-center justify-center border border-transparent dark:border-gray-700"
                       style={{
                         backgroundColor: i % 2 === 0 ? darkMainColor : darkSecondaryColor,
-                        opacity: isDarkMode ? 1 : 0.8,
+                        opacity: mounted && isDarkMode ? 1 : 0.8,
                       }}
                     >
                       <Coffee className="w-4 h-4 text-white" />
@@ -201,7 +204,7 @@ export function BuyMeCoffee({
                           className="w-6 h-6 rounded-full border-2 border-background dark:border-gray-900"
                           style={{
                             backgroundColor: i % 2 === 0 ? darkMainColor : darkSecondaryColor,
-                            opacity: isDarkMode ? 1 : 0.8,
+                            opacity: mounted && isDarkMode ? 1 : 0.8,
                           }}
                         />
                       ))}

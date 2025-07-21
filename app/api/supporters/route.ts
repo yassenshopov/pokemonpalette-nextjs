@@ -52,7 +52,7 @@ export async function GET() {
         timeAgo: getTimeAgo(new Date(supporter.support_created_on)),
         // We're not passing the amount/currency data as we'll use fixed values in the UI
       })),
-      total: Math.min(data.total || 5, 5), // Ensure we never show more than 5 supporters in the UI
+      total: data.total || 5, // Use the actual total from the API
     });
   } catch (error) {
     // Error fetching supporters - returning fallback data

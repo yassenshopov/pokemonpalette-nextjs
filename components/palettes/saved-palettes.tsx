@@ -161,6 +161,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                             style={{ filter: 'brightness(0)' }}
                             unoptimized={true}
                             quality={100}
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                           />
                         </div>
                       </div>

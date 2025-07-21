@@ -26,16 +26,19 @@ export const size = {
 };
 export const contentType = 'image/png';
 
-export default async function Image({ params }: { params: { pokemon: string } }) {
+export default async function Image({ params }: { params: Promise<{ pokemon: string }> }) {
+  const resolvedParams = await params;
+
   try {
     const pokemonName =
-      params.pokemon.charAt(0).toUpperCase() + params.pokemon.slice(1).replace(/-/g, ' ');
-    const pokemonId = speciesData[params.pokemon as keyof typeof speciesData];
+      resolvedParams.pokemon.charAt(0).toUpperCase() +
+      resolvedParams.pokemon.slice(1).replace(/-/g, ' ');
+    const pokemonId = speciesData[resolvedParams.pokemon as keyof typeof speciesData];
 
     // Check if pokemonId exists
     if (!pokemonId) {
       logger.error('Pokemon not found in species data', null, {
-        pokemonName: params.pokemon,
+        pokemonName: resolvedParams.pokemon,
         endpoint: '/[pokemon]/opengraph-image',
       });
 
@@ -271,7 +274,7 @@ export default async function Image({ params }: { params: { pokemon: string } })
   } catch (error) {
     // Log the error for debugging purposes
     logger.error('Failed to generate opengraph image', error, {
-      pokemonName: params.pokemon,
+      pokemonName: resolvedParams.pokemon,
       endpoint: '/[pokemon]/opengraph-image',
     });
 

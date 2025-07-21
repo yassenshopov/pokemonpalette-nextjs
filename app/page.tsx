@@ -169,30 +169,8 @@ export default function Home() {
   const [descriptions, setDescriptions] = useState<
     Array<{ flavor_text: string; version: { name: string } }>
   >([]);
-  const [_progress, setProgress] = useState(0);
-  const [_selectedColorProgress, setSelectedColorProgress] = useState<string>(colors[0] || '');
-  const [_selectedColorNotification, setSelectedColorNotification] = useState<string>(
-    colors[1] || ''
-  );
-  const [_selectedColorCard, setSelectedColorCard] = useState<string>(colors[0] || '');
+
   const [stats, setStats] = useState<Array<{ name: string; base_stat: number }>>([]);
-
-  useEffect(() => {
-    setSelectedColorProgress(colors[0] || '');
-    setSelectedColorNotification(colors[1] || '');
-    setSelectedColorCard(colors[0] || '');
-  }, [colors]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) return 0; // Reset to 0 when reaching 100%
-        return prev + 10; // Increment progress by 10%
-      });
-    }, 1000); // Update every second
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
 
   // Update effect to handle description changes
   useEffect(() => {

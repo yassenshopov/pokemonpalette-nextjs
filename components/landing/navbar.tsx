@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
+import { useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { Bookmark, Check, Menu, Palette, Sparkles, User, LogIn, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
@@ -14,7 +14,14 @@ import { PalettePickerDialog } from '@/components/palettes/palette-picker-dialog
 import { useRouter } from 'next/navigation';
 import { useSave } from '@/contexts/save-context';
 import { useColors } from '@/contexts/color-context';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { SidebarNav } from '@/components/ui/sidebar-nav';
 import {
   DropdownMenu,
@@ -33,10 +40,9 @@ interface NavbarProps {
 }
 
 export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }: NavbarProps) {
-  const [isRotating, setIsRotating] = useState(false);
+  const { user, isLoaded, isSignedIn } = useUser();
   const { isSaved, toggleSave } = useSave();
   const { shiny } = useColors();
-  const { user } = useUser();
   const { toast } = useToast();
   const router = useRouter();
   const [palettePickerOpen, setPalettePickerOpen] = useState(false);
@@ -109,10 +115,24 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
 
   // Trigger rotation animation when colors change
   useEffect(() => {
-    setIsRotating(true);
-    const timer = setTimeout(() => setIsRotating(false), 1000);
-    return () => clearTimeout(timer);
+    // setIsRotating(true); // Removed as per edit hint
+    // const timer = setTimeout(() => setIsRotating(false), 1000); // Removed as per edit hint
+    // return () => clearTimeout(timer); // Removed as per edit hint
   }, [colors]);
+
+  if (!isLoaded) {
+    return (
+      <nav className="box-border fixed top-0 left-0 right-0 z-30 h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container h-full px-2 md:px-4 mx-auto flex items-center justify-between gap-2 md:gap-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
+            <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <>
@@ -138,6 +158,10 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-80 p-0 flex flex-col h-full">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
+                  <SheetDescription className="sr-only">Sidebar navigation panel</SheetDescription>
+                </SheetHeader>
                 <div className="flex-shrink-0 border-b p-4">
                   <h2 className="text-lg font-semibold">Navigation</h2>
                 </div>
@@ -154,9 +178,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                 alt="Pokemon Palette Logo"
                 width={32}
                 height={32}
-                className={`h-full w-full object-contain transition-all ${
-                  isRotating ? 'animate-rotate' : ''
-                }`}
+                className="h-full w-full object-contain transition-all"
                 style={{
                   filter: `hue-rotate(${colors.length > 0 ? getHueFromColor(colors[0]) : 0}deg)`,
                 }}
@@ -171,9 +193,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                   alt="Pokemon Palette Logo"
                   width={32}
                   height={32}
-                  className={`h-full w-full object-contain transition-all ${
-                    isRotating ? 'animate-rotate' : ''
-                  }`}
+                  className="h-full w-full object-contain transition-all"
                   style={{
                     filter: `hue-rotate(${colors.length > 0 ? getHueFromColor(colors[0]) : 0}deg)`,
                   }}
@@ -217,13 +237,26 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
             {/* Mobile Action Buttons */}
             <div className="md:hidden flex items-center space-x-1">
               {/* Save palette button for mobile */}
-              <SignedIn>
+              {isSignedIn && (
                 <Button
                   variant="ghost"
                   size="icon"
                   disabled={colors.length === 0}
                   onClick={handleSavedClick}
-                  className="h-8 w-8 text-sm transition-colors hover:bg-primary/10"
+                  className={`h-8 w-8 text-sm transition-colors ${
+                    isSaved(pokemonNumber || Date.now())
+                      ? 'hover:bg-accent/20'
+                      : 'hover:bg-primary/10'
+                  }`}
+                  style={
+                    isSaved(pokemonNumber || Date.now()) && colors.length > 0
+                      ? {
+                          backgroundColor: colors[0],
+                          color:
+                            getContrastColor(colors[0]).text === 'text-white' ? '#fff' : '#000',
+                        }
+                      : {}
+                  }
                 >
                   {isSaved(pokemonNumber || Date.now()) ? (
                     <Check className="h-4 w-4" />
@@ -231,7 +264,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                     <Bookmark className="h-4 w-4" />
                   )}
                 </Button>
-              </SignedIn>
+              )}
 
               {/* Mobile Menu Button - Universal */}
               <Sheet>
@@ -247,10 +280,11 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                 <SheetContent side="right" className="w-[250px] sm:w-[300px]">
                   <SheetHeader>
                     <SheetTitle>Menu</SheetTitle>
+                    <SheetDescription className="sr-only">Mobile menu panel</SheetDescription>
                   </SheetHeader>
 
                   {/* Different menu content based on auth state */}
-                  <SignedIn>
+                  {isSignedIn && (
                     <div className="py-4 flex flex-col gap-3">
                       {/* User account section at top of menu */}
                       <div className="flex items-center space-x-3 px-2 py-3 bg-accent/40 rounded-md mb-1">
@@ -289,7 +323,21 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                         size="sm"
                         disabled={colors.length === 0}
                         onClick={handleSavedClick}
-                        className="w-full justify-start"
+                        className={`w-full justify-start ${
+                          isSaved(pokemonNumber || Date.now()) ? 'border-2' : ''
+                        }`}
+                        style={
+                          isSaved(pokemonNumber || Date.now()) && colors.length > 0
+                            ? {
+                                backgroundColor: colors[0],
+                                borderColor: colors[0],
+                                color:
+                                  getContrastColor(colors[0]).text === 'text-white'
+                                    ? '#fff'
+                                    : '#000',
+                              }
+                            : {}
+                        }
                       >
                         {isSaved(pokemonNumber || Date.now()) ? (
                           <>
@@ -343,9 +391,9 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                         </div>
                       </div>
                     </div>
-                  </SignedIn>
+                  )}
 
-                  <SignedOut>
+                  {!isSignedIn && (
                     <div className="py-4 flex flex-col gap-3">
                       {/* Sign in button at top of menu */}
                       <SignInButton mode="modal">
@@ -394,13 +442,13 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                         </div>
                       </div>
                     </div>
-                  </SignedOut>
+                  )}
                 </SheetContent>
               </Sheet>
             </div>
 
             {/* Desktop Action Buttons */}
-            <SignedIn>
+            {isSignedIn && (
               <div className="hidden md:flex items-center gap-3">
                 {/* Directly control the palette picker dialog */}
                 <PalettePickerDialog
@@ -429,7 +477,20 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                   size="sm"
                   disabled={colors.length === 0}
                   onClick={handleSavedClick}
-                  className="h-8 px-3 text-sm font-medium transition-colors hover:bg-primary/10 gap-2"
+                  className={`h-8 px-3 text-sm font-medium transition-colors gap-2 ${
+                    isSaved(pokemonNumber || Date.now())
+                      ? 'hover:bg-accent/20'
+                      : 'hover:bg-primary/10'
+                  }`}
+                  style={
+                    isSaved(pokemonNumber || Date.now()) && colors.length > 0
+                      ? {
+                          backgroundColor: colors[0],
+                          color:
+                            getContrastColor(colors[0]).text === 'text-white' ? '#fff' : '#000',
+                        }
+                      : {}
+                  }
                 >
                   {isSaved(pokemonNumber || Date.now()) ? (
                     <>
@@ -444,12 +505,12 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                   )}
                 </Button>
               </div>
-            </SignedIn>
+            )}
 
             {/* Desktop-only elements */}
             <div className="hidden md:flex items-center">
               {/* Sign In Button - Desktop only */}
-              <SignedOut>
+              {!isSignedIn && (
                 <SignInButton mode="modal">
                   <Button
                     variant="ghost"
@@ -460,10 +521,10 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                     <span>Sign in</span>
                   </Button>
                 </SignInButton>
-              </SignedOut>
+              )}
 
               {/* User Button - Desktop */}
-              <SignedIn>
+              {isSignedIn && (
                 <UserButton
                   afterSignOutUrl="/"
                   appearance={{
@@ -473,7 +534,7 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
                     },
                   }}
                 />
-              </SignedIn>
+              )}
 
               {/* Separator - Desktop only */}
               <div className="h-4 w-px bg-border/50 mx-1" />
