@@ -934,15 +934,17 @@ export default function ProfilePage() {
                   {achievements.map((achievement, index) => {
                     const IconComponent = achievement.icon;
                     const getRarityColor = (rarity: string, unlocked: boolean) => {
-                      if (!unlocked) return 'from-gray-300 via-gray-400 to-gray-500';
-                      // All unlocked badges are golden
-                      return 'from-amber-400 via-yellow-500 to-amber-600';
+                      if (!unlocked)
+                        return 'from-gray-300 via-gray-400 to-gray-500 dark:from-gray-600 dark:via-gray-500 dark:to-gray-400';
+                      // All unlocked badges are golden - darker in dark mode
+                      return 'from-amber-400 via-yellow-500 to-amber-600 dark:from-amber-500 dark:via-yellow-600 dark:to-amber-700';
                     };
 
                     const getInnerColor = (rarity: string, unlocked: boolean) => {
-                      if (!unlocked) return 'from-gray-100 to-gray-200';
-                      // All unlocked badges have golden inner color
-                      return 'from-amber-200 to-yellow-300';
+                      if (!unlocked)
+                        return 'from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600';
+                      // All unlocked badges have golden inner color - darker in dark mode
+                      return 'from-amber-200 to-yellow-300 dark:from-amber-600 dark:to-yellow-700';
                     };
 
                     return (
@@ -968,7 +970,9 @@ export default function ProfilePage() {
                             >
                               <IconComponent
                                 className={`w-7 h-7 ${
-                                  achievement.unlocked ? 'text-current' : 'text-gray-600'
+                                  achievement.unlocked
+                                    ? 'text-amber-800 dark:text-amber-200'
+                                    : 'text-gray-600 dark:text-gray-400'
                                 }`}
                               />
                             </div>
@@ -1311,9 +1315,9 @@ export default function ProfilePage() {
                           return (
                             <div key={index} className="flex flex-col items-center group">
                               <div className="relative">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 p-0.5 transition-all duration-300 group-hover:scale-105">
-                                  <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-200 to-yellow-300 flex items-center justify-center">
-                                    <IconComponent className="w-6 h-6 text-amber-800" />
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 dark:from-yellow-500 dark:via-amber-600 dark:to-yellow-700 p-0.5 transition-all duration-300 group-hover:scale-105">
+                                  <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-200 to-yellow-300 dark:from-amber-600 dark:to-yellow-700 flex items-center justify-center">
+                                    <IconComponent className="w-6 h-6 text-amber-800 dark:text-amber-200" />
                                   </div>
                                 </div>
                                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/30 to-transparent opacity-50"></div>
@@ -1406,13 +1410,15 @@ export default function ProfilePage() {
                     <div
                       className={`w-full h-full rounded-full bg-gradient-to-br flex items-center justify-center ${
                         selectedAchievement.unlocked
-                          ? 'from-amber-200 to-yellow-300'
-                          : 'from-gray-100 to-gray-200'
+                          ? 'from-amber-200 to-yellow-300 dark:from-amber-600 dark:to-yellow-700'
+                          : 'from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600'
                       }`}
                     >
                       <selectedAchievement.icon
                         className={`w-6 h-6 ${
-                          selectedAchievement.unlocked ? 'text-current' : 'text-gray-600'
+                          selectedAchievement.unlocked
+                            ? 'text-amber-800 dark:text-amber-200'
+                            : 'text-gray-600 dark:text-gray-400'
                         }`}
                       />
                     </div>

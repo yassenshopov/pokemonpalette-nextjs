@@ -4,10 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { SidebarNav } from './sidebar-nav';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Close sidebar when route changes
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -25,7 +32,7 @@ export function MobileNav() {
           <SheetTitle className="sr-only">Mobile Navigation</SheetTitle>
         </SheetHeader>
         <div className="px-7">
-          <SidebarNav className="mt-4" />
+          <SidebarNav className="mt-4" simplified />
         </div>
       </SheetContent>
     </Sheet>
