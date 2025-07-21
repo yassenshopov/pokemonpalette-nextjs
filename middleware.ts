@@ -4,7 +4,9 @@ export default clerkMiddleware();
 
 export const config = {
   matcher: [
-    '/(internal)(.*)', // Only protect internal pages
-    '/(api|trpc)(.*)', // Protect API routes
+    // Protect internal pages - match actual URL paths
+    '/((?!_next/static|.*\\..*|api|trpc).*)',
+    // Explicitly protect API routes
+    '/(api|trpc)(.*)',
   ],
 };
