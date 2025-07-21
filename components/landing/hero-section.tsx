@@ -19,6 +19,35 @@ interface HeroSectionProps {
   pokemonNumber?: number;
 }
 
+// Helper function to get contrast color
+const getContrastColor = (bgColor: string): { text: string; overlay: string } => {
+  if (!bgColor) return { text: 'text-foreground', overlay: '' };
+
+  // Convert hex to RGB if needed
+  let rgbColor = bgColor;
+  if (bgColor.startsWith('#')) {
+    const hex = bgColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    rgbColor = `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // Parse RGB values
+  const rgb = rgbColor.match(/\d+/g);
+  if (!rgb) return { text: 'text-foreground', overlay: '' };
+
+  const [r, g, b] = rgb.map(Number);
+
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return {
+    text: luminance > 0.5 ? 'text-black' : 'text-white',
+    overlay: luminance > 0.7 || luminance < 0.3 ? '' : 'bg-black/10 dark:bg-white/10',
+  };
+};
+
 function hexToRgb(hex: string) {
   // Remove the hash if it exists
   hex = hex.replace('#', '');
@@ -44,8 +73,8 @@ export function HeroSection({
   const [palettePickerOpen, setPalettePickerOpen] = useState(false);
 
   // Use the first two colors from the palette, or fallback to neutral colors
-  const primaryColor = colors[0] || 'rgb(209 213 219)';
-  const secondaryColor = colors[1] || 'rgb(243 244 246)';
+  const primaryColor = colors[0] || '#e5e7eb'; // Tailwind gray-200
+  const secondaryColor = colors[1] || '#f3f4f6'; // Tailwind gray-100
 
   // Function to handle saving palette
   const handleSavePalette = () => {
@@ -150,51 +179,56 @@ export function HeroSection({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 md:pt-4 w-full sm:w-auto">
-            <SignedIn>
-              <Button
-                size="lg"
-                className={`gap-2 h-12 px-6 text-base transition-all touch-target w-full sm:w-auto ${
-                  isSaved(pokemonNumber || Date.now())
-                    ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                    : ''
-                }`}
-                style={{
-                  backgroundColor: isSaved(pokemonNumber || Date.now()) ? undefined : primaryColor,
-                  borderColor: isSaved(pokemonNumber || Date.now()) ? undefined : primaryColor,
-                  color: isSaved(pokemonNumber || Date.now()) ? undefined : '#fff',
-                }}
-                onClick={handleSavedClick}
-                disabled={colors.length === 0}
-              >
-                {isSaved(pokemonNumber || Date.now()) ? (
-                  <>
-                    <Check className="w-5 h-5" />
-                    Saved!
-                  </>
-                ) : (
-                  <>
-                    <Bookmark className="w-5 h-5" />
-                    Save Palette
-                  </>
-                )}
-              </Button>
-            </SignedIn>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button
-                  size="lg"
-                  className="gap-2 h-12 px-6 text-base touch-target w-full sm:w-auto"
-                  style={{
-                    backgroundColor: primaryColor,
-                    borderColor: primaryColor,
-                    color: '#fff',
-                  }}
-                >
-                  <Bookmark className="w-5 h-5" />
-                  Save Palette
-                </Button>
-              </SignInButton>
-            </SignedOut>
+            {!colors[0] ? (
+              <div className="h-12 w-40 rounded-lg bg-muted animate-pulse" />
+            ) : (
+              <>
+                <SignedIn>
+                  <Button
+                    size="lg"
+                    className={`gap-2 h-12 px-6 text-base transition-all touch-target w-full sm:w-auto ${
+                      isSaved(pokemonNumber || Date.now()) ? 'shadow-lg scale-105' : ''
+                    }`}
+                    style={{
+                      backgroundColor: primaryColor,
+                      borderColor: primaryColor,
+                      color: getContrastColor(primaryColor).text === 'text-white' ? '#fff' : '#000',
+                    }}
+                    onClick={handleSavedClick}
+                    disabled={colors.length === 0}
+                  >
+                    {isSaved(pokemonNumber || Date.now()) ? (
+                      <>
+                        <Check className="w-5 h-5" />
+                        Saved!
+                      </>
+                    ) : (
+                      <>
+                        <Bookmark className="w-5 h-5" />
+                        Save Palette
+                      </>
+                    )}
+                  </Button>
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <Button
+                      size="lg"
+                      className="gap-2 h-12 px-6 text-base touch-target w-full sm:w-auto"
+                      style={{
+                        backgroundColor: primaryColor,
+                        borderColor: primaryColor,
+                        color:
+                          getContrastColor(primaryColor).text === 'text-white' ? '#fff' : '#000',
+                      }}
+                    >
+                      <Bookmark className="w-5 h-5" />
+                      Save Palette
+                    </Button>
+                  </SignInButton>
+                </SignedOut>
+              </>
+            )}
             <Button
               size="lg"
               variant="outline"
@@ -234,6 +268,7 @@ export function HeroSection({
                 className="object-contain p-6 sm:p-8 md:p-12 transition-all duration-300 hover:scale-105"
                 priority={true}
                 quality={100}
+                sizes="(max-width: 640px) 220px, (max-width: 768px) 280px, (max-width: 1024px) 420px, 480px"
               />
             </div>
           </motion.div>

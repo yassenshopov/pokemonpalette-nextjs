@@ -178,15 +178,18 @@ export function PokemonInfo({
       {/* Pokemon Silhouette */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-12 opacity-10 pointer-events-none">
         <div className="relative w-[400px] h-[400px]">
-          <Image
-            src={officialArt}
-            alt={pokemonName}
-            fill
-            className="object-contain"
-            style={{ filter: 'brightness(0)' }}
-            priority={true}
-            quality={100}
-          />
+          {officialArt && (
+            <Image
+              src={officialArt}
+              alt={pokemonName}
+              fill
+              className="object-contain"
+              style={{ filter: 'brightness(0)' }}
+              priority={true}
+              quality={100}
+              sizes="400px"
+            />
+          )}
         </div>
       </div>
 

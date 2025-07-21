@@ -67,6 +67,7 @@ function NotFoundContent() {
                     fill
                     className="object-contain"
                     priority
+                    sizes="160px"
                   />
                   <span
                     className="glitch-text absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-[#3a352a] font-pixel uppercase tracking-widest bg-[#e6f2c2]/80 dark:bg-[#181a13]/80 px-2 py-1 rounded shadow-lg z-20"

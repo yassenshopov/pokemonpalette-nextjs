@@ -4,9 +4,13 @@ import { SidebarNav } from '@/components/ui/sidebar-nav';
 import { MobileNav } from '@/components/ui/mobile-nav';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Navbar } from '@/components/landing/navbar';
+import { useColors } from '@/contexts/color-context';
+import { getContrastColor } from '@/lib/color-utils';
 
 export default function InternalLayout({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { colors } = useColors();
 
   return (
     <div className="flex min-h-screen">
@@ -37,7 +41,10 @@ export default function InternalLayout({ children }: { children: React.ReactNode
             <MobileNav />
           </div>
         </header>
-
+        {/* Desktop Navbar */}
+        <div className="hidden lg:block">
+          <Navbar colors={colors} getContrastColor={getContrastColor} />
+        </div>
         <div className="mx-auto max-w-5xl px-4 py-4">{children}</div>
       </main>
     </div>

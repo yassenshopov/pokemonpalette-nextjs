@@ -464,68 +464,33 @@ export default function GamePage() {
         </Head>
         <GameBackground colors={colors} />
         <div className="scanlines pointer-events-none absolute inset-0 z-30" />
-        <header className="w-full bg-card/80 fixed top-0 left-0 z-50 border-b">
-          <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
-            <Link
-              href="/"
-              className="flex items-center gap-4 group"
-              tabIndex={0}
-              aria-label="Go to homepage"
-            >
-              <Image
-                src="/logo512.png"
-                alt="Pokemon Palette Logo"
-                width={32}
-                height={32}
-                className="w-8 h-8 pokemon-float group-hover:scale-110 transition-transform"
-              />
-              <h1
-                className="text-lg font-bold font-display leading-tight font-pixel"
-                style={{ fontFamily: 'Press Start 2P, monospace' }}
-              >
-                Pokemon Palette
-                <span className="block text-xs text-muted-foreground -mt-1">Guesser</span>
-              </h1>
-            </Link>
-            <div className="flex items-center gap-2">
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="h-8 font-pixel"
-                style={{ fontFamily: 'Press Start 2P, monospace' }}
-              >
-                <Link href="/">Home</Link>
-              </Button>
-              <Tabs value={gameState.gameMode} onValueChange={toggleGameMode}>
-                <TabsList className="grid w-full grid-cols-2 bg-muted/50">
-                  <TabsTrigger
-                    value="daily"
-                    className="text-xs px-3 font-pixel data-[state=active]:bg-background data-[state=active]:text-foreground"
-                  >
-                    📅 Daily
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="unlimited"
-                    className="text-xs px-3 font-pixel data-[state=active]:bg-background data-[state=active]:text-foreground"
-                  >
-                    🎲 Unlimited
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <div className="flex items-center gap-2">
-                <SignInButton mode="modal">
-                  <Button variant="ghost" size="sm" className="h-8 font-pixel">
-                    Sign In
-                  </Button>
-                </SignInButton>
-                <UserButton afterSignOutUrl="/" />
-              </div>
-              <ThemeToggle />
-            </div>
+        <main className="flex-1 flex flex-col items-center pt-8 px-4">
+          {/* Standard heading and subtitle */}
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold">Pokemon Palette Guesser</h1>
+            <p className="text-muted-foreground text-lg">
+              Guess the Pokémon by its colors! Try daily or unlimited mode.
+            </p>
           </div>
-        </header>
-        <main className="flex-1 flex flex-col items-center pt-20 px-4">
+          {/* Game mode tabs */}
+          <div className="mb-8">
+            <Tabs value={gameState.gameMode} onValueChange={toggleGameMode}>
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+                <TabsTrigger
+                  value="daily"
+                  className="text-xs px-3 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  📅 Daily
+                </TabsTrigger>
+                <TabsTrigger
+                  value="unlimited"
+                  className="text-xs px-3 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  🎲 Unlimited
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
           {/* Show the color palette as the main focus */}
           <div className="w-full max-w-lg mx-auto mb-8">
             <ColorPalette colors={colors} />

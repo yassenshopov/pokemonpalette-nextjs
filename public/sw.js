@@ -80,8 +80,11 @@ self.addEventListener('fetch', event => {
 
           return fetch(request)
             .then(networkResponse => {
-              // Only cache successful responses
-              if (networkResponse.status === 200) {
+              // Only cache successful responses with supported protocols
+              if (
+                networkResponse.status === 200 &&
+                (url.protocol === 'http:' || url.protocol === 'https:')
+              ) {
                 cache.put(request, networkResponse.clone());
                 limitCacheSize(DYNAMIC_CACHE, MAX_CACHE_ITEMS);
               }
@@ -109,8 +112,11 @@ self.addEventListener('fetch', event => {
 
         return fetch(request)
           .then(networkResponse => {
-            // Cache successful responses
-            if (networkResponse.status === 200) {
+            // Cache successful responses with supported protocols
+            if (
+              networkResponse.status === 200 &&
+              (url.protocol === 'http:' || url.protocol === 'https:')
+            ) {
               const responseClone = networkResponse.clone();
               caches.open(DYNAMIC_CACHE).then(cache => {
                 cache.put(request, responseClone);

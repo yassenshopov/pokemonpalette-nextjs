@@ -191,7 +191,7 @@ export default {
       },
       fontFamily: {
         sans: ['var(--font-geist)'],
-        display: ['var(--font-cal)'],
+        display: ['var(--font-geist)'],
         default: ['var(--font-geist)'],
       },
     },
