@@ -142,7 +142,7 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
       );
     }
 
-    const pokemonImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
+    const pokemonImage = `/images/pokemon/official-artwork/${pokemonId}.png`;
 
     return new ImageResponse(
       (

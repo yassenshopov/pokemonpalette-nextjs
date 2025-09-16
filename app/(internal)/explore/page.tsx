@@ -92,13 +92,14 @@ const EmptyState = ({ selectedPokemon }: { selectedPokemon: string }) => {
           >
             <div className="relative">
               <Image
-                src={pokemonSprite}
+                src={`/images/pokemon/front/${pokemonId}.png`}
                 alt={pokemonName || 'Pokemon'}
                 width={256}
                 height={256}
                 className="w-64 h-64 filter brightness-0 dark:invert dark:brightness-100 opacity-30 dark:opacity-20"
                 style={{ imageRendering: 'pixelated' }}
                 quality={50}
+                unoptimized={true}
               />
               {/* Glow effect */}
               <div className="absolute inset-0 w-64 h-64 rounded-full bg-gradient-to-r from-primary/30 to-primary/10 dark:from-primary/20 dark:to-primary/5 blur-2xl" />

@@ -26,6 +26,7 @@ export function PokemonShowcase() {
                 height={60}
                 className="filter brightness-110"
                 pokemonId={25}
+                imageType="official-artwork"
               />
             </div>
             <div>
@@ -47,6 +48,7 @@ export function PokemonShowcase() {
                 height={60}
                 className="filter brightness-110"
                 pokemonId={658}
+                imageType="official-artwork"
               />
             </div>
             <div>
@@ -68,6 +70,7 @@ export function PokemonShowcase() {
                 height={60}
                 className="filter brightness-110"
                 pokemonId={1007}
+                imageType="official-artwork"
               />
             </div>
             <div>

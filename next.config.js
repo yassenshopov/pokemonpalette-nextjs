@@ -15,10 +15,15 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days cache
+    // Optimize for local images - reduce transformation usage
+    formats: ['image/webp'], // Remove AVIF to reduce processing
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920], // Reduced sizes
+    imageSizes: [16, 32, 48, 64, 96, 128, 256], // Reduced sizes
+    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year cache for local images
+    // Disable image optimization for local Pokemon images
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
@@ -54,6 +59,20 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      // Optimize Pokemon image caching
+      {
+        source: '/images/pokemon/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable', // 1 year cache
+          },
+          {
+            key: 'Content-Type',
+            value: 'image/png',
           },
         ],
       },

@@ -834,7 +834,7 @@ export default function ProfilePage() {
                               {palette.pokemonId ? (
                                 <div className="absolute inset-0 opacity-25 dark:opacity-20">
                                   <img
-                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${palette.pokemonId}.png`}
+                                    src={`/images/pokemon/official-artwork/${palette.pokemonId}.png`}
                                     alt={palette.pokemonName || 'Pokemon'}
                                     className="w-full h-full object-contain"
                                     style={{
