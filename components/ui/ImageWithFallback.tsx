@@ -27,8 +27,8 @@ export function ImageWithFallback({
   isFemale = false,
   ...props
 }: ImageWithFallbackProps) {
-  // Build local fallback path based on image type and variants
-  const getLocalFallbackPath = () => {
+  // Build local fallback path based on image type and variants - memoized to prevent infinite re-renders
+  const getLocalFallbackPath = useCallback(() => {
     if (!pokemonId) return '/images/misc/missingno.webp';
 
     // Handle forms (IDs > 10000)
@@ -50,15 +50,14 @@ export function ImageWithFallback({
     if (isShiny) parts.push('shiny');
     if (isFemale) parts.push('female');
 
-    return `${parts.join('/')}/${pokemonId}.png`;
-  };
-
-  // Default fallback for Pokemon images
-  const defaultFallback = getLocalFallbackPath();
+    const finalPath = `${parts.join('/')}/${pokemonId}.png`;
+    return finalPath;
+  }, [pokemonId, imageType, variant, isShiny, isFemale]);
 
   // For Pokemon images, ALWAYS use local cache when pokemonId is provided
   const shouldUseLocalFirst = pokemonId !== undefined;
   const localPath = pokemonId ? getLocalFallbackPath() : null;
+  const defaultFallback = getLocalFallbackPath();
 
   const [currentSrc, setCurrentSrc] = useState(shouldUseLocalFirst && localPath ? localPath : src);
   const [retries, setRetries] = useState(0);
@@ -77,23 +76,14 @@ export function ImageWithFallback({
     if (retries < retryCount) {
       // Retry with the same URL
       setRetries(prev => prev + 1);
-      console.warn(`Image load failed for ${currentSrc}, retry ${retries + 1}/${retryCount}`);
     } else {
       // Use fallback
       const fallback = fallbackSrc || defaultFallback;
       setCurrentSrc(fallback);
       setHasError(true);
 
-      const error = new Error(`Failed to load image: ${currentSrc}`);
-      console.error('ImageWithFallback error:', error.message, {
-        pokemonId,
-        originalSrc: src,
-        currentSrc,
-        fallbackSrc: fallback,
-        triedLocal,
-      });
-
       if (onLoadError) {
+        const error = new Error(`Failed to load image: ${currentSrc}`);
         onLoadError(error, pokemonId);
       }
     }
@@ -111,7 +101,7 @@ export function ImageWithFallback({
     localPath,
   ]);
 
-  // Reset state when src changes
+  // Reset state when src changes - memoized dependencies to prevent infinite re-renders
   useEffect(() => {
     const newSrc = shouldUseLocalFirst && localPath ? localPath : src;
     if (newSrc !== currentSrc) {
@@ -120,7 +110,7 @@ export function ImageWithFallback({
       setHasError(false);
       setTriedLocal(false);
     }
-  }, [src, currentSrc, shouldUseLocalFirst, localPath]);
+  }, [src, shouldUseLocalFirst, localPath]); // Removed currentSrc from dependencies
 
   // Use unoptimized for local Pokemon images to avoid Vercel transformations
   const isLocalImage = typeof currentSrc === 'string' && currentSrc.startsWith('/images/pokemon/');
