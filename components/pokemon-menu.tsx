@@ -718,143 +718,47 @@ export function PokemonMenu() {
     }));
   };
 
-  // New function to extract full evolution chain
+  // Simplified function to extract full evolution chain
   const extractEvolutionChain = (
     chain: any,
     currentPokemonName: string,
     condition?: string,
     depth = 0
   ): EvolutionStage[][] => {
-    // Start with base evolution
-    const baseSpeciesId = PokemonService.getSpeciesId(chain.species.name) || 0;
+    const result: EvolutionStage[][] = [];
 
-    // Log chain data for debugging
-    if (depth === 0) {
-      logger.debug('Evolution chain extracted', { chain });
-    }
+    // Helper function to add Pokémon to result
+    const addPokemon = (pokemon: any, isCurrent: boolean, condition?: string) => {
+      const speciesId = PokemonService.getSpeciesId(pokemon.species.name) || 0;
 
-    const result: EvolutionStage[][] = [
-      [
-        {
-          name: chain.species.name,
-          id: baseSpeciesId,
-          isCurrent: chain.species.name === currentPokemonName,
+      if (speciesId > 0) {
+        const stage: EvolutionStage = {
+          name: pokemon.species.name,
+          id: speciesId,
+          isCurrent: isCurrent,
           condition: condition,
-        },
-      ],
-    ];
+        };
 
-    // Handle branching evolutions
-    if (chain.evolves_to && chain.evolves_to.length > 0) {
-      // Handle each evolution path
-      const nextStages: EvolutionStage[][] = [];
-
-      chain.evolves_to.forEach((evo: any) => {
-        const evoSpeciesId = PokemonService.getSpeciesId(evo.species.name) || 0;
-        const isCurrentPokemon = evo.species.name === currentPokemonName;
-        const evoCondition = getEvolutionCondition(evo);
-
-        // Check if we already added this stage
-        let stage1Found = false;
-        for (const stage of nextStages) {
-          if (stage.some(p => p.name === evo.species.name)) {
-            stage1Found = true;
-            break;
-          }
-        }
-
-        if (!stage1Found) {
-          nextStages.push([
-            {
-              name: evo.species.name,
-              id: evoSpeciesId,
-              isCurrent: isCurrentPokemon,
-              condition: evoCondition,
-            },
-          ]);
-        }
-
-        // Process further evolutions recursively
-        if (evo.evolves_to && evo.evolves_to.length > 0) {
-          evo.evolves_to.forEach((nextEvo: any) => {
-            const nextEvoSpeciesId = PokemonService.getSpeciesId(nextEvo.species.name) || 0;
-            const isNextEvoCurrent = nextEvo.species.name === currentPokemonName;
-            const nextEvoCondition = getEvolutionCondition(nextEvo);
-
-            // Add stage 2 evolution
-            let stage2Found = false;
-            for (let i = 2; i < result.length; i++) {
-              if (result[i] && result[i].some(p => p.name === nextEvo.species.name)) {
-                stage2Found = true;
-                break;
-              }
-            }
-
-            if (!stage2Found) {
-              // Make sure we have an array for stage 2
-              if (!result[2]) result[2] = [];
-
-              result[2].push({
-                name: nextEvo.species.name,
-                id: nextEvoSpeciesId,
-                isCurrent: isNextEvoCurrent,
-                condition: nextEvoCondition,
-              });
-            }
-
-            // Handle potential stage 3+ evolutions
-            if (nextEvo.evolves_to && nextEvo.evolves_to.length > 0) {
-              nextEvo.evolves_to.forEach((stage3Evo: any, idx: number) => {
-                const stage3Id = PokemonService.getSpeciesId(stage3Evo.species.name) || 0;
-                const isStage3Current = stage3Evo.species.name === currentPokemonName;
-                const stage3Condition = getEvolutionCondition(stage3Evo);
-
-                // Add stage 3 evolution
-                if (!result[3]) result[3] = [];
-
-                result[3].push({
-                  name: stage3Evo.species.name,
-                  id: stage3Id,
-                  isCurrent: isStage3Current,
-                  condition: stage3Condition,
-                });
-              });
-            }
-          });
-        }
-      });
-
-      // Add stage 1 evolutions to the result if not already included
-      if (nextStages.length > 0 && !result[1]) {
-        result[1] = nextStages.flat();
+        // Add to appropriate stage
+        if (!result[0]) result[0] = [];
+        result[0].push(stage);
       }
-    }
+    };
 
-    // Special case handling for Scovillain and other Pokémon with unique evolution mechanisms
-    // These might not be properly represented in the standard evolution chain
-    if (currentPokemonName === 'scovillain') {
-      const capsacidId = PokemonService.getSpeciesId('capsakid') || 0;
-      result.length = 0; // Clear the array
+    // Add base evolution
+    addPokemon(chain, chain.species.name === currentPokemonName, condition);
 
-      // Create proper evolution chain for Scovillain
-      result.push([
-        {
-          name: 'capsakid',
-          id: capsacidId,
-          isCurrent: false,
-          condition: undefined,
-        },
-      ]);
+    // Add all evolutions recursively
+    const addEvolutions = (evoChain: any, currentName: string) => {
+      if (evoChain.evolves_to && evoChain.evolves_to.length > 0) {
+        evoChain.evolves_to.forEach((evo: any) => {
+          addPokemon(evo, evo.species.name === currentName, getEvolutionCondition(evo));
+          addEvolutions(evo, currentName);
+        });
+      }
+    };
 
-      result.push([
-        {
-          name: 'scovillain',
-          id: PokemonService.getSpeciesId('scovillain') || 0,
-          isCurrent: true,
-          condition: 'Level up with Spicy Extract',
-        },
-      ]);
-    }
+    addEvolutions(chain, currentPokemonName);
 
     return result;
   };
@@ -1341,7 +1245,7 @@ export function PokemonMenu() {
                             quality={50}
                             className="w-16 h-16 sm:w-20 sm:h-20"
                             style={{ imageRendering: 'pixelated' }}
-                            pokemonId={pokemon.id}
+                            pokemonId={pokemon.id || 15} // Fallback to Beedrill ID
                             imageType="sprite"
                             variant="front"
                             isShiny={isShiny}
