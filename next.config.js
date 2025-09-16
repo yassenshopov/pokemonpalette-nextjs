@@ -22,7 +22,7 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year cache for local images
     // Disable image optimization for local Pokemon images
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
+    contentDispositionType: 'inline',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {

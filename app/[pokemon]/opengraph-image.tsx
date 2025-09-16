@@ -1,14 +1,12 @@
 import { ImageResponse } from 'next/og';
 import speciesData from '@/data/species.json';
 import { logger } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 // Define the type for species data
 interface SpeciesData {
   [key: string]: number;
 }
-
-// Use type assertion for speciesData
-const typedSpeciesData = speciesData as SpeciesData;
 
 // Helper function to capitalize first letter of each word
 function capitalizeWords(str: string): string {
@@ -34,6 +32,12 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
       resolvedParams.pokemon.charAt(0).toUpperCase() +
       resolvedParams.pokemon.slice(1).replace(/-/g, ' ');
     const pokemonId = speciesData[resolvedParams.pokemon as keyof typeof speciesData];
+
+    // Get origin from request headers or use metadataBase fallback
+    const headersList = await headers();
+    const host = headersList.get('host');
+    const protocol = headersList.get('x-forwarded-proto') || 'https';
+    const origin = host ? `${protocol}://${host}` : 'https://pokemonpalette.com';
 
     // Check if pokemonId exists
     if (!pokemonId) {
@@ -142,7 +146,12 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
       );
     }
 
-    const pokemonImage = `/images/pokemon/official-artwork/${pokemonId}.png`;
+    // Build absolute URL for local image with fallback to external asset
+    const localImagePath = `/images/pokemon/official-artwork/${pokemonId}.png`;
+    const pokemonImage = `${origin}${localImagePath}`;
+
+    // External fallback URL (Pokemon official artwork from PokeAPI)
+    const externalImageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
 
     return new ImageResponse(
       (
@@ -187,6 +196,10 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
                 height={250}
                 style={{
                   objectFit: 'contain',
+                }}
+                onError={e => {
+                  // Fallback to external image if local image fails to load
+                  e.currentTarget.src = externalImageUrl;
                 }}
               />
             </div>
