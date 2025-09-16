@@ -30,6 +30,7 @@ import {
   Share2,
   Zap,
   Bookmark,
+  Compass,
 } from 'lucide-react';
 import Link from 'next/link';
 import { SubmitDesignDialog } from '@/components/ui/submit-design-dialog';
@@ -91,13 +92,14 @@ const EmptyState = ({ selectedPokemon }: { selectedPokemon: string }) => {
           >
             <div className="relative">
               <Image
-                src={pokemonSprite}
+                src={`/images/pokemon/front/${pokemonId}.png`}
                 alt={pokemonName || 'Pokemon'}
                 width={256}
                 height={256}
                 className="w-64 h-64 filter brightness-0 dark:invert dark:brightness-100 opacity-30 dark:opacity-20"
                 style={{ imageRendering: 'pixelated' }}
                 quality={50}
+                unoptimized={true}
               />
               {/* Glow effect */}
               <div className="absolute inset-0 w-64 h-64 rounded-full bg-gradient-to-r from-primary/30 to-primary/10 dark:from-primary/20 dark:to-primary/5 blur-2xl" />
@@ -320,24 +322,43 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center space-y-4 mb-8">
-          <h1 className="text-4xl font-bold">Explore Designs</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Discover amazing Pokemon-inspired designs created by our community. Get inspired and
-            share your own creations!
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button asChild variant="outline">
-              <Link href="/profile" className="gap-2">
-                <Bookmark className="w-4 h-4" />
-                My Profile
-              </Link>
-            </Button>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <div className="container mx-auto px-4 py-20 max-w-6xl">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-6">
+              <Compass className="w-4 h-4" />
+              Community Designs
+            </div>
+
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent leading-tight">
+              Explore Designs
+            </h1>
+
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-8 max-w-3xl mx-auto">
+              Discover amazing Pokemon-inspired designs created by our community. Get inspired and
+              share your own creations!
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild variant="outline" size="lg" className="gap-2">
+                <Link href="/profile">
+                  <Bookmark className="w-4 h-4" />
+                  My Profile
+                </Link>
+              </Button>
+              <SubmitDesignDialog>
+                <Button size="lg" className="gap-2">
+                  <Plus className="w-5 h-5" />
+                  Submit Design
+                </Button>
+              </SubmitDesignDialog>
+            </div>
           </div>
         </div>
+      </section>
 
+      <div className="container mx-auto px-4 py-16 max-w-6xl">
         {/* Pro Features Banner */}
         {!loading && <ProFeaturesBanner />}
 

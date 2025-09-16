@@ -2,20 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-// Pokemon IDs to download (based on the ones used in the blog posts)
-const POKEMON_IDS = [
-  3, // Venusaur
-  4, // Charmander
-  5, // Charmeleon
-  6, // Charizard
-  9, // Blastoise
-  25, // Pikachu
-  94, // Gengar
-  197, // Umbreon
-  658, // Greninja
-  1007, // Koraidon
-  1008, // Miraidon
-];
+// Generate all Pokemon IDs from 1 to 1025 (covers all generations up to Gen 9)
+const POKEMON_IDS = Array.from({ length: 1025 }, (_, i) => i + 1);
 
 const POKEMON_IMAGES_DIR = path.join(__dirname, '../public/images/pokemon');
 

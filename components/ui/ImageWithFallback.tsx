@@ -8,6 +8,10 @@ interface ImageWithFallbackProps extends Omit<ImageProps, 'onError'> {
   pokemonId?: number;
   retryCount?: number;
   onLoadError?: (error: Error, pokemonId?: number) => void;
+  imageType?: 'sprite' | 'official-artwork';
+  variant?: 'front' | 'back';
+  isShiny?: boolean;
+  isFemale?: boolean;
 }
 
 export function ImageWithFallback({
@@ -17,65 +21,146 @@ export function ImageWithFallback({
   pokemonId,
   retryCount = 2,
   onLoadError,
+  imageType = 'sprite',
+  variant = 'front',
+  isShiny = false,
+  isFemale = false,
   ...props
 }: ImageWithFallbackProps) {
-  const [currentSrc, setCurrentSrc] = useState(src);
-  const [retries, setRetries] = useState(0);
-  const [hasError, setHasError] = useState(false);
+  // Build local fallback path based on image type and variants
+  const getLocalFallbackPath = () => {
+    if (!pokemonId) return '/images/misc/missingno.webp';
+
+    // Handle forms (IDs > 10000)
+    if (pokemonId > 10000) {
+      return `/images/pokemon/forms/${pokemonId}.png`;
+    }
+
+    // Handle official artwork
+    if (imageType === 'official-artwork') {
+      return isShiny
+        ? `/images/pokemon/official-artwork/shiny/${pokemonId}.png`
+        : `/images/pokemon/official-artwork/${pokemonId}.png`;
+    }
+
+    // Handle sprites with all variants
+    const basePath = `/images/pokemon/${variant}`;
+    const parts = [basePath];
+
+    if (isShiny) parts.push('shiny');
+    if (isFemale) parts.push('female');
+
+    return `${parts.join('/')}/${pokemonId}.png`;
+  };
 
   // Default fallback for Pokemon images
-  const defaultFallback = pokemonId
-    ? `/images/pokemon/${pokemonId}.png`
-    : '/images/misc/missingno.webp';
+  const defaultFallback = getLocalFallbackPath();
+
+  // For Pokemon images, ALWAYS use local cache when pokemonId is provided
+  const shouldUseLocalFirst = pokemonId !== undefined;
+  const localPath = pokemonId ? getLocalFallbackPath() : null;
+
+  const [currentSrc, setCurrentSrc] = useState(shouldUseLocalFirst && localPath ? localPath : src);
+  const [retries, setRetries] = useState(0);
+  const [hasError, setHasError] = useState(false);
+  const [triedLocal, setTriedLocal] = useState(false);
 
   const handleError = useCallback(() => {
+    // If we haven't tried the external URL yet and we're using a local path
+    if (!triedLocal && shouldUseLocalFirst && localPath && currentSrc === localPath) {
+      setTriedLocal(true);
+      setCurrentSrc(src); // Try the external URL
+      setRetries(0);
+      return;
+    }
+
     if (retries < retryCount) {
       // Retry with the same URL
       setRetries(prev => prev + 1);
-      console.warn(`Image load failed for ${src}, retry ${retries + 1}/${retryCount}`);
+      console.warn(`Image load failed for ${currentSrc}, retry ${retries + 1}/${retryCount}`);
     } else {
       // Use fallback
       const fallback = fallbackSrc || defaultFallback;
       setCurrentSrc(fallback);
       setHasError(true);
 
-      const error = new Error(`Failed to load image: ${src}`);
+      const error = new Error(`Failed to load image: ${currentSrc}`);
       console.error('ImageWithFallback error:', error.message, {
         pokemonId,
         originalSrc: src,
+        currentSrc,
         fallbackSrc: fallback,
+        triedLocal,
       });
 
       if (onLoadError) {
         onLoadError(error, pokemonId);
       }
     }
-  }, [src, retries, retryCount, fallbackSrc, defaultFallback, pokemonId, onLoadError]);
+  }, [
+    currentSrc,
+    retries,
+    retryCount,
+    fallbackSrc,
+    defaultFallback,
+    pokemonId,
+    onLoadError,
+    src,
+    triedLocal,
+    shouldUseLocalFirst,
+    localPath,
+  ]);
 
   // Reset state when src changes
   useEffect(() => {
-    if (src !== currentSrc) {
-      setCurrentSrc(src);
+    const newSrc = shouldUseLocalFirst && localPath ? localPath : src;
+    if (newSrc !== currentSrc) {
+      setCurrentSrc(newSrc);
       setRetries(0);
       setHasError(false);
+      setTriedLocal(false);
     }
-  }, [src, currentSrc]);
+  }, [src, currentSrc, shouldUseLocalFirst, localPath]);
 
-  return <Image {...props} src={currentSrc} alt={alt} onError={handleError} />;
-}
+  // Use unoptimized for local Pokemon images to avoid Vercel transformations
+  const isLocalImage = typeof currentSrc === 'string' && currentSrc.startsWith('/images/pokemon/');
 
-// Utility function to extract Pokemon ID from URL
-export function extractPokemonIdFromUrl(url: string): number | null {
-  const match = url.match(/pokemon\/other\/official-artwork\/(\d+)\.png/);
-  return match ? parseInt(match[1], 10) : null;
-}
-
-// Utility function to convert external URL to local path
-export function getLocalPokemonPath(pokemonId: number): string {
-  return `/images/pokemon/${pokemonId}.png`;
+  return (
+    <Image {...props} src={currentSrc} alt={alt} onError={handleError} unoptimized={isLocalImage} />
+  );
 }
 
 // Utility function to check if URL is external
-export function isExternalUrl(url: string): boolean {
+function isExternalUrl(url: string): boolean {
   return url.startsWith('http://') || url.startsWith('https://');
+}
+
+// Utility function to convert external URL to local path
+export function getLocalPokemonPath(
+  pokemonId: number,
+  imageType: 'sprite' | 'official-artwork' = 'sprite',
+  variant: 'front' | 'back' = 'front',
+  isShiny = false,
+  isFemale = false
+): string {
+  // Handle forms (IDs > 10000)
+  if (pokemonId > 10000) {
+    return `/images/pokemon/forms/${pokemonId}.png`;
+  }
+
+  // Handle official artwork
+  if (imageType === 'official-artwork') {
+    return isShiny
+      ? `/images/pokemon/official-artwork/shiny/${pokemonId}.png`
+      : `/images/pokemon/official-artwork/${pokemonId}.png`;
+  }
+
+  // Handle sprites with all variants
+  const basePath = `/images/pokemon/${variant}`;
+  const parts = [basePath];
+
+  if (isShiny) parts.push('shiny');
+  if (isFemale) parts.push('female');
+
+  return `${parts.join('/')}/${pokemonId}.png`;
 }

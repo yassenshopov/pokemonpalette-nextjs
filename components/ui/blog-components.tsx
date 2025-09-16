@@ -147,6 +147,7 @@ export function PokemonCard({
             height={120}
             className="hover:scale-110 transition-transform duration-300"
             pokemonId={id}
+            imageType="official-artwork"
           />
         </div>
 
@@ -234,6 +235,7 @@ export function EvolutionStage({ name, id, color, meaning, isLast }: EvolutionSt
           height={80}
           className="group-hover:scale-110 transition-transform duration-300"
           pokemonId={id}
+          imageType="official-artwork"
         />
       </div>
       <h4 className="font-semibold text-lg mb-2">{name}</h4>

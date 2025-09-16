@@ -22,7 +22,8 @@ import { useColors } from '@/contexts/color-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import speciesData from '@/data/species.json';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import Image from 'next/image';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
+import { PokemonImage } from '@/components/ui/PokemonImage';
 import { useToast } from '@/components/ui/use-toast';
 import { logger } from '@/lib/logger';
 import { PokemonSpriteSkeleton } from '@/components/ui/skeleton';
@@ -916,13 +917,15 @@ export function PokemonMenu() {
               isLoading ? 'opacity-50 scale-95' : 'opacity-100 scale-100'
             } ${isRotating ? 'animate-pulse' : ''}`}
           >
-            <Image
-              src={spriteUrl}
+            <PokemonImage
+              pokemonId={parseInt(dexNumber)}
               alt={pokemonName}
               width={180}
               height={180}
-              quality={75}
-              style={{ imageRendering: 'pixelated' }}
+              className="w-full h-full"
+              isShiny={isShiny}
+              imageType="sprite"
+              variant="front"
             />
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -1040,7 +1043,7 @@ export function PokemonMenu() {
                         borderColor: bgColors[0] ? `${bgColors[0]}20` : undefined,
                       }}
                     >
-                      <Image
+                      <ImageWithFallback
                         src={suggestion.sprite}
                         alt={suggestion.name}
                         width={32}
@@ -1048,6 +1051,7 @@ export function PokemonMenu() {
                         className="w-6 h-6 sm:w-8 sm:h-8"
                         quality={50}
                         style={{ imageRendering: 'pixelated' }}
+                        pokemonId={suggestion.id}
                       />
                       <span className="text-sm">{suggestion.name.replace(/-/g, ' ')}</span>
                     </button>
@@ -1278,7 +1282,7 @@ export function PokemonMenu() {
                                 : 'rgba(0, 0, 0, 0.1)',
                           }}
                         >
-                          <Image
+                          <ImageWithFallback
                             src={
                               form.sprite ||
                               `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
@@ -1291,6 +1295,7 @@ export function PokemonMenu() {
                             quality={50}
                             className="w-16 h-16 sm:w-20 sm:h-20"
                             style={{ imageRendering: 'pixelated' }}
+                            pokemonId={parseInt(form.id)}
                           />
                         </div>
                         <div
@@ -1326,7 +1331,7 @@ export function PokemonMenu() {
                               : 'rgba(0, 0, 0, 0.1)',
                           }}
                         >
-                          <Image
+                          <ImageWithFallback
                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
                               isShiny ? 'shiny/' : ''
                             }${pokemon.id}.png`}
@@ -1336,6 +1341,10 @@ export function PokemonMenu() {
                             quality={50}
                             className="w-16 h-16 sm:w-20 sm:h-20"
                             style={{ imageRendering: 'pixelated' }}
+                            pokemonId={pokemon.id}
+                            imageType="sprite"
+                            variant="front"
+                            isShiny={isShiny}
                           />
                         </div>
                         <div className="text-xs sm:text-sm font-medium capitalize text-center">

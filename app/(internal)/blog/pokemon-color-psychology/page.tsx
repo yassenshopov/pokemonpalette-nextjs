@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { Card, CardContent } from '@/components/ui/card';
-import { ImageWithFallback, extractPokemonIdFromUrl } from '@/components/ui/ImageWithFallback';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { TypeBadge } from '@/components/type-badge';
 import {
   BlogHero,
@@ -159,6 +159,7 @@ const ColorWheelHero = () => (
         width={60}
         height={60}
         pokemonId={25}
+        imageType="official-artwork"
       />
     </div>
     <div className="absolute top-1/2 right-4 transform -translate-y-1/2">
@@ -168,6 +169,7 @@ const ColorWheelHero = () => (
         width={60}
         height={60}
         pokemonId={6}
+        imageType="official-artwork"
       />
     </div>
     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
@@ -177,6 +179,7 @@ const ColorWheelHero = () => (
         width={60}
         height={60}
         pokemonId={3}
+        imageType="official-artwork"
       />
     </div>
     <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
@@ -186,6 +189,7 @@ const ColorWheelHero = () => (
         width={60}
         height={60}
         pokemonId={9}
+        imageType="official-artwork"
       />
     </div>
 

@@ -37,8 +37,7 @@ export default async function Image() {
               right: 0,
               bottom: 0,
               left: 0,
-              background:
-                'url(https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png) no-repeat',
+              background: 'url(/images/pokemon/official-artwork/25.png) no-repeat',
               backgroundSize: '400px 400px',
               backgroundPosition: 'right -40px bottom -40px',
               opacity: 0.2,

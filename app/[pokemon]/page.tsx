@@ -172,11 +172,21 @@ export default function Page() {
         const data: Pokemon = await response.json();
 
         // Update Pokemon data
+        const localOfficialArt = shiny
+          ? `/images/pokemon/official-artwork/shiny/${data.id}.png`
+          : `/images/pokemon/official-artwork/${data.id}.png`;
+        const externalOfficialArt = shiny
+          ? data.sprites.other['official-artwork'].front_shiny
+          : data.sprites.other['official-artwork'].front_default;
+
+        const localSpriteUrl = shiny
+          ? `/images/pokemon/front/shiny/${data.id}.png`
+          : `/images/pokemon/front/${data.id}.png`;
+        const externalSpriteUrl = shiny ? data.sprites.front_shiny : data.sprites.front_default;
+
         setPokemonData({
-          officialArt: shiny
-            ? data.sprites.other['official-artwork'].front_shiny
-            : data.sprites.other['official-artwork'].front_default,
-          spriteUrl: shiny ? data.sprites.front_shiny : data.sprites.front_default,
+          officialArt: externalOfficialArt, // Use external URL as primary, ImageWithFallback will try local first
+          spriteUrl: externalSpriteUrl, // Use external URL as primary, ImageWithFallback will try local first
           pokemonCry: data.cries.latest,
           pokemonTypes: data.types.map(t => t.type.name),
           pokemonNumber: data.id,

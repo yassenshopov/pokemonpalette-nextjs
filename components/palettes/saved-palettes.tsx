@@ -154,7 +154,7 @@ export function SavedPalettes({ onSelectPalette, isDialog = false }: SavedPalett
                       <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none h-full w-full overflow-hidden">
                         <div className="absolute bottom-[-10%] right-[-10%] w-[110%] h-[110%]">
                           <Image
-                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${palette.pokemonId}.png`}
+                            src={`/images/pokemon/official-artwork/${palette.pokemonId}.png`}
                             alt={palette.pokemonName || 'Pokemon'}
                             fill
                             className="object-contain"

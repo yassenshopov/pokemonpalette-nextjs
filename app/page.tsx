@@ -7,6 +7,7 @@ import { Navbar } from '@/components/landing/navbar';
 import { ColorExampleSection } from '@/components/landing/color-example-section';
 import StructuredData from '@/app/components/StructuredData';
 import { logger } from '@/lib/logger';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 
 // Add import for the sidebar navigation
 import { SidebarNav } from '@/components/ui/sidebar-nav';
@@ -209,10 +210,13 @@ export default function Home() {
         const data: Pokemon = await response.json();
 
         // Set artwork, cry, types, and stats
-        const artwork = shiny
+        const localArtwork = shiny
+          ? `/images/pokemon/official-artwork/shiny/${data.id}.png`
+          : `/images/pokemon/official-artwork/${data.id}.png`;
+        const externalArtwork = shiny
           ? data.sprites.other['official-artwork'].front_shiny
           : data.sprites.other['official-artwork'].front_default;
-        setOfficialArt(artwork);
+        setOfficialArt(externalArtwork); // Use external URL as primary, ImageWithFallback will try local first
         setPokemonCry(data.cries.latest);
         setPokemonTypes(data.types.map(t => t.type.name));
 

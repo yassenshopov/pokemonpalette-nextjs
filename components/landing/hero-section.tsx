@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Paintbrush, Palette, Bookmark, ArrowRight, Check, Sparkles } from 'lucide-react';
@@ -261,7 +261,7 @@ export function HeroSection({
                   background: `linear-gradient(to bottom right, ${primaryColor}20, transparent)`,
                 }}
               />
-              <Image
+              <ImageWithFallback
                 src={officialArt}
                 alt={pokemonName}
                 fill
@@ -269,6 +269,9 @@ export function HeroSection({
                 priority={true}
                 quality={100}
                 sizes="(max-width: 640px) 220px, (max-width: 768px) 280px, (max-width: 1024px) 420px, 480px"
+                pokemonId={pokemonNumber}
+                imageType="official-artwork"
+                isShiny={shiny}
               />
             </div>
           </motion.div>

@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { savePalette, isPaletteSaved } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { PalettePickerDialog } from '@/components/palettes/palette-picker-dialog';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useSave } from '@/contexts/save-context';
 import { useColors } from '@/contexts/color-context';
 import {
@@ -45,8 +45,14 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
   const { shiny } = useColors();
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
   const [palettePickerOpen, setPalettePickerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Close sidebar when route changes
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   // Function to handle saving palette
   const handleSavePalette = () => {

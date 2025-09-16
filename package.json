@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "download-pokemon": "node scripts/download-pokemon-images.js"
+    "download-pokemon": "node scripts/download-pokemon-images.js",
+    "download-all-pokemon": "node scripts/download-all-pokemon-images.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.18.1",
