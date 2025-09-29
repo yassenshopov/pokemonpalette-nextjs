@@ -525,14 +525,44 @@ export interface PokemonData {
 
 export interface PokemonFormData {
   name: string;
+  display_name?: string;
   url: string;
+  form_id?: number;
+  form_order?: number;
   is_default: boolean;
-  is_mega: boolean;
-  is_gigantamax: boolean;
-  is_alolan: boolean;
-  is_galarian: boolean;
-  is_hisui: boolean;
-  is_paldean: boolean;
+  is_battle_only?: boolean;
+  form_type:
+    | 'default'
+    | 'mega'
+    | 'gigantamax'
+    | 'alolan'
+    | 'galarian'
+    | 'hisui'
+    | 'paldean'
+    | 'seasonal'
+    | 'gender'
+    | 'totem'
+    | 'primal'
+    | 'eternamax'
+    | 'origin'
+    | 'hero'
+    | 'zen'
+    | 'weather'
+    | 'color'
+    | 'trim'
+    | 'style'
+    | 'coat'
+    | 'sea'
+    | 'mood'
+    | 'strike'
+    | 'segment'
+    | 'family'
+    | 'shape'
+    | 'other';
+  sprites?: {
+    front_default?: string;
+    front_shiny?: string;
+  };
 }
 
 export interface EvolutionChainData {

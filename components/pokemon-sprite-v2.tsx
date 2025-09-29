@@ -40,6 +40,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [forms, setForms] = useState<PokemonFormData[]>([]);
   const [evolutionChain, setEvolutionChain] = useState<EvolutionChainData | null>(null);
+  const [spriteKey, setSpriteKey] = useState(0);
 
   // Helper functions
   const getPokemonId = (input: string): number | null => {
@@ -165,7 +166,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
 
   const fetchPokemonData = async (pokemonId: number) => {
     try {
-      const response = await fetch('/data/pokemon-data.json');
+      const response = await fetch('/data/pokemon-data-forms-enriched.json');
       const data = await response.json();
       const localData = data.pokemon?.[pokemonId.toString()];
 
@@ -246,10 +247,17 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
       const pokemonName = getPokemonName(pokemonId);
       const additionalData = await fetchPokemonData(pokemonId);
 
+      // Ensure we use the base Pokemon sprite, not a form sprite
+      const baseSpriteUrl = getLocalImagePath(pokemonId, shiny);
+      const baseSpriteExists = await testLocalImage(baseSpriteUrl);
+      const finalSpriteUrl = baseSpriteExists
+        ? baseSpriteUrl
+        : getPokeApiImageUrl(pokemonId, shiny);
+
       setPokemonData({
         id: pokemonId,
         name: pokemonName,
-        sprite: spriteUrl,
+        sprite: finalSpriteUrl,
         isShiny: shiny,
         ...additionalData,
       });
@@ -262,14 +270,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
 
       // Filter out forms that are just the same Pokemon (is_default: false but same name)
       const filteredForms = pokemonForms.filter(
-        (form: PokemonFormData) =>
-          form.name !== pokemonName &&
-          (form.is_mega ||
-            form.is_gigantamax ||
-            form.is_alolan ||
-            form.is_galarian ||
-            form.is_hisui ||
-            form.is_paldean)
+        (form: PokemonFormData) => form.name !== pokemonName && form.form_type !== 'default'
       );
 
       console.log(`Filtered forms for Pokemon ${pokemonId}:`, filteredForms);
@@ -407,6 +408,72 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
     setShowSuggestions(false);
   };
 
+  // Helper function to get the sprite URL for a form (used by both display and click handler)
+  const getFormSpriteUrl = (form: PokemonFormData): string => {
+    // Extract form ID from URL if not provided directly
+    let actualFormId = form.form_id;
+    if (!actualFormId && form.url) {
+      const urlParts = form.url.split('/');
+      const formIdFromUrl = parseInt(urlParts[urlParts.length - 2]);
+      if (!isNaN(formIdFromUrl)) {
+        actualFormId = formIdFromUrl;
+      }
+    }
+
+    if (form.sprites?.front_default) {
+      // Use the form's specific sprite
+      return form.sprites.front_default;
+    } else if (actualFormId && actualFormId !== pokemonData?.id) {
+      // For forms with different IDs (like Mega forms), ALWAYS use PokeAPI
+      // Form sprites are typically not available locally
+      return isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${actualFormId}.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${actualFormId}.png`;
+    } else {
+      // For same-Pokemon forms, use local images if available
+      return isShiny
+        ? `/images/pokemon/front/shiny/${pokemonData?.id}.png`
+        : `/images/pokemon/front/${pokemonData?.id}.png`;
+    }
+  };
+
+  const handleFormClick = (form: PokemonFormData) => {
+    console.log('=== FORM CLICK DEBUG ===');
+    console.log('Form clicked:', form);
+    console.log('Current pokemonData.sprite:', pokemonData?.sprite);
+
+    if (!pokemonData) {
+      console.error('No pokemon data available');
+      return;
+    }
+
+    // Use the same helper function as the form display
+    const formSpriteUrl = getFormSpriteUrl(form);
+    console.log('New sprite URL:', formSpriteUrl);
+    console.log('Are URLs the same?', pokemonData.sprite === formSpriteUrl);
+
+    // Force a different URL if they're the same
+    let finalSpriteUrl = formSpriteUrl;
+    if (pokemonData.sprite === formSpriteUrl) {
+      // Add a cache-busting parameter to force re-render
+      finalSpriteUrl = formSpriteUrl + '?t=' + Date.now();
+      console.log('Added cache-busting parameter:', finalSpriteUrl);
+    }
+
+    // Update the Pokemon data with the new sprite
+    setPokemonData({
+      ...pokemonData,
+      sprite: finalSpriteUrl,
+    });
+
+    // Force re-render by updating the sprite key
+    setSpriteKey(prev => prev + 1);
+
+    console.log('✅ Updated pokemonData with new sprite');
+    setShowSuggestions(false);
+    console.log('=== END FORM CLICK DEBUG ===');
+  };
+
   const copyColor = async (color: string) => {
     try {
       await navigator.clipboard.writeText(color);
@@ -450,27 +517,121 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
   };
 
   const getFormTypeLabel = (form: PokemonFormData): string => {
-    if (form.is_mega) return 'Mega';
-    if (form.is_gigantamax) return 'Gigantamax';
-    if (form.is_alolan) return 'Alolan';
-    if (form.is_galarian) return 'Galarian';
-    if (form.is_hisui) return 'Hisuian';
-    if (form.is_paldean) return 'Paldean';
-    if (form.is_default) return 'Default';
-    return 'Form';
+    switch (form.form_type) {
+      case 'mega':
+        return 'Mega';
+      case 'gigantamax':
+        return 'Gigantamax';
+      case 'alolan':
+        return 'Alolan';
+      case 'galarian':
+        return 'Galarian';
+      case 'hisui':
+        return 'Hisuian';
+      case 'paldean':
+        return 'Paldean';
+      case 'seasonal':
+        return 'Seasonal';
+      case 'gender':
+        return 'Gender';
+      case 'totem':
+        return 'Totem';
+      case 'primal':
+        return 'Primal';
+      case 'eternamax':
+        return 'Eternamax';
+      case 'origin':
+        return 'Origin';
+      case 'hero':
+        return 'Hero';
+      case 'zen':
+        return 'Zen';
+      case 'weather':
+        return 'Weather';
+      case 'color':
+        return 'Color';
+      case 'trim':
+        return 'Trim';
+      case 'style':
+        return 'Style';
+      case 'coat':
+        return 'Coat';
+      case 'sea':
+        return 'Sea';
+      case 'mood':
+        return 'Mood';
+      case 'strike':
+        return 'Strike';
+      case 'segment':
+        return 'Segment';
+      case 'family':
+        return 'Family';
+      case 'shape':
+        return 'Shape';
+      case 'default':
+        return 'Default';
+      default:
+        return 'Form';
+    }
   };
 
   const getFormTypeColor = (form: PokemonFormData): string => {
-    if (form.is_mega)
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
-    if (form.is_gigantamax) return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-    if (form.is_alolan) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-    if (form.is_galarian) return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-    if (form.is_hisui)
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
-    if (form.is_paldean)
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-    return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    switch (form.form_type) {
+      case 'mega':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'gigantamax':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'alolan':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'galarian':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case 'hisui':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+      case 'paldean':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'seasonal':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'gender':
+        return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300';
+      case 'totem':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+      case 'primal':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'eternamax':
+        return 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300';
+      case 'origin':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+      case 'hero':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'zen':
+        return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
+      case 'weather':
+        return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300';
+      case 'color':
+        return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300';
+      case 'trim':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case 'style':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'coat':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'sea':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'mood':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'strike':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case 'segment':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'family':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case 'shape':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+      case 'default':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    }
   };
 
   const findCurrentPokemonInChain = (
@@ -679,16 +840,18 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
           <div className="text-center space-y-4">
             <div className="relative inline-block">
               <div className="w-48 h-48 mx-auto bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 flex items-center justify-center">
-                <ImageWithFallback
+                <img
+                  key={`${pokemonData.sprite}-${spriteKey}`}
                   src={pokemonData.sprite}
                   alt={pokemonData.name}
                   width={192}
                   height={192}
                   className="max-w-full max-h-full"
                   style={{ imageRendering: 'pixelated' }}
-                  pokemonId={pokemonData.id}
-                  isShiny={pokemonData.isShiny}
-                  fallbackSrc={getPokeApiImageUrl(pokemonData.id, pokemonData.isShiny)}
+                  onError={e => {
+                    console.log('Image failed to load:', pokemonData.sprite);
+                    e.currentTarget.src = getPokeApiImageUrl(pokemonData.id, pokemonData.isShiny);
+                  }}
                 />
               </div>
               <Button
@@ -852,45 +1015,79 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
                 <div>
                   <h4 className="font-medium mb-3">Forms</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {forms.map((form, index) => (
-                      <div key={index} className="bg-background/50 rounded-lg p-3 border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded flex items-center justify-center">
-                            <ImageWithFallback
-                              src={
-                                isShiny
-                                  ? `/images/pokemon/front/shiny/${pokemonData.id}.png`
-                                  : `/images/pokemon/front/${pokemonData.id}.png`
-                              }
-                              alt={form.name}
-                              width={24}
-                              height={24}
-                              className="max-w-full max-h-full"
-                              style={{ imageRendering: 'pixelated' }}
-                              pokemonId={pokemonData.id}
-                              isShiny={isShiny}
-                              fallbackSrc={
-                                isShiny
-                                  ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonData.id}.png`
-                                  : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonData.id}.png`
-                              }
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="font-medium text-sm capitalize">
-                              {form.name.replace(/-/g, ' ')}
+                    {forms.map((form, index) => {
+                      // Extract form ID from URL if not provided directly
+                      let actualFormId = form.form_id;
+                      if (!actualFormId && form.url) {
+                        const urlParts = form.url.split('/');
+                        const formIdFromUrl = parseInt(urlParts[urlParts.length - 2]);
+                        if (!isNaN(formIdFromUrl)) {
+                          actualFormId = formIdFromUrl;
+                        }
+                      }
+
+                      // Determine the best sprite URL for this form
+                      let formSpriteUrl: string;
+                      let formFallbackUrl: string;
+
+                      if (form.sprites?.front_default) {
+                        // Use the form's specific sprite
+                        formSpriteUrl = form.sprites.front_default;
+                        formFallbackUrl = form.sprites.front_shiny || formSpriteUrl;
+                      } else if (actualFormId && actualFormId !== pokemonData.id) {
+                        // For forms with different IDs, use PokeAPI
+                        formSpriteUrl = isShiny
+                          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${actualFormId}.png`
+                          : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${actualFormId}.png`;
+                        formFallbackUrl = isShiny
+                          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${actualFormId}.png`
+                          : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${actualFormId}.png`;
+                      } else {
+                        // Fallback to current Pokemon's sprite
+                        formSpriteUrl = isShiny
+                          ? `/images/pokemon/front/shiny/${pokemonData.id}.png`
+                          : `/images/pokemon/front/${pokemonData.id}.png`;
+                        formFallbackUrl = isShiny
+                          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonData.id}.png`
+                          : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonData.id}.png`;
+                      }
+
+                      return (
+                        <div
+                          key={index}
+                          className="bg-background/50 rounded-lg p-3 border cursor-pointer transition-all hover:bg-background/80 hover:border-blue-300 hover:shadow-md"
+                          onClick={() => handleFormClick(form)}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded flex items-center justify-center">
+                              <ImageWithFallback
+                                src={formSpriteUrl}
+                                alt={form.name}
+                                width={24}
+                                height={24}
+                                className="max-w-full max-h-full"
+                                style={{ imageRendering: 'pixelated' }}
+                                pokemonId={actualFormId || pokemonData.id}
+                                isShiny={isShiny}
+                                fallbackSrc={formFallbackUrl}
+                              />
                             </div>
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-medium ${getFormTypeColor(
-                                form
-                              )}`}
-                            >
-                              {getFormTypeLabel(form)}
-                            </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium text-sm capitalize">
+                                {form.display_name || form.name.replace(/-/g, ' ')}
+                              </div>
+                              <span
+                                className={`px-2 py-1 rounded text-xs font-medium ${getFormTypeColor(
+                                  form
+                                )}`}
+                              >
+                                {getFormTypeLabel(form)}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

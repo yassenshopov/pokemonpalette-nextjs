@@ -1,4 +1,4 @@
-import './globals.css';
+import '../globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ColorProvider } from '@/contexts/color-context';
 import { SaveProvider } from '@/contexts/save-context';
@@ -23,4 +23,3 @@ export default function TestLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
