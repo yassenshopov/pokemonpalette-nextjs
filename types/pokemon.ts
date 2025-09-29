@@ -248,6 +248,9 @@ export interface EvolutionChain {
 }
 
 export interface EvolutionChainLink {
+  id?: number;
+  name?: string;
+  level?: number;
   is_baby: boolean;
   species: {
     name: string;
@@ -483,4 +486,73 @@ export interface Design {
   imageUrl?: string;
   status: string;
   savedAt?: string;
+}
+
+// Component-specific types
+export interface PokemonSpriteV2Props {
+  className?: string;
+}
+
+export interface PokemonData {
+  id: number;
+  name: string;
+  sprite: string;
+  isShiny: boolean;
+  height?: number;
+  weight?: number;
+  types?: string[];
+  baseStats?: {
+    hp: number;
+    attack: number;
+    defense: number;
+    specialAttack: number;
+    specialDefense: number;
+    speed: number;
+  };
+  abilities?: string[];
+  generation?: string;
+  habitat?: string;
+  isLegendary?: boolean;
+  isMythical?: boolean;
+  color?: string;
+  shape?: string;
+  forms?: PokemonFormData[];
+  evolutionChain?: EvolutionChainData;
+  evolutionChainId?: string;
+  hasGenderDifferences?: boolean;
+  formsSwitchable?: boolean;
+}
+
+export interface PokemonFormData {
+  name: string;
+  url: string;
+  is_default: boolean;
+  is_mega: boolean;
+  is_gigantamax: boolean;
+  is_alolan: boolean;
+  is_galarian: boolean;
+  is_hisui: boolean;
+  is_paldean: boolean;
+}
+
+export interface EvolutionChainData {
+  id: number;
+  chain: EvolutionChainLink;
+}
+
+export interface EvolutionDetail {
+  trigger: string;
+  min_level?: number;
+  min_happiness?: number;
+  min_affection?: number;
+  min_beauty?: number;
+  time_of_day?: string;
+  known_move?: string;
+  known_move_type?: string;
+  location?: string;
+  held_item?: string;
+  item?: string;
+  gender?: number;
+  needs_overworld_rain?: boolean;
+  turn_upside_down?: boolean;
 }
