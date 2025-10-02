@@ -170,6 +170,7 @@ export default function Home() {
   const [descriptions, setDescriptions] = useState<
     Array<{ flavor_text: string; version: { name: string } }>
   >([]);
+  const [isLoadingPokemon, setIsLoadingPokemon] = useState<boolean>(false);
 
   const [stats, setStats] = useState<Array<{ name: string; base_stat: number }>>([]);
 
@@ -203,6 +204,7 @@ export default function Home() {
   useEffect(() => {
     const fetchPokemonData = async () => {
       if (!pokemonName) return;
+      setIsLoadingPokemon(true);
       try {
         // Fetch basic Pokemon data
         const normPokemonName = pokemonName.toLowerCase().trim().replace(/\s+/g, '-');
@@ -286,6 +288,8 @@ export default function Home() {
         setPokemonDescription('');
         setPokemonNumber(0);
         setStats([]);
+      } finally {
+        setIsLoadingPokemon(false);
       }
     };
 
@@ -331,6 +335,7 @@ export default function Home() {
           descriptions={descriptions}
           currentDescriptionIndex={currentDescriptionIndex}
           onDescriptionChange={setCurrentDescriptionIndex}
+          isLoadingPokemon={isLoadingPokemon}
         />
       </main>
     </div>

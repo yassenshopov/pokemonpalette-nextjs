@@ -498,6 +498,8 @@ export interface PokemonData {
   name: string;
   sprite: string;
   isShiny: boolean;
+  genus?: string;
+  species?: string;
   height?: number;
   weight?: number;
   types?: string[];

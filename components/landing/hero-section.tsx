@@ -17,6 +17,7 @@ interface HeroSectionProps {
   officialArt: string;
   colors?: string[]; // Make colors optional since they might not be available immediately
   pokemonNumber?: number;
+  isLoadingPokemon?: boolean;
 }
 
 // Helper function to get contrast color
@@ -65,6 +66,7 @@ export function HeroSection({
   officialArt,
   colors = [],
   pokemonNumber,
+  isLoadingPokemon = false,
 }: HeroSectionProps) {
   const { isSaved, toggleSave } = useSave();
   const { shiny } = useColors();
@@ -247,20 +249,14 @@ export function HeroSection({
         </motion.div>
 
         {/* Right image section */}
-        {officialArt && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 flex justify-center lg:justify-end mt-6 lg:mt-0"
-          >
-            <div className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] overflow-hidden">
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(to bottom right, ${primaryColor}20, transparent)`,
-                }}
-              />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex-1 flex justify-center lg:justify-end mt-6 lg:mt-0"
+        >
+          <div className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] overflow-hidden">
+            {officialArt && !isLoadingPokemon ? (
               <ImageWithFallback
                 src={officialArt}
                 alt={pokemonName}
@@ -273,9 +269,21 @@ export function HeroSection({
                 imageType="official-artwork"
                 isShiny={shiny}
               />
-            </div>
-          </motion.div>
-        )}
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center space-y-4">
+                  <div
+                    className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin"
+                    style={{ borderColor: `${primaryColor} transparent transparent transparent` }}
+                  ></div>
+                  <div className="text-sm text-muted-foreground">
+                    {isLoadingPokemon ? 'Loading Pokemon...' : 'Loading artwork...'}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

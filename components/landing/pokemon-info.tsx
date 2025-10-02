@@ -57,7 +57,9 @@ export function PokemonInfo({
   const mainColor = colors[0] || '#000000';
   const secondaryColor = colors[1] || mainColor;
   const tertiaryColor = colors[2] || secondaryColor;
-  const { text: textColor } = getContrastColor(mainColor);
+  // Calculate contrast based on the actual background color (with opacity)
+  const actualBgColor = mainColor ? `${mainColor}05` : '#ffffff';
+  const { text: textColor } = getContrastColor(actualBgColor);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
@@ -172,8 +174,13 @@ export function PokemonInfo({
   return (
     <div
       id="pokemon-info"
-      className="w-full px-8 md:px-16 mx-auto max-w-7xl rounded-2xl relative overflow-hidden bg-gradient-to-br from-transparent to-black/5"
-      style={{ backgroundColor: mainColor }}
+      className="w-full px-8 md:px-16 mx-auto max-w-7xl rounded-2xl relative overflow-hidden"
+      style={{
+        backgroundColor: mainColor ? `${mainColor}05` : undefined,
+        backgroundImage: mainColor
+          ? `linear-gradient(135deg, ${mainColor}08 0%, transparent 50%, ${mainColor}05 100%)`
+          : undefined,
+      }}
     >
       {/* Pokemon Silhouette */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-12 opacity-10 pointer-events-none">

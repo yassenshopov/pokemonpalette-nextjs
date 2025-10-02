@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import {
 import speciesData from '@/data/species.json';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import ColorThief from 'colorthief';
+import { useColors } from '@/contexts/color-context';
 import {
   PokemonSpriteV2Props,
   PokemonData,
@@ -26,12 +27,48 @@ import {
 } from '@/types/pokemon';
 
 export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
-  const [pokemonInput, setPokemonInput] = useState('');
+  // Get color context for sharing data with other components
+  const {
+    setColors,
+    setPokemonName: setContextPokemonName,
+    setShiny,
+    setForm,
+    colors,
+  } = useColors();
+
+  // Helper function to get contrast color for text/icons
+  const getContrastColor = (bgColor: string): string => {
+    if (!bgColor) return '#000000';
+
+    // Convert hex to RGB if needed
+    let rgbColor = bgColor;
+    if (bgColor.startsWith('#')) {
+      const hex = bgColor.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      rgbColor = `rgb(${r}, ${g}, ${b})`;
+    }
+
+    // Parse RGB values
+    const rgb = rgbColor.match(/\d+/g);
+    if (!rgb) return '#000000';
+
+    const [r, g, b] = rgb.map(Number);
+
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Return white for dark backgrounds, black for light backgrounds
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  };
+
+  const [pokemonInput, setPokemonInput] = useState('golduck');
   const [pokemonData, setPokemonData] = useState<PokemonData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isShiny, setIsShiny] = useState(false);
-  const [dexNumber, setDexNumber] = useState('');
+  const [dexNumber, setDexNumber] = useState('55');
   const [extractedColors, setExtractedColors] = useState<string[]>([]);
   const [isExtractingColors, setIsExtractingColors] = useState(false);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
@@ -66,18 +103,20 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
   };
 
   const getLocalImagePath = (pokemonId: number, shiny: boolean = false): string => {
+    const timestamp = Date.now();
     if (shiny) {
-      return `/images/pokemon/front/shiny/${pokemonId}.png`;
+      return `/images/pokemon/front/shiny/${pokemonId}.png?t=${timestamp}`;
     }
-    return `/images/pokemon/front/${pokemonId}.png`;
+    return `/images/pokemon/front/${pokemonId}.png?t=${timestamp}`;
   };
 
   const getPokeApiImageUrl = (pokemonId: number, shiny: boolean = false): string => {
     const baseUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
+    const timestamp = Date.now();
     if (shiny) {
-      return `${baseUrl}/shiny/${pokemonId}.png`;
+      return `${baseUrl}/shiny/${pokemonId}.png?t=${timestamp}`;
     }
-    return `${baseUrl}/${pokemonId}.png`;
+    return `${baseUrl}/${pokemonId}.png?t=${timestamp}`;
   };
 
   const testLocalImage = (imagePath: string): Promise<boolean> => {
@@ -166,12 +205,11 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
 
   const fetchPokemonData = async (pokemonId: number) => {
     try {
-      const response = await fetch('/data/pokemon-data-forms-enriched.json');
+      const response = await fetch(`/data/pokemon-data.json?t=${Date.now()}`);
       const data = await response.json();
       const localData = data.pokemon?.[pokemonId.toString()];
 
       if (localData) {
-        console.log(`✅ Using local data for Pokemon ${pokemonId}`);
         return {
           ...localData,
           // Convert base_stats to baseStats to match component expectations
@@ -185,6 +223,8 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
                 speed: localData.base_stats.speed,
               }
             : undefined,
+          // Explicitly include genus to ensure it's not lost
+          genus: localData.genus,
           forms: localData.forms || [],
           evolutionChain: localData.evolution_chain || null,
           evolutionChainId: localData.evolution_chain_id || null,
@@ -197,10 +237,24 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
       const apiResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
       const apiData = await apiResponse.json();
 
+      // Try to get species information
+      let speciesInfo = 'Pokémon';
+      try {
+        const speciesResponse = await fetch(
+          `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`
+        );
+        const speciesData = await speciesResponse.json();
+        speciesInfo =
+          speciesData.genera?.find((g: any) => g.language.name === 'en')?.genus || 'Pokémon';
+      } catch (error) {
+        console.log('Could not fetch species data:', error);
+      }
+
       return {
         types: apiData.types?.map((t: any) => t.type.name) || [],
         height: apiData.height / 10,
         weight: apiData.weight / 10,
+        genus: speciesInfo,
         baseStats: {
           hp: apiData.stats?.[0]?.base_stat || 0,
           attack: apiData.stats?.[1]?.base_stat || 0,
@@ -220,6 +274,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
   // Main function - defined as a regular function, not const
   async function fetchPokemonSprite(input: string, shiny: boolean = false) {
     console.log('fetchPokemonSprite called with:', { input, shiny });
+    console.log('Starting to fetch Pokemon sprite...');
     setIsLoading(true);
     setError(null);
 
@@ -254,13 +309,16 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
         ? baseSpriteUrl
         : getPokeApiImageUrl(pokemonId, shiny);
 
-      setPokemonData({
+      const pokemonDataToSet = {
         id: pokemonId,
         name: pokemonName,
         sprite: finalSpriteUrl,
         isShiny: shiny,
         ...additionalData,
-      });
+      };
+
+      console.log('Setting Pokemon data:', pokemonDataToSet);
+      setPokemonData(pokemonDataToSet);
 
       setDexNumber(pokemonId.toString());
 
@@ -281,6 +339,14 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
       try {
         const colors = await extractColors(spriteUrl);
         setExtractedColors(colors);
+
+        // Use setTimeout to batch context updates and prevent multiple re-renders
+        setTimeout(() => {
+          setContextPokemonName(pokemonName);
+          setShiny(shiny);
+          setForm('');
+          setColors(colors);
+        }, 0);
       } catch (colorError) {
         console.error('Error extracting colors:', colorError);
         setExtractedColors([]);
@@ -295,6 +361,15 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
       setIsLoading(false);
     }
   }
+
+  // Load default Pokemon on component mount
+  useEffect(() => {
+    // Load Golduck (ID 55) as the default Pokemon
+    console.log('PokemonSpriteV2 mounted, loading default Pokemon: Golduck');
+    console.log('Current pokemonInput state:', pokemonInput);
+    console.log('Current dexNumber state:', dexNumber);
+    fetchPokemonSprite('golduck', false);
+  }, []);
 
   const generateSuggestions = (input: string) => {
     if (input.length < 2) {
@@ -388,6 +463,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
   const handleShinyToggle = () => {
     const newShinyState = !isShiny;
     setIsShiny(newShinyState);
+    setShiny(newShinyState); // Update context
     if (pokemonData) {
       fetchPokemonSprite(pokemonData.name, newShinyState);
     }
@@ -438,40 +514,25 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
   };
 
   const handleFormClick = (form: PokemonFormData) => {
-    console.log('=== FORM CLICK DEBUG ===');
-    console.log('Form clicked:', form);
-    console.log('Current pokemonData.sprite:', pokemonData?.sprite);
-
     if (!pokemonData) {
-      console.error('No pokemon data available');
       return;
     }
 
     // Use the same helper function as the form display
     const formSpriteUrl = getFormSpriteUrl(form);
-    console.log('New sprite URL:', formSpriteUrl);
-    console.log('Are URLs the same?', pokemonData.sprite === formSpriteUrl);
-
-    // Force a different URL if they're the same
-    let finalSpriteUrl = formSpriteUrl;
-    if (pokemonData.sprite === formSpriteUrl) {
-      // Add a cache-busting parameter to force re-render
-      finalSpriteUrl = formSpriteUrl + '?t=' + Date.now();
-      console.log('Added cache-busting parameter:', finalSpriteUrl);
-    }
 
     // Update the Pokemon data with the new sprite
     setPokemonData({
       ...pokemonData,
-      sprite: finalSpriteUrl,
+      sprite: formSpriteUrl,
     });
+
+    // Update context with form information
+    setForm(form.name);
 
     // Force re-render by updating the sprite key
     setSpriteKey(prev => prev + 1);
-
-    console.log('✅ Updated pokemonData with new sprite');
     setShowSuggestions(false);
-    console.log('=== END FORM CLICK DEBUG ===');
   };
 
   const copyColor = async (color: string) => {
@@ -662,13 +723,23 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
     return (
       <div key={`${pokemonId}-${level}`} className="flex flex-col items-center">
         <div
-          className={`flex flex-col items-center space-y-2 cursor-pointer transition-all hover:scale-105 hover:bg-background/50 rounded-lg p-2 ${
-            isCurrentPokemon ? 'ring-2 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'
-          }`}
+          className="flex flex-col items-center space-y-2 cursor-pointer transition-all hover:scale-105 hover:bg-background/50 rounded-lg p-2"
+          style={{
+            border: isCurrentPokemon ? `2px solid ${colors[0] || '#3b82f6'}` : undefined,
+            borderColor: !isCurrentPokemon && colors[0] ? colors[0] : undefined,
+          }}
           onClick={() => handleEvolutionClick(pokemonId, pokemonName)}
           title={`Click to view ${displayName}`}
         >
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-2 flex items-center justify-center">
+          <div
+            className="w-16 h-16 rounded-lg p-2 flex items-center justify-center"
+            style={{
+              background: colors[0]
+                ? `linear-gradient(135deg, ${colors[0]}20, ${colors[0]}10)`
+                : undefined,
+              backgroundColor: colors[0] ? `${colors[0]}15` : undefined,
+            }}
+          >
             <ImageWithFallback
               src={
                 isShiny
@@ -694,18 +765,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
             <div className="text-xs text-muted-foreground">
               #{pokemonId.toString().padStart(3, '0')}
             </div>
-            {isCurrentPokemon && <div className="text-xs text-blue-500 font-medium">Current</div>}
-            {!isCurrentPokemon && (
-              <div className="text-xs text-muted-foreground opacity-70">Click to view</div>
-            )}
           </div>
-          {chain.evolution_details && chain.evolution_details.length > 0 && (
-            <div className="text-xs text-muted-foreground text-center max-w-20">
-              {chain.evolution_details[0].min_level &&
-                `Lv. ${chain.evolution_details[0].min_level}`}
-              {chain.evolution_details[0].item && ` ${chain.evolution_details[0].item}`}
-            </div>
-          )}
         </div>
 
         {chain.evolves_to && chain.evolves_to.length > 0 && (
@@ -721,12 +781,53 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
   };
 
   return (
-    <Card className={`w-full max-w-md mx-auto ${className}`}>
-      <CardHeader>
-        <CardTitle className="text-center">Pokemon Sprite V2</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-2">
+    <div className={`w-full max-w-md mx-auto ${className}`}>
+      {/* Pokemon Sprite */}
+      {pokemonData && (
+        <div className="flex justify-center mb-4">
+          <div className="relative w-48 h-48 flex items-center justify-center">
+            <img
+              key={`${pokemonData.sprite}-${spriteKey}`}
+              src={pokemonData.sprite}
+              alt={pokemonData.name}
+              width={192}
+              height={192}
+              className="max-w-full max-h-full"
+              style={{ imageRendering: 'pixelated' }}
+              onError={e => {
+                console.log('Image failed to load:', pokemonData.sprite);
+                e.currentTarget.src = getPokeApiImageUrl(pokemonData.id, pokemonData.isShiny);
+              }}
+            />
+            {/* Shiny Button in Top-Right Corner */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`absolute top-2 right-2 h-8 w-8 rounded-full p-0 ${
+                isShiny ? 'text-yellow-500' : 'text-muted-foreground'
+              }`}
+              onClick={handleShinyToggle}
+              disabled={isLoading}
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Species Text */}
+      {pokemonData && (
+        <div className="text-center mb-6">
+          <p className="text-sm text-muted-foreground">
+            {pokemonData.genus ? `The ${pokemonData.genus} Pokémon` : 'Pokémon'}
+          </p>
+        </div>
+      )}
+
+      {/* Search Controls */}
+      <div className="space-y-4 mb-6">
+        {/* Search Bar */}
+        <form onSubmit={handleSubmit}>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -734,7 +835,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
               value={pokemonInput}
               onChange={e => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Enter Pokemon name..."
+              placeholder="Golduck"
               className="pl-10 pr-12"
             />
             <Button
@@ -742,6 +843,11 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
               size="sm"
               className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8"
               disabled={isLoading}
+              style={{
+                backgroundColor: colors[0] || undefined,
+                color: colors[0] ? getContrastColor(colors[0]) : undefined,
+                borderColor: colors[0] || undefined,
+              }}
             >
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -792,377 +898,341 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
           </div>
         </form>
 
-        <div className="flex items-center justify-center gap-2">
+        {/* Dex Number and Randomize Controls */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleDexNumberChange('down')}
+              disabled={isLoading || parseInt(dexNumber) <= 1}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-muted-foreground">Dex:</span>
+              <Input
+                type="number"
+                value={dexNumber}
+                onChange={e => handleDexNumberInputChange(e.target.value)}
+                className="text-center w-16 h-8"
+                min="1"
+                max="1025"
+                disabled={isLoading}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleDexNumberChange('up')}
+              disabled={isLoading || parseInt(dexNumber) >= 1025}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+          </div>
+
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleRandomize}
             disabled={isLoading}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 ml-auto"
           >
             <Shuffle className="h-4 w-4" />
             Randomize
           </Button>
         </div>
+      </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => handleDexNumberChange('down')}
-            disabled={isLoading || parseInt(dexNumber) <= 1}
-          >
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-          <Input
-            type="number"
-            value={dexNumber}
-            onChange={e => handleDexNumberInputChange(e.target.value)}
-            className="text-center"
-            min="1"
-            max="1025"
-            disabled={isLoading}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => handleDexNumberChange('up')}
-            disabled={isLoading || parseInt(dexNumber) >= 1025}
-          >
-            <ChevronUp className="h-4 w-4" />
-          </Button>
-        </div>
+      {/* Error and Loading States */}
+      {error && <div className="text-center text-red-500 text-sm mb-4">{error}</div>}
+      {isLoading && (
+        <div className="text-center text-muted-foreground text-sm mb-4">Loading Pokemon...</div>
+      )}
 
-        {pokemonData && (
-          <div className="text-center space-y-4">
-            <div className="relative inline-block">
-              <div className="w-48 h-48 mx-auto bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 flex items-center justify-center">
-                <img
-                  key={`${pokemonData.sprite}-${spriteKey}`}
-                  src={pokemonData.sprite}
-                  alt={pokemonData.name}
-                  width={192}
-                  height={192}
-                  className="max-w-full max-h-full"
-                  style={{ imageRendering: 'pixelated' }}
-                  onError={e => {
-                    console.log('Image failed to load:', pokemonData.sprite);
-                    e.currentTarget.src = getPokeApiImageUrl(pokemonData.id, pokemonData.isShiny);
-                  }}
-                />
+      {/* Tabs */}
+      {pokemonData && (
+        <Tabs defaultValue="information" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="information">Information</TabsTrigger>
+            <TabsTrigger value="forms">Forms & Evolutions</TabsTrigger>
+            <TabsTrigger value="colors">Colors</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="information" className="space-y-4 mt-4">
+            {/* Type */}
+            {pokemonData.types && (
+              <div>
+                <h4 className="font-medium mb-2">Type</h4>
+                <div className="flex gap-2">
+                  {pokemonData.types.map(type => (
+                    <span
+                      key={type}
+                      className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${
+                        type === 'normal'
+                          ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                          : type === 'fire'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                          : type === 'water'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                          : type === 'electric'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                          : type === 'grass'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                          : type === 'ice'
+                          ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300'
+                          : type === 'fighting'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                          : type === 'poison'
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                          : type === 'ground'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                          : type === 'flying'
+                          ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300'
+                          : type === 'psychic'
+                          ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
+                          : type === 'bug'
+                          ? 'bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300'
+                          : type === 'rock'
+                          ? 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300'
+                          : type === 'ghost'
+                          ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300'
+                          : type === 'dragon'
+                          ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300'
+                          : type === 'dark'
+                          ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                          : type === 'steel'
+                          ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
+                          : type === 'fairy'
+                          ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                      }`}
+                    >
+                      {type}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                className={`absolute top-2 right-2 h-8 w-8 rounded-full ${
-                  isShiny ? 'bg-yellow-500/20' : 'bg-background/80'
-                }`}
-                onClick={handleShinyToggle}
-                disabled={isLoading}
-              >
-                <Sparkles
-                  className={`h-4 w-4 ${isShiny ? 'text-yellow-500' : 'text-muted-foreground'}`}
-                />
-              </Button>
+            )}
+
+            {/* Height and Weight */}
+            {(pokemonData.height || pokemonData.weight) && (
+              <div className="grid grid-cols-2 gap-4">
+                {pokemonData.height && (
+                  <div>
+                    <h4 className="font-medium mb-1">Height</h4>
+                    <p className="text-sm text-muted-foreground">{pokemonData.height} m</p>
+                  </div>
+                )}
+                {pokemonData.weight && (
+                  <div>
+                    <h4 className="font-medium mb-1">Weight</h4>
+                    <p className="text-sm text-muted-foreground">{pokemonData.weight} kg</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Base Stats */}
+            {pokemonData.baseStats && (
+              <div>
+                <h4 className="font-medium mb-2">Base Stats</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>HP</span>
+                    <span>{pokemonData.baseStats.hp}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Attack</span>
+                    <span>{pokemonData.baseStats.attack}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Defense</span>
+                    <span>{pokemonData.baseStats.defense}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Speed</span>
+                    <span>{pokemonData.baseStats.speed}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Abilities */}
+            {pokemonData.abilities && pokemonData.abilities.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2">Abilities</h4>
+                <div className="flex flex-wrap gap-2">
+                  {pokemonData.abilities.map(ability => (
+                    <span
+                      key={ability}
+                      className="px-2 py-1 bg-background/50 rounded text-xs capitalize"
+                    >
+                      {ability.replace(/-/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Future Updates Message */}
+            <div className="text-center text-muted-foreground text-sm pt-4">
+              More Pokémon details coming in future updates
             </div>
+          </TabsContent>
 
-            <div>
-              <h3 className="text-lg font-semibold capitalize">
-                {pokemonData.name.replace(/-/g, ' ')}
-                {isShiny && <span className="ml-2 text-yellow-500">✨ Shiny</span>}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                #{pokemonData.id.toString().padStart(3, '0')}
-              </p>
-              <p className="text-sm text-muted-foreground">Local Image</p>
-            </div>
-          </div>
-        )}
-
-        {error && <div className="text-center text-red-500 text-sm">{error}</div>}
-
-        {isLoading && (
-          <div className="text-center text-muted-foreground text-sm">Loading Pokemon...</div>
-        )}
-
-        {pokemonData && (
-          <Tabs defaultValue="information" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="information">Information</TabsTrigger>
-              <TabsTrigger value="forms">Forms & Evolutions</TabsTrigger>
-              <TabsTrigger value="colors">Colors</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="information" className="space-y-3">
-              {pokemonData.types && (
-                <div>
-                  <h4 className="font-medium mb-2">Type</h4>
-                  <div className="flex gap-2">
-                    {pokemonData.types.map(type => (
-                      <span
-                        key={type}
-                        className={`px-2 py-1 rounded text-xs font-medium capitalize ${
-                          type === 'normal'
-                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                            : type === 'fire'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                            : type === 'water'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                            : type === 'electric'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                            : type === 'grass'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                            : type === 'ice'
-                            ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300'
-                            : type === 'fighting'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                            : type === 'poison'
-                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-                            : type === 'ground'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                            : type === 'flying'
-                            ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300'
-                            : type === 'psychic'
-                            ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
-                            : type === 'bug'
-                            ? 'bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300'
-                            : type === 'rock'
-                            ? 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300'
-                            : type === 'ghost'
-                            ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300'
-                            : type === 'dragon'
-                            ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300'
-                            : type === 'dark'
-                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                            : type === 'steel'
-                            ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
-                            : type === 'fairy'
-                            ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                        }`}
-                      >
-                        {type}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(pokemonData.height || pokemonData.weight) && (
-                <div className="grid grid-cols-2 gap-4">
-                  {pokemonData.height && (
-                    <div>
-                      <h4 className="font-medium">Height</h4>
-                      <p className="text-sm text-muted-foreground">{pokemonData.height} m</p>
-                    </div>
-                  )}
-                  {pokemonData.weight && (
-                    <div>
-                      <h4 className="font-medium">Weight</h4>
-                      <p className="text-sm text-muted-foreground">{pokemonData.weight} kg</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {pokemonData.baseStats && (
-                <div>
-                  <h4 className="font-medium mb-2">Base Stats</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>HP</span>
-                      <span>{pokemonData.baseStats.hp}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Attack</span>
-                      <span>{pokemonData.baseStats.attack}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Defense</span>
-                      <span>{pokemonData.baseStats.defense}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Speed</span>
-                      <span>{pokemonData.baseStats.speed}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {pokemonData.abilities && pokemonData.abilities.length > 0 && (
-                <div>
-                  <h4 className="font-medium mb-2">Abilities</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {pokemonData.abilities.map(ability => (
-                      <span
-                        key={ability}
-                        className="px-2 py-1 bg-background/50 rounded text-xs capitalize"
-                      >
-                        {ability.replace(/-/g, ' ')}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="forms" className="space-y-4">
-              {/* Forms Section */}
-              {forms.length > 0 && (
-                <div>
-                  <h4 className="font-medium mb-3">Forms</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    {forms.map((form, index) => {
-                      // Extract form ID from URL if not provided directly
-                      let actualFormId = form.form_id;
-                      if (!actualFormId && form.url) {
-                        const urlParts = form.url.split('/');
-                        const formIdFromUrl = parseInt(urlParts[urlParts.length - 2]);
-                        if (!isNaN(formIdFromUrl)) {
-                          actualFormId = formIdFromUrl;
-                        }
+          <TabsContent value="forms" className="space-y-4 mt-4">
+            {/* Forms Section */}
+            {forms.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-3">Forms</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {forms.map((form, index) => {
+                    // Extract form ID from URL if not provided directly
+                    let actualFormId = form.form_id;
+                    if (!actualFormId && form.url) {
+                      const urlParts = form.url.split('/');
+                      const formIdFromUrl = parseInt(urlParts[urlParts.length - 2]);
+                      if (!isNaN(formIdFromUrl)) {
+                        actualFormId = formIdFromUrl;
                       }
+                    }
 
-                      // Determine the best sprite URL for this form
-                      let formSpriteUrl: string;
-                      let formFallbackUrl: string;
+                    // Determine the best sprite URL for this form
+                    let formSpriteUrl: string;
+                    let formFallbackUrl: string;
 
-                      if (form.sprites?.front_default) {
-                        // Use the form's specific sprite
-                        formSpriteUrl = form.sprites.front_default;
-                        formFallbackUrl = form.sprites.front_shiny || formSpriteUrl;
-                      } else if (actualFormId && actualFormId !== pokemonData.id) {
-                        // For forms with different IDs, use PokeAPI
-                        formSpriteUrl = isShiny
-                          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${actualFormId}.png`
-                          : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${actualFormId}.png`;
-                        formFallbackUrl = isShiny
-                          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${actualFormId}.png`
-                          : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${actualFormId}.png`;
-                      } else {
-                        // Fallback to current Pokemon's sprite
-                        formSpriteUrl = isShiny
-                          ? `/images/pokemon/front/shiny/${pokemonData.id}.png`
-                          : `/images/pokemon/front/${pokemonData.id}.png`;
-                        formFallbackUrl = isShiny
-                          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonData.id}.png`
-                          : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonData.id}.png`;
-                      }
+                    if (form.sprites?.front_default) {
+                      // Use the form's specific sprite
+                      formSpriteUrl = form.sprites.front_default;
+                      formFallbackUrl = form.sprites.front_shiny || formSpriteUrl;
+                    } else if (actualFormId && actualFormId !== pokemonData.id) {
+                      // For forms with different IDs, use PokeAPI
+                      formSpriteUrl = isShiny
+                        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${actualFormId}.png`
+                        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${actualFormId}.png`;
+                      formFallbackUrl = isShiny
+                        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${actualFormId}.png`
+                        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${actualFormId}.png`;
+                    } else {
+                      // Fallback to current Pokemon's sprite
+                      formSpriteUrl = isShiny
+                        ? `/images/pokemon/front/shiny/${pokemonData.id}.png`
+                        : `/images/pokemon/front/${pokemonData.id}.png`;
+                      formFallbackUrl = isShiny
+                        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonData.id}.png`
+                        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonData.id}.png`;
+                    }
 
-                      return (
-                        <div
-                          key={index}
-                          className="bg-background/50 rounded-lg p-3 border cursor-pointer transition-all hover:bg-background/80 hover:border-blue-300 hover:shadow-md"
-                          onClick={() => handleFormClick(form)}
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded flex items-center justify-center">
-                              <ImageWithFallback
-                                src={formSpriteUrl}
-                                alt={form.name}
-                                width={24}
-                                height={24}
-                                className="max-w-full max-h-full"
-                                style={{ imageRendering: 'pixelated' }}
-                                pokemonId={actualFormId || pokemonData.id}
-                                isShiny={isShiny}
-                                fallbackSrc={formFallbackUrl}
-                              />
+                    return (
+                      <div
+                        key={index}
+                        className="bg-background/50 rounded-lg p-3 border cursor-pointer transition-all hover:bg-background/80 hover:border-blue-300 hover:shadow-md"
+                        onClick={() => handleFormClick(form)}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded flex items-center justify-center">
+                            <ImageWithFallback
+                              src={formSpriteUrl}
+                              alt={form.name}
+                              width={24}
+                              height={24}
+                              className="max-w-full max-h-full"
+                              style={{ imageRendering: 'pixelated' }}
+                              pokemonId={actualFormId || pokemonData.id}
+                              isShiny={isShiny}
+                              fallbackSrc={formFallbackUrl}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-sm capitalize">
+                              {form.display_name || form.name.replace(/-/g, ' ')}
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="font-medium text-sm capitalize">
-                                {form.display_name || form.name.replace(/-/g, ' ')}
-                              </div>
-                              <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${getFormTypeColor(
-                                  form
-                                )}`}
-                              >
-                                {getFormTypeLabel(form)}
-                              </span>
-                            </div>
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${getFormTypeColor(
+                                form
+                              )}`}
+                            >
+                              {getFormTypeLabel(form)}
+                            </span>
                           </div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Evolution Chain Section */}
+            {evolutionChain && (
+              <div>
+                <h4 className="font-medium mb-3">Evolution Chain</h4>
+                <div className="bg-background/50 rounded-lg p-4">
+                  <div className="flex justify-center">
+                    {renderEvolutionChain(evolutionChain.chain)}
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Evolution Chain Section */}
-              {evolutionChain && (
-                <div>
-                  <h4 className="font-medium mb-3">Evolution Chain</h4>
-                  <div className="bg-background/50 rounded-lg p-4">
-                    <div className="flex justify-center">
-                      {renderEvolutionChain(evolutionChain.chain)}
-                    </div>
-                  </div>
-                </div>
-              )}
+            {/* No Data Message */}
+            {forms.length === 0 && !evolutionChain && (
+              <div className="text-center text-muted-foreground text-sm">
+                No forms or evolution data available for this Pokemon.
+              </div>
+            )}
+          </TabsContent>
 
-              {/* No Data Message */}
-              {forms.length === 0 && !evolutionChain && (
-                <div className="text-center text-muted-foreground text-sm">
-                  No forms or evolution data available for this Pokemon.
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="colors" className="space-y-3">
-              {isExtractingColors ? (
-                <div className="text-center text-muted-foreground text-sm">
-                  Extracting colors...
-                </div>
-              ) : extractedColors.length > 0 ? (
-                <div>
-                  <h4 className="font-medium mb-3">Color Palette</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    {extractedColors.map((color, index) => {
-                      const colorFormats = convertColor(color);
-                      return (
+          <TabsContent value="colors" className="space-y-3 mt-4">
+            {isExtractingColors ? (
+              <div className="text-center text-muted-foreground text-sm">Extracting colors...</div>
+            ) : extractedColors.length > 0 ? (
+              <div>
+                <h4 className="font-medium mb-3">Color Palette</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {extractedColors.map((color, index) => {
+                    const colorFormats = convertColor(color);
+                    return (
+                      <div
+                        key={index}
+                        className="group relative bg-background/50 rounded-lg p-3 cursor-pointer transition-all hover:bg-background/80"
+                        onClick={() => copyColor(color)}
+                      >
                         <div
-                          key={index}
-                          className="group relative bg-background/50 rounded-lg p-3 cursor-pointer transition-all hover:bg-background/80"
-                          onClick={() => copyColor(color)}
-                        >
-                          <div
-                            className="w-full h-8 rounded mb-2 border"
-                            style={{ backgroundColor: color }}
-                          />
-                          <div className="space-y-1 text-xs">
-                            <div className="font-mono">{colorFormats.hex.toUpperCase()}</div>
-                            <div className="font-mono text-muted-foreground">
-                              {colorFormats.rgb}
-                            </div>
-                            <div className="font-mono text-muted-foreground">
-                              {colorFormats.hsl}
-                            </div>
-                          </div>
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {copiedColor === color ? (
-                              <Check className="h-3 w-3 text-green-500" />
-                            ) : (
-                              <Copy className="h-3 w-3 text-muted-foreground" />
-                            )}
-                          </div>
+                          className="w-full h-8 rounded mb-2 border"
+                          style={{ backgroundColor: color }}
+                        />
+                        <div className="space-y-1 text-xs">
+                          <div className="font-mono">{colorFormats.hex.toUpperCase()}</div>
+                          <div className="font-mono text-muted-foreground">{colorFormats.rgb}</div>
+                          <div className="font-mono text-muted-foreground">{colorFormats.hsl}</div>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {copiedColor === color ? (
+                            <Check className="h-3 w-3 text-green-500" />
+                          ) : (
+                            <Copy className="h-3 w-3 text-muted-foreground" />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ) : (
-                <div className="text-center text-muted-foreground text-sm">
-                  No colors extracted yet. Load a Pokemon to see its color palette!
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        )}
-      </CardContent>
-    </Card>
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground text-sm">
+                No colors extracted yet. Load a Pokemon to see its color palette!
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
+    </div>
   );
 }

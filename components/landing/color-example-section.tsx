@@ -22,6 +22,7 @@ interface ColorExampleSectionProps {
   descriptions: Array<{ flavor_text: string; version: { name: string } }>;
   currentDescriptionIndex: number;
   onDescriptionChange: (index: number) => void;
+  isLoadingPokemon: boolean;
 }
 
 const MemoizedHeroSection = memo(HeroSection);
@@ -47,6 +48,7 @@ export const ColorExampleSection = memo(function ColorExampleSection({
   descriptions,
   currentDescriptionIndex,
   onDescriptionChange,
+  isLoadingPokemon,
 }: ColorExampleSectionProps) {
   const [selectedColorProgress, setSelectedColorProgress] = useState(colors[0]);
   const [selectedColorNotification, setSelectedColorNotification] = useState(colors[1]);
@@ -84,53 +86,56 @@ export const ColorExampleSection = memo(function ColorExampleSection({
         officialArt={officialArt}
         colors={colors}
         pokemonNumber={pokemonNumber}
+        isLoadingPokemon={isLoadingPokemon}
       />
 
-      <div className="space-y-8">
-        <div>
-          <MemoizedColorPalette colors={colors} />
-        </div>
+      {!isLoadingPokemon && (
+        <div className="space-y-8">
+          <div>
+            <MemoizedColorPalette colors={colors} />
+          </div>
 
-        <div>
-          <MemoizedBuyMeCoffee
-            mainColor={colors[0]}
-            secondaryColor={colors[1]}
-            tertiaryColor={colors[2]}
-            getContrastColor={getContrastColor}
-          />
-        </div>
+          <div>
+            <MemoizedBuyMeCoffee
+              mainColor={colors[0]}
+              secondaryColor={colors[1]}
+              tertiaryColor={colors[2]}
+              getContrastColor={getContrastColor}
+            />
+          </div>
 
-        <div>
-          <MemoizedPokemonInfo
-            pokemonName={pokemonName}
-            pokemonNumber={pokemonNumber}
-            pokemonDescription={pokemonDescription}
-            pokemonTypes={pokemonTypes}
-            selectedVersion={selectedVersion}
-            availableVersions={availableVersions}
-            onVersionChange={onVersionChange}
-            getContrastColor={getContrastColor}
-            colors={colors}
-            officialArt={officialArt}
-            pokemonCry={pokemonCry}
-            stats={stats}
-            descriptions={descriptions}
-            currentDescriptionIndex={currentDescriptionIndex}
-            onDescriptionChange={onDescriptionChange}
-          />
-        </div>
+          <div>
+            <MemoizedPokemonInfo
+              pokemonName={pokemonName}
+              pokemonNumber={pokemonNumber}
+              pokemonDescription={pokemonDescription}
+              pokemonTypes={pokemonTypes}
+              selectedVersion={selectedVersion}
+              availableVersions={availableVersions}
+              onVersionChange={onVersionChange}
+              getContrastColor={getContrastColor}
+              colors={colors}
+              officialArt={officialArt}
+              pokemonCry={pokemonCry}
+              stats={stats}
+              descriptions={descriptions}
+              currentDescriptionIndex={currentDescriptionIndex}
+              onDescriptionChange={onDescriptionChange}
+            />
+          </div>
 
-        <div>
-          <MemoizedExampleComponents
-            selectedColorProgress={selectedColorProgress}
-            selectedColorNotification={selectedColorNotification}
-            selectedColorCard={selectedColorCard}
-            progress={progress}
-            getContrastColor={getContrastColor}
-            colors={colors}
-          />
+          <div>
+            <MemoizedExampleComponents
+              selectedColorProgress={selectedColorProgress}
+              selectedColorNotification={selectedColorNotification}
+              selectedColorCard={selectedColorCard}
+              progress={progress}
+              getContrastColor={getContrastColor}
+              colors={colors}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <MemoizedFooter />
     </div>

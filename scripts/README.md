@@ -68,3 +68,5 @@ The PokemonSpriteV2 component automatically:
 Run this script once to populate your local Pokemon database for optimal performance!
 
 
+
+

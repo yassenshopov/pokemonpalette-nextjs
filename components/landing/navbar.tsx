@@ -145,7 +145,10 @@ export function Navbar({ colors, pokemonName, pokemonNumber, getContrastColor }:
       <nav
         className="box-border fixed top-0 left-0 right-0 z-30 h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
         style={{
-          background: `linear-gradient(to right, ${colors[0]}20, ${colors[1]}10)`,
+          background:
+            colors.length > 0
+              ? `linear-gradient(to right, ${colors[0]}08, transparent, ${colors[1]}08)`
+              : undefined,
         }}
       >
         <div className="container h-full px-2 md:px-4 mx-auto flex items-center justify-between gap-2 md:gap-4">
