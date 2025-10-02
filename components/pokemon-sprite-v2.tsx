@@ -33,6 +33,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
     setPokemonName: setContextPokemonName,
     setShiny,
     setForm,
+    setOfficialArt,
     colors,
   } = useColors();
 
@@ -513,7 +514,7 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
     }
   };
 
-  const handleFormClick = (form: PokemonFormData) => {
+  const handleFormClick = async (form: PokemonFormData) => {
     if (!pokemonData) {
       return;
     }
@@ -533,6 +534,31 @@ export function PokemonSpriteV2({ className = '' }: PokemonSpriteV2Props) {
     // Force re-render by updating the sprite key
     setSpriteKey(prev => prev + 1);
     setShowSuggestions(false);
+
+    // Extract colors from the new form's sprite
+    setIsExtractingColors(true);
+    try {
+      const colors = await extractColors(formSpriteUrl);
+      setExtractedColors(colors);
+
+      // Use setTimeout to batch context updates and prevent multiple re-renders
+      setTimeout(() => {
+        setContextPokemonName(pokemonData.name);
+        setShiny(isShiny);
+        setForm(form.name);
+        setColors(colors);
+
+        // Update official artwork for the form
+        // For forms, we'll use the same sprite URL as the form sprite
+        // since official artwork for forms might not be available
+        setOfficialArt(formSpriteUrl);
+      }, 0);
+    } catch (colorError) {
+      console.error('Error extracting colors from form sprite:', colorError);
+      setExtractedColors([]);
+    } finally {
+      setIsExtractingColors(false);
+    }
   };
 
   const copyColor = async (color: string) => {

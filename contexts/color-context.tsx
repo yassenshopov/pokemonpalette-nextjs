@@ -11,18 +11,38 @@ interface ColorContextType {
   setShiny: (isShiny: boolean) => void;
   form: string;
   setForm: (form: string) => void;
+  officialArt: string;
+  setOfficialArt: (artwork: string) => void;
 }
 
 const ColorContext = createContext<ColorContextType | undefined>(undefined);
 
 export function ColorProvider({ children }: { children: React.ReactNode }) {
-  const [colors, setColors] = useState<string[]>(['rgb(255, 255, 255)', 'rgb(0, 0, 0)', 'rgb(128, 128, 128)']);
+  const [colors, setColors] = useState<string[]>([
+    'rgb(255, 255, 255)',
+    'rgb(0, 0, 0)',
+    'rgb(128, 128, 128)',
+  ]);
   const [pokemonName, setPokemonName] = useState<string>('');
   const [shiny, setShiny] = useState<boolean>(false);
   const [form, setForm] = useState<string>('');
+  const [officialArt, setOfficialArt] = useState<string>('');
 
   return (
-    <ColorContext.Provider value={{ colors, setColors, pokemonName, setPokemonName, shiny, setShiny, form, setForm }}>
+    <ColorContext.Provider
+      value={{
+        colors,
+        setColors,
+        pokemonName,
+        setPokemonName,
+        shiny,
+        setShiny,
+        form,
+        setForm,
+        officialArt,
+        setOfficialArt,
+      }}
+    >
       {children}
     </ColorContext.Provider>
   );
@@ -38,4 +58,4 @@ export const useColors = () => {
     setShiny: (isShiny: boolean) => context.setShiny(isShiny),
     setForm: (form: string) => context.setForm(form),
   };
-}; 
+};
