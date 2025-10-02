@@ -298,6 +298,7 @@ export default function Page() {
               descriptions={descriptionData.descriptions}
               currentDescriptionIndex={descriptionData.currentDescriptionIndex}
               onDescriptionChange={handleDescriptionChange}
+              isLoadingPokemon={isLoading}
             />
             {colors[0] && colors[0].length > 0 && <ShinyToggleFab primaryColor={colors[0]} />}
           </motion.div>

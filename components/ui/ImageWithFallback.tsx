@@ -110,7 +110,7 @@ export function ImageWithFallback({
       setHasError(false);
       setTriedLocal(false);
     }
-  }, [src, shouldUseLocalFirst, localPath]); // Removed currentSrc from dependencies
+  }, [src, shouldUseLocalFirst, localPath, isShiny, isFemale]); // Added isShiny and isFemale to dependencies
 
   // Use unoptimized for local Pokemon images to avoid Vercel transformations
   const isLocalImage = typeof currentSrc === 'string' && currentSrc.startsWith('/images/pokemon/');

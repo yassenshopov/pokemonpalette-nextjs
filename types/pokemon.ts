@@ -248,6 +248,9 @@ export interface EvolutionChain {
 }
 
 export interface EvolutionChainLink {
+  id?: number;
+  name?: string;
+  level?: number;
   is_baby: boolean;
   species: {
     name: string;
@@ -483,4 +486,105 @@ export interface Design {
   imageUrl?: string;
   status: string;
   savedAt?: string;
+}
+
+// Component-specific types
+export interface PokemonSpriteV2Props {
+  className?: string;
+}
+
+export interface PokemonData {
+  id: number;
+  name: string;
+  sprite: string;
+  isShiny: boolean;
+  genus?: string;
+  species?: string;
+  height?: number;
+  weight?: number;
+  types?: string[];
+  baseStats?: {
+    hp: number;
+    attack: number;
+    defense: number;
+    specialAttack: number;
+    specialDefense: number;
+    speed: number;
+  };
+  abilities?: string[];
+  generation?: string;
+  habitat?: string;
+  isLegendary?: boolean;
+  isMythical?: boolean;
+  color?: string;
+  shape?: string;
+  forms?: PokemonFormData[];
+  evolutionChain?: EvolutionChainData;
+  evolutionChainId?: string;
+  hasGenderDifferences?: boolean;
+  formsSwitchable?: boolean;
+}
+
+export interface PokemonFormData {
+  name: string;
+  display_name?: string;
+  url: string;
+  form_id?: number;
+  form_order?: number;
+  is_default: boolean;
+  is_battle_only?: boolean;
+  form_type:
+    | 'default'
+    | 'mega'
+    | 'gigantamax'
+    | 'alolan'
+    | 'galarian'
+    | 'hisui'
+    | 'paldean'
+    | 'seasonal'
+    | 'gender'
+    | 'totem'
+    | 'primal'
+    | 'eternamax'
+    | 'origin'
+    | 'hero'
+    | 'zen'
+    | 'weather'
+    | 'color'
+    | 'trim'
+    | 'style'
+    | 'coat'
+    | 'sea'
+    | 'mood'
+    | 'strike'
+    | 'segment'
+    | 'family'
+    | 'shape'
+    | 'other';
+  sprites?: {
+    front_default?: string;
+    front_shiny?: string;
+  };
+}
+
+export interface EvolutionChainData {
+  id: number;
+  chain: EvolutionChainLink;
+}
+
+export interface EvolutionDetail {
+  trigger: string;
+  min_level?: number;
+  min_happiness?: number;
+  min_affection?: number;
+  min_beauty?: number;
+  time_of_day?: string;
+  known_move?: string;
+  known_move_type?: string;
+  location?: string;
+  held_item?: string;
+  item?: string;
+  gender?: number;
+  needs_overworld_rain?: boolean;
+  turn_upside_down?: boolean;
 }

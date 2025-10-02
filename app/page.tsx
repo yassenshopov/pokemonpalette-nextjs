@@ -158,8 +158,15 @@ interface PokemonSpecies {
 }
 
 export default function Home() {
-  const { colors, pokemonName = 'umbreon', shiny, form, setColors } = useColors();
-  const [officialArt, setOfficialArt] = useState<string>('');
+  const {
+    colors,
+    pokemonName = 'umbreon',
+    shiny,
+    form,
+    setColors,
+    officialArt,
+    setOfficialArt,
+  } = useColors();
   const [pokemonCry, setPokemonCry] = useState<string>('');
   const [pokemonDescription, setPokemonDescription] = useState<string>('');
   const [pokemonTypes, setPokemonTypes] = useState<string[]>([]);
@@ -170,6 +177,7 @@ export default function Home() {
   const [descriptions, setDescriptions] = useState<
     Array<{ flavor_text: string; version: { name: string } }>
   >([]);
+  const [isLoadingPokemon, setIsLoadingPokemon] = useState<boolean>(false);
 
   const [stats, setStats] = useState<Array<{ name: string; base_stat: number }>>([]);
 
@@ -203,6 +211,7 @@ export default function Home() {
   useEffect(() => {
     const fetchPokemonData = async () => {
       if (!pokemonName) return;
+      setIsLoadingPokemon(true);
       try {
         // Fetch basic Pokemon data
         const normPokemonName = pokemonName.toLowerCase().trim().replace(/\s+/g, '-');
@@ -210,13 +219,32 @@ export default function Home() {
         const data: Pokemon = await response.json();
 
         // Set artwork, cry, types, and stats
-        const localArtwork = shiny
-          ? `/images/pokemon/official-artwork/shiny/${data.id}.png`
-          : `/images/pokemon/official-artwork/${data.id}.png`;
-        const externalArtwork = shiny
-          ? data.sprites.other['official-artwork'].front_shiny
-          : data.sprites.other['official-artwork'].front_default;
-        setOfficialArt(externalArtwork); // Use external URL as primary, ImageWithFallback will try local first
+        // Handle different forms for artwork
+        let artworkUrl = '';
+        if (form && form !== '') {
+          // For forms, try to construct form-specific URLs
+          const formName = form.toLowerCase().replace(/\s+/g, '-');
+          const localFormArtwork = shiny
+            ? `/images/pokemon/official-artwork/shiny/${formName}/${data.id}.png`
+            : `/images/pokemon/official-artwork/${formName}/${data.id}.png`;
+          const externalFormArtwork = shiny
+            ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${data.id}.png`
+            : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${data.id}.png`;
+
+          // Try form-specific artwork first, fallback to regular
+          artworkUrl = externalFormArtwork;
+        } else {
+          // Regular Pokemon artwork
+          const localArtwork = shiny
+            ? `/images/pokemon/official-artwork/shiny/${data.id}.png`
+            : `/images/pokemon/official-artwork/${data.id}.png`;
+          const externalArtwork = shiny
+            ? data.sprites.other['official-artwork'].front_shiny
+            : data.sprites.other['official-artwork'].front_default;
+          artworkUrl = externalArtwork;
+        }
+
+        setOfficialArt(artworkUrl);
         setPokemonCry(data.cries.latest);
         setPokemonTypes(data.types.map(t => t.type.name));
 
@@ -286,11 +314,13 @@ export default function Home() {
         setPokemonDescription('');
         setPokemonNumber(0);
         setStats([]);
+      } finally {
+        setIsLoadingPokemon(false);
       }
     };
 
     fetchPokemonData();
-  }, [pokemonName, shiny]);
+  }, [pokemonName, shiny, form]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -331,6 +361,7 @@ export default function Home() {
           descriptions={descriptions}
           currentDescriptionIndex={currentDescriptionIndex}
           onDescriptionChange={setCurrentDescriptionIndex}
+          isLoadingPokemon={isLoadingPokemon}
         />
       </main>
     </div>

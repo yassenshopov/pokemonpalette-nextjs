@@ -78,13 +78,6 @@ export function BuyMeCoffee({
   // Calculate remaining supporters (minus the ones we're displaying)
   const remainingSupporters = Math.max(0, supporterCount - latestSupporters.length);
 
-  // Get text color for the button based on contrast
-  const buttonTextColor = getContrastColor(tertiaryColor).text === 'text-white' ? 'white' : '#333';
-
-  // Dark mode adjusted colors - only apply after mounting to prevent hydration mismatch
-  const darkMainColor = mounted && isDarkMode ? `${mainColor}` : mainColor;
-  const darkSecondaryColor = mounted && isDarkMode ? `${secondaryColor}` : secondaryColor;
-
   // Helper function to convert rgb to rgba with opacity
   const rgbToRgba = (rgbColor: string, opacity: number): string => {
     // Extract the RGB values using regex
@@ -98,6 +91,20 @@ export function BuyMeCoffee({
 
   // Create diluted version of the primary color for card background
   const cardBgOpacity = mounted && isDarkMode ? 0.3 : 0.15; // Less opacity in light mode
+
+  // Calculate contrast based on the actual background color (with opacity)
+  const actualBgColor = rgbToRgba(mainColor, cardBgOpacity);
+  const { text: textColorClass } = getContrastColor(actualBgColor);
+
+  // Convert text class to actual color value
+  const textColor = textColorClass === 'text-white' ? '#ffffff' : '#000000';
+
+  // Get text color for the button based on contrast
+  const buttonTextColor = getContrastColor(tertiaryColor).text === 'text-white' ? 'white' : '#333';
+
+  // Dark mode adjusted colors - only apply after mounting to prevent hydration mismatch
+  const darkMainColor = mounted && isDarkMode ? `${mainColor}` : mainColor;
+  const darkSecondaryColor = mounted && isDarkMode ? `${secondaryColor}` : secondaryColor;
   const cardBgStyle = {
     backgroundColor: rgbToRgba(mainColor, cardBgOpacity),
   };
@@ -143,7 +150,7 @@ export function BuyMeCoffee({
             </div>
             <div>
               <h3 className="text-xl font-bold dark:text-white">Support Pokémon Palette</h3>
-              <p className="text-gray-600 dark:text-gray-300 mt-2">
+              <p className="mt-2" style={{ color: textColor }}>
                 This tool is completely free and built with <span className="text-red-500">❤</span>{' '}
                 by a solo developer. Your support helps fund new features like custom palettes, more
                 Pokémon, and advanced color tools.
@@ -155,7 +162,7 @@ export function BuyMeCoffee({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+              <span className="text-sm font-medium" style={{ color: textColor }}>
                 Recent Supporters
               </span>
             </div>
@@ -186,7 +193,7 @@ export function BuyMeCoffee({
                       {supporter.name}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm" style={{ color: textColor }}>
                     {supporter.timeAgo}
                   </span>
                 </div>
@@ -209,7 +216,7 @@ export function BuyMeCoffee({
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                    <span className="text-sm font-medium" style={{ color: textColor }}>
                       and {remainingSupporters} more{' '}
                       {remainingSupporters === 1 ? 'supporter' : 'supporters'}
                     </span>
@@ -223,17 +230,15 @@ export function BuyMeCoffee({
           <div className="space-y-2 md:hidden">
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5" style={{ color: tertiaryColor }} />
-              <span className="text-gray-600 dark:text-gray-300">Support ongoing development</span>
+              <span style={{ color: textColor }}>Support ongoing development</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5" style={{ color: tertiaryColor }} />
-              <span className="text-gray-600 dark:text-gray-300">Fund new features</span>
+              <span style={{ color: textColor }}>Fund new features</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5" style={{ color: tertiaryColor }} />
-              <span className="text-gray-600 dark:text-gray-300">
-                Keep the tool free for everyone
-              </span>
+              <span style={{ color: textColor }}>Keep the tool free for everyone</span>
             </div>
           </div>
 
@@ -278,47 +283,44 @@ export function BuyMeCoffee({
         {/* Right side */}
         <div className="hidden md:block md:border-l md:pl-6 md:border-gray-200 dark:md:border-gray-800">
           <div className="space-y-4">
-            <h4 className="text-gray-600 dark:text-gray-300 font-medium">Your support enables:</h4>
+            <h4 className="font-medium" style={{ color: textColor }}>
+              Your support enables:
+            </h4>
 
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 rounded-full bg-yellow-100 dark:bg-gray-800 p-0.5">
                   <Check className="w-4 h-4" style={{ color: tertiaryColor }} />
                 </div>
-                <span className="text-gray-700 dark:text-gray-300">
-                  Keeping the service free for everyone
-                </span>
+                <span style={{ color: textColor }}>Keeping the service free for everyone</span>
               </div>
 
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 rounded-full bg-yellow-100 dark:bg-gray-800 p-0.5">
                   <Check className="w-4 h-4" style={{ color: tertiaryColor }} />
                 </div>
-                <span className="text-gray-700 dark:text-gray-300">
-                  Adding more Pokémon and features
-                </span>
+                <span style={{ color: textColor }}>Adding more Pokémon and features</span>
               </div>
 
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 rounded-full bg-yellow-100 dark:bg-gray-800 p-0.5">
                   <Check className="w-4 h-4" style={{ color: tertiaryColor }} />
                 </div>
-                <span className="text-gray-700 dark:text-gray-300">
-                  More color tools and custom palettes
-                </span>
+                <span style={{ color: textColor }}>More color tools and custom palettes</span>
               </div>
 
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 rounded-full bg-yellow-100 dark:bg-gray-800 p-0.5">
                   <Check className="w-4 h-4" style={{ color: tertiaryColor }} />
                 </div>
-                <span className="text-gray-700 dark:text-gray-300">
-                  Motivating an indie developer
-                </span>
+                <span style={{ color: textColor }}>Motivating an indie developer</span>
               </div>
             </div>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <p
+              className="text-sm mt-6 pt-4 border-t border-gray-200 dark:border-gray-800"
+              style={{ color: textColor }}
+            >
               Every contribution, no matter how small, makes a difference. Thank you for your
               support!
             </p>
